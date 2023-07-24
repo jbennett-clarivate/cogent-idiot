@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Bayes' Theorem</title>
+	<script type="text/javascript" src="js/bayes.js"></script>
+</head>
+<body>
+<div class="container container-large">
+	<div class="panel panel-default light-gray panel-shadow">
+		<div class="header-main">
+			<form class="form-horizontal">
+				<div class="form-group">
+					<div class="knownSpace">&nbsp;</div>
+					<div class="row">
+						<div class="col-xs-1 col-sm-1"></div>
+						<div class="col-xs-10 text-center">
+							<div class="row">
+								<div class="col-xs-1 col-sm-1"></div>
+								<div class="col-xs-10 col-sm-10 labels text-center">
+									<label style=" margin: 0; ">P(H)P(E|H)</label>
+								</div>
+								<div class="col-xs-1 col-sm-1"></div>
+							</div>
+							<div class="row">
+								<div class="col-xs-1 col-sm-1"></div>
+								<div class="col-xs-10 col-sm-10 labels text-center">
+									<label style=" border-top: 2px solid; margin: 0; padding-top: 5px;">P(H)P(E|H)+P(¬H)P(E|¬H)</label>
+								</div>
+								<div class="col-xs-1 col-sm-1"></div>
+							</div>
+						</div>
+						<div class="col-xs-1 col-sm-1"></div>
+					</div>
+					<div class="knownSpace">&nbsp;</div>
+					<div class="row">
+						<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3 text-center">
+							<div class="row">
+								<div class="col-xs-6 text-right">
+									<label for="suspicion"><span class="text-nowrap title-medium" data-title="True (best guess)">P(H):&nbsp;</span></label>
+								</div>
+								<div class="col-xs-6 text-left">
+									<input type="text" id="suspicion" value="" maxlength="7" size="7"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3 text-center">
+							<div class="row">
+								<div class="col-xs-6 text-right">
+									<label for="confirmedSuspicion"><span class="text-nowrap title-medium" data-title="Confirmed true with test">P(E|H):&nbsp;</span></label>
+								</div>
+								<div class="col-xs-6 text-left">
+									<input type="text" id="confirmedSuspicion" value="" maxlength="7" size="7"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3 text-center">
+							<div class="row">
+								<div class="col-xs-6 text-right">
+									<label for="falseSuspicion"><span class="text-nowrap title-medium" data-title="False">P(¬H):&nbsp;</span></label>
+								</div>
+								<div class="col-xs-6 text-left">
+									<input type="text" id="falseSuspicion" value="" maxlength="7" size="7" readonly/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-12 col-sm-6 col-md-6 col-lg-3 text-center">
+							<div class="row">
+								<div class="col-xs-6 text-right">
+									<label for="confirmedFalseSuspicion"><span class="text-nowrap title-medium" data-title="Confirmed false with test">P(E|¬H):&nbsp;</span></label>
+								</div>
+								<div class="col-xs-6 text-left">
+									<input type="text" id="confirmedFalseSuspicion" value="" maxlength="7" size="7" readonly/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="knownSpace">&nbsp;</div>
+					<div class="row">
+						<div class="col-xs-12 text-center">
+							<div class="row">
+								<div class="col-xs-6 text-right">
+									<label for="answer"><span class="text-nowrap title-medium" data-title="New best guess">P(H|E)&nbsp;&rArr;&nbsp;</span></label>
+								</div>
+								<div class="col-xs-6 text-left">
+									<input type="text" id="answer" value="" size="7" readonly/>
+									<input type="hidden" id="rawAnswer"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-xs-1 col-sm-1"></div>
+					<div class="col-xs-10 col-sm-10">
+						<button tabindex="70" type="button" class="btn btn-primary pull-left" id="regenerate-it">♺&nbsp;Reuse</button>
+						<button tabindex="71" type="button" class="btn btn-success pull-right" id="reset">⎚&nbsp;Reset</button>
+					</div>
+					<div class="col-xs-1 col-sm-1"></div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+</body>
+</html>

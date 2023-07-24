@@ -1,0 +1,114 @@
+<?php
+session_start();
+function getName($n) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $randomString = '';
+  
+    for ($i = 0; $i < $n; $i++) {
+        $index = rand(0, strlen($characters) - 1);
+        $randomString .= $characters[$index];
+    }
+  
+    return $randomString;
+}
+$_SESSION["pepper"]=getName(12);
+if (isset($_SESSION['login']) && isset($_SESSION['logged_in_at']) && time() - $_SESSION['logged_in_at'] <= 60 * 60) {
+	?>
+	<!DOCTYPE html>
+	<html class="no-js" lang="">
+	<head>
+		<meta name="description" content="Just a hodgepodge of tools. It is completely client side. I do not collect information and it does not leave your computer.">
+		<meta name="keywords" content="HTML,CSS,jQuery,JavaScript">
+		<meta name="author" content="Jacob Bennett">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<title>Web Tools</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=.75">
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+		<link rel="icon" href="favicon.ico" type="image/x-icon"/>
+		<link rel="stylesheet" href="css/normalize.css">
+		<link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+		<link rel="stylesheet" href="css/main.css">
+		<style id="antiClickjack">body {
+				display: none !important;
+			}</style>
+		<script type="text/javascript" src="js/vendor/modernizr-3.6.0.min.js"></script>
+		<script type="text/javascript" src="js/vendor/jquery-3.2.1.min.js"></script>
+		<script type="text/javascript" src="js/vendor/flot/jquery.flot.js"></script>
+		<script type="text/javascript" src="js/vendor/flot/jquery.flot.time.js"></script>
+		<script type="text/javascript" src="js/vendor/date.js"></script>
+		<script type="text/javascript" src="js/vendor/bootstrap.bundle.min.js"></script>
+		<script type="text/javascript" src="js/plugins.js"></script>
+		<script type="text/javascript" src="js/jumpship.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>
+		<script>
+			(function (window, document, tagType, id) {
+				var f = document.getElementsByTagName(tagType)[0];
+				var j = document.createElement(tagType);
+				j.async = true;
+				j.src =	"https://www.googletagmanager.com/gtag/js?id=" + id;
+				f.parentNode.insertBefore(j, f);
+				window.dataLayer = window.dataLayer || [];
+
+				function gtag() {
+					dataLayer.push(arguments);
+				}
+
+				gtag("js", new Date());
+
+				gtag("config", id);
+			})(window, document, "script", "<?php echo getenv('gacode'); ?>");
+		</script>
+	</head>
+	<body>
+	<div id="warning-container"><i data-reactroot=""></i></div>
+	<div class="panel-heading gradient">
+		<div class="btn-group btn-group fixed-width-group">
+			<button tabindex="1" type="button" id="listcomparator" class="page-transition btn btn-default light-gray" title="List Comparator">
+				<img src="images/comparator.svg" style="line-height: 18px; width: 16px;" class="info-char" alt="comparator"/>
+			</button>
+			<button tabindex="2" type="button" id="listclean" class="current-page page-transition btn btn-default light-gray" title="List Cleaner">
+				<img src="images/cleaner.svg" style="line-height: 18px; width: 16px;" class="info-char" alt="cleaner"/>
+			</button>
+			<button tabindex="3" type="button" id="listrandom" class="current-page page-transition btn btn-default light-gray" title="Random List">
+				<img src="images/random.svg" style="line-height: 18px; width: 16px;" class="info-char" alt="random"/>
+			</button>
+			<button tabindex="4" type="button" id="safecron" class="current-page page-transition btn btn-default light-gray" title="Planned Downtime">
+				<img src="images/cron.svg" style="line-height: 18px; width: 16px;" class="info-char" alt="safecron"/>
+			</button>
+			<button tabindex="5" type="button" id="pascal" class="current-page page-transition btn btn-default light-gray" title="Pascals Triangle">
+				<img src="images/pascal.svg" style="line-height: 18px; width: 16px;" class="info-char" alt="pascal"/>
+			</button>
+			<button tabindex="6" type="button" id="listiterator" class="current-page page-transition btn btn-default light-gray" title="Iterated List">
+				<img src="images/iterator.svg" style="line-height: 18px; width: 16px;" class="info-char" alt="iterator"/>
+			</button>
+			<button tabindex="7" type="button" id="bayes" class="current-page page-transition btn btn-default light-gray" title="Bayes' Theorem">
+				<img src="images/bayes.svg" style="line-height: 18px; width: 16px;" class="info-char" alt="bayes"/>
+			</button>
+			<button tabindex="8" type="button" id="taxes" class="current-page page-transition btn btn-default light-gray" title="Taxes">
+				<img src="images/taxes.svg" style="line-height: 18px; width: 16px;" class="info-char" alt="taxes"/>
+			</button>
+			<button tabindex="9" type="button" id="message" class="current-page page-transition btn btn-default light-gray" title="Message">
+				<img src="images/message.svg" style="line-height: 18px; width: 16px;" class="info-char" alt="message"/>
+			</button>
+		</div>
+		<div class="pull-right">
+			<div style="text-align: right;">
+				<button tabindex="1000" type="button" class="btn btn-default" id="info-text-button" title="Info">
+					<img src="images/info.svg" style="line-height: 18px; width: 16px;" class="info-char" alt="info"/>
+				</button>
+				<button tabindex="1000" type="button" class="btn btn-default" id="logout-button" title="Logout">
+					<img src="images/logout.svg" style="line-height: 18px; width: 16px;" class="info-char" alt="logout"/>
+				</button>
+			</div>
+			<div class="info-text-style" id="info-text"></div>
+		</div>
+		<div class="center-block panel-title tool-title" style="text-align: center;"></div>
+	</div>
+	<div id="content" class="container-fluid"></div>
+	</body>
+	</html>
+	<?php
+} else {
+	header("Location: index.phtml");
+}

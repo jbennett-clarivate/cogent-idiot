@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Taxes</title>
+	<script type="text/javascript" src="js/taxes.js"></script>
+</head>
+<body>
+<div id="content">
+	<div class="container">
+		<form>
+			<div class="form-group centered">
+				<div class="row">
+					<div class="col-sm-12">
+						<div style="text-align: center;">
+							<label class="pull-left">Corporate:&nbsp;<input type="text" id="corporate" maxlength="6" size="6" value="59000"></label>
+							<label class="pull-right">Personal:&nbsp;<input type="text" id="personal" maxlength="6" size="6" value="12760"></label>
+							<select tabindex="81" class="form-control widthLimit" id="tax-types" style="display: inline;">
+								<option selected="selected" disabled>--Tax Type--</option>
+								<option>Personal</option>
+								<option>Corporate</option>
+							</select>
+						</div>
+						<div style="text-align: center;">
+							<label>Quantity:&nbsp;<input type="number" id="quantity" value="" max="999999999999" min="12760"/></label>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+	<div class="tax-container">
+		<div id="taxPlot" class="tax-chart" style="padding: 0px; position: relative;"></div>
+	</div>
+	<div class="form-group">
+		<div class="col-xs-1 col-sm-1"></div>
+		<div class="col-xs-10 col-sm-10">
+			<button tabindex="85" type="button" class="btn btn-primary pull-left" id="chart-taxes">Show Taxes</button>
+			<button tabindex="86" type="button" class="btn btn-success pull-right" id="reset-taxes">Reset Taxes</button>
+		</div>
+		<div class="col-xs-1 col-sm-1"></div>
+	</div>
+</div>
+<div class="text-center">
+	<label id="footer">Copyright © 2007 - 2014 IOLA and Ole Laursen</label>
+</div>
+</body>
+</html>

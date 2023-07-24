@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>Page Not Found</title>
+	<meta name="description" content="404">
+	<meta name="viewport" content="width=device-width, initial-scale=.45">
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+	<link rel="icon" href="favicon.ico" type="image/x-icon"/>
+	<script type="text/javascript" src="js/vendor/jquery-3.2.1.min.js"></script>
+	<script type="application/javascript">
+		(function ($) {
+			"use strict";
+			$(document).ready(function () {
+				var text404 = "Once upon a midnight dreary, Whilst I websurfed, weak and weary<br />" +
+					"Over many a spurious and obnoxious website galore<br />" +
+					"When I clicked my browser bookmark, So the page did go stark,<br />" +
+					"And my heart did fill with discontent, A lament for my tome of lore.<br />" +
+					"'Tis not possible!, So I bleated, But my browser, so depleted,<br />" +
+					"Remained blank. I then repeated; Blank and nothing more.<br />" +
+					"With a shock and feeling cheated, Thinking favorites were deleted!,<br />" +
+					"In a roar, no longer seated, \"Give it back!\" I did implore<br />" +
+					"Then, in answer to my query, Upon the page I loved so dearly,<br />" +
+					"Came its answer, dark and dreary: Quoth the server<br /><br />" +
+					"<strong>404</strong>";
+				var outerDiv = $("<div>", {
+					css: {
+						"display": "table",
+						"position": "absolute",
+						"height": "100%",
+						"width": "100%"
+					}
+				});
+				var middleDiv = $("<div>", {
+					css: {
+						"display": "table-cell",
+						"vertical-align": "middle"
+					}
+				});
+				var innerDiv = $("<div>", {
+					css: {
+						"margin-left": "auto",
+						"margin-right": "auto",
+						"width": "768px",
+						"font-weight": "bold",
+						"text-align": "center"
+					},
+					html: text404
+				});
+				middleDiv.append(innerDiv);
+				outerDiv.append(middleDiv);
+				var body = $("body");
+				body.html(outerDiv);
+				var viewport = $("meta[name='viewport']");
+				var original = viewport.attr("content");
+				var force_scale = original + ", maximum-scale=.45";
+				viewport.attr("content", force_scale);
+				setTimeout(function () {
+					viewport.attr("content", original);
+				}, 50);
+			});
+		}(jQuery));
+	</script>
+</head>
+<body></body>
+</html>

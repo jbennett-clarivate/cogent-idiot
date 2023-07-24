@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>List Comparator</title>
+	<script type="text/javascript" src="js/listcomparator.js"></script>
+</head>
+<body>
+<div class="container container-large">
+	<div class="panel panel-default light-gray panel-shadow">
+		<div class="header-main">
+			<form class="form-horizontal">
+				<div class="row">
+					<div class="col-xs-1 col-sm-1"></div>
+					<div class="col-xs-5 col-sm-5 labels text-center">
+						<label>List A:</label>
+						<span id="input_list_a_span"></span>
+						<input id="file_input_list_a" type="file" name="file_input_list_a"/>
+						<label for="file_input_list_a" data-title="Text files only please">Load File</label>
+					</div>
+					<div class="col-xs-5 col-sm-5 labels text-center">
+						<label>List B:</label>
+						<span id="input_list_b_span"></span>
+						<input id="file_input_list_b" type="file" name="file_input_list_b"/>
+						<label for="file_input_list_b" data-title="Text files only please">Load File</label>
+					</div>
+					<div class="col-xs-1 col-sm-1"></div>
+				</div>
+				<div class="form-group">
+					<div class="col-xs-1 col-sm-1"></div>
+					<div class="col-xs-5 col-sm-5">
+						<div tabindex="10" contenteditable="true" id="input_list_a" class="form-control"><div><br/></div></div>
+					</div>
+					<div class="col-xs-5 col-sm-5">
+						<div tabindex="11" contenteditable="true" id="input_list_b" class="form-control"><div><br/></div></div>
+					</div>
+					<div class="col-xs-1 col-sm-1"></div>
+				</div>
+				<div class="form-group">
+					<div class="col-xs-1 col-sm-1"></div>
+					<div class="col-xs-10 col-sm-10">
+						<div class="row">
+							<div class="col-xs-12 col-sm-12">
+								<label class="checkbox-inline">
+									<input tabindex="13" type="checkbox" id="lowercase" value=""/>
+									<span class="text-nowrap title-large" data-title="Lower the case prior to compare"> Lowercase</span>
+								</label>
+							</div>
+						</div>
+						<hr style="margin: 0;">
+						<div class="row">
+							<div class="col-xs-4 col-sm-2">
+								<label class="checkbox-inline">
+									<input tabindex="14" type="checkbox" id="tabs" value=""/>
+									<span class="text-nowrap title-medium" data-title="Delimit on tabs">Tabs</span>
+								</label>
+							</div>
+							<div class="col-xs-4 col-sm-2">
+								<label class="checkbox-inline">
+									<input tabindex="15" type="checkbox" id="commas" value=""/>
+									<span class="text-nowrap title-medium" data-title="Delimit on commas">Commas</span>
+								</label>
+							</div>
+							<div class="col-xs-4 col-sm-2">
+								<label class="checkbox-inline">
+									<input tabindex="16" type="checkbox" id="spaces" value=""/>
+									<span class="text-nowrap title-medium" data-title="Delimit on spaces">Spaces</span>
+								</label>
+							</div>
+							<div class="col-xs-4 col-sm-2">
+								<label class="checkbox-inline">
+									<input tabindex="17" type="checkbox" id="doublequote" value=""/>
+									<span class="text-nowrap title-medium" data-title="Delimit on quotation marks">Quotes</span>
+								</label>
+							</div>
+							<div class="col-xs-4 col-sm-2">
+								<label class="checkbox-inline">
+									<input tabindex="18" type="checkbox" id="semicolons" value=""/>
+									<span class="text-nowrap title-medium" data-title="Delimit on semicolons">Semicolons</span>
+								</label>
+							</div>
+							<div class="col-xs-4 col-sm-2">
+								<label class="checkbox-inline">
+									<input tabindex="19" type="checkbox" id="singlequote" value=""/>
+									<span class="text-nowrap title-medium" data-title="Delimit on apostrophes">Apostrophes</span>
+								</label>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-1 col-sm-1"></div>
+				</div>
+				<div class="form-group">
+					<div class="col-xs-1 col-sm-1"></div>
+					<div class="col-xs-11 col-sm-11">
+						<button tabindex="19" type="button" class="btn btn-primary" value="Compare It" id="compare-it">Compare</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	<div class="table table-condensed">
+		<div class="col-xs-3 col-sm-3 control-label text-center">
+			<span class="text-nowrap arrow title-medium" data-title="{ x &isin; A : x &notin; B }">Unique to A</span>
+			<span id="output_list_a_span"></span>
+		</div>
+		<div class="col-xs-3 col-sm-3 control-label text-center">
+			<span class="text-nowrap arrow title-medium" data-title="{ x &isin; B : x &notin; A }">Unique to B</span>
+			<span id="output_list_b_span"></span>
+		</div>
+		<div class="col-xs-3 col-sm-3 control-label text-center">
+			<span class="text-nowrap arrow title-medium" data-title="{ A &bigcap; B }">Intersection</span>
+			<span id="output_list_intersection_span"></span>
+		</div>
+		<div class="col-xs-3 col-sm-3 control-label text-center">
+			<span class="text-nowrap arrow title-medium" data-title="{ B &bigcup; A }">Combination</span>
+			<span id="output_list_union_span"></span>
+		</div>
+		<div class="col-xs-3 col-sm-3 comparator-output">
+			<div class="output" id="output_list_a_not_b"
+					 style="width: 100%; height: 15em; border: solid #d3d3d3 1px; padding: 5px;"></div>
+		</div>
+		<div class="col-xs-3 col-sm-3 comparator-output">
+			<div class="output" id="output_list_b_not_a"
+					 style="width: 100%; height: 15em; border: solid #d3d3d3 1px; padding: 5px;"></div>
+		</div>
+		<div class="col-xs-3 col-sm-3 comparator-output">
+			<div class="output" id="output_list_intersection"
+					 style="width: 100%; height: 15em; border: solid #d3d3d3 1px; padding: 5px;"></div>
+		</div>
+		<div class="col-xs-3 col-sm-3 comparator-output">
+			<div class="output" id="output_list_union"
+					 style="width: 100%; height: 15em; border: solid #d3d3d3 1px; padding: 5px;"></div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html class="no-js" lang="">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>Safe Time Zones for Jobs</title>
+	<script src="js/safecron.js"></script>
+</head>
+<body>
+<div id="content">
+	<div class="container">
+		<form>
+			<div class="form-group centered">
+				<div class="row">
+					<div class="col-sm-12">
+						<div style="text-align: center;">
+							<select tabindex="40" class="form-control widthLimit" id="all-utc-offsets" style="display: inline;">
+								<option selected="selected" value disabled>--Time Zone (Required)--</option>
+							</select>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-12">
+						<div style="text-align: center;">
+							<select tabindex="41" class="form-control widthLimit" id="weights" style="display: inline;">
+								<option selected="selected" value disabled>--Importance (Optional)--</option>
+								<option>Low</option>
+								<option>Moderate</option>
+								<option>High</option>
+								<option>Critical</option>
+							</select>
+						</div>
+					</div>
+					<div class="col-sm-12">
+						<div style="text-align: center;">
+							<div class="widthLimit" style="display: inline;">
+								<button tabindex="42" type="button" class="btn btn-default pull-left" id="chart-it">Add Zone</button>
+								<button tabindex="43" type="button" class="btn btn-success pull-right" id="best-time" disabled>Safe Time</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row pull-right">Schedule&nbsp;meeting:&nbsp;<span id="meeting"></span></div>
+				<div class="row pull-left">Schedule&nbsp;downtime:&nbsp;<span id="downtime"></span></div>
+			</div>
+		</form>
+	</div>
+	<div class="cron-container">
+		<div id="cronUTC" class="cron-chart" style="padding: 0px; position: relative;"></div>
+	</div>
+</div>
+<div id="footer">Copyright © 2007 - 2014 IOLA and Ole Laursen</div>
+</body>
+</html>
