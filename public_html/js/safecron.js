@@ -1,58 +1,58 @@
 /*globals jQuery:false timezoneJS:false,STAY_ON_SITE:false */
 (function ($) {
 	"use strict";
-	var populateGraphTimer;
-	var savedClientWidth;
+	let populateGraphTimer;
+	let savedClientWidth;
 	$(document).ready(function () {
-		var selectedLocalTimes = [];
-		var safeScheduleArray;
-		var localTimes = [
-			["14", "LINT", "0", "Line Islands"],
-			["13.75", "CHADT", "0", "Chatham Islands"],
-			["13", "NZDT", "0", "New Zealand DT"],
-			["12", "ANAT", "0", "Anadyr"],
-			["11", "AEDT", "0", "Australian Eastern DT"],
-			["10.5", "ACDT", "0", "Australian Central"],
-			["10", "AEST", "0", "Australian Eastern ST"],
-			["9.5", "ACST", "0", "Australian Central ST"],
-			["9", "JST", "0", "Japan ST"],
-			["8.75", "ACWST", "0", "Australian Central Western ST"],
-			["8.5", "PYT", "0", "Pyongyang"],
-			["8", "CST", "0", "China ST"],
-			["7", "WIB", "0", "Western Indonesian"],
-			["6.5", "MMT", "0", "Myanmar"],
-			["6", "BST", "0", "Bangladesh ST"],
-			["5.75", "NPT", "0", "Nepal"],
-			["5.5", "IST", "0", "Irish ST"],
-			["5", "UZT", "0", "Uzbekistan"],
-			["4.5", "IRDT", "0", "Iran DT"],
-			["4", "GST", "0", "Gulf ST"],
-			["3", "MSK", "0", "Moscow ST"],
-			["2", "CEST", "0", "Central European ST"],
-			["1", "BST", "0", "British ST"],
-			["0", "GMT", "0", "Accra"],
-			["-1", "CVT", "0", "Praia"],
-			["-2", "WGST", "0", "Nuuk"],
-			["-2.5", "NDT", "0", "St. John's"],
-			["-3", "ART", "0", "Buenos Aires"],
-			["-4", "EDT", "0", "New York"],
-			["-5", "CDT", "0", "Chicago"],
-			["-6", "CST", "0", "Mexico City"],
-			["-7", "PDT", "0", "Los Angeles"],
-			["-8", "AKDT", "0", "Anchorage"],
-			["-9", "HADT", "0", "Adak"],
-			["-9.5", "MART", "0", "Taiohae"],
-			["-10", "HAST", "0", "Honolulu"],
-			["-11", "NUT", "0", "Alofi"],
-			["-12", "AoE", "0", "Baker Island"]
+		const selectedLocalTimes = [];
+		let safeScheduleArray;
+		const localTimes = [
+			['14', 'LINT', '0', 'Line Islands'],
+			['13.75', 'CHADT', '0', 'Chatham Islands'],
+			['13', 'NZDT', '0', 'New Zealand DT'],
+			['12', 'ANAT', '0', 'Anadyr'],
+			['11', 'AEDT', '0', 'Australian Eastern DT'],
+			['10.5', 'ACDT', '0', 'Australian Central'],
+			['10', 'AEST', '0', 'Australian Eastern ST'],
+			['9.5', 'ACST', '0', 'Australian Central ST'],
+			['9', 'JST', '0', 'Japan ST'],
+			['8.75', 'ACWST', '0', 'Australian Central Western ST'],
+			['8.5', 'PYT', '0', 'Pyongyang'],
+			['8', 'CST', '0', 'China ST'],
+			['7', 'WIB', '0', 'Western Indonesian'],
+			['6.5', 'MMT', '0', 'Myanmar'],
+			['6', 'BST', '0', 'Bangladesh ST'],
+			['5.75', 'NPT', '0', 'Nepal'],
+			['5.5', 'IST', '0', 'Irish ST'],
+			['5', 'UZT', '0', 'Uzbekistan'],
+			['4.5', 'IRDT', '0', 'Iran DT'],
+			['4', 'GST', '0', 'Gulf ST'],
+			['3', 'MSK', '0', 'Moscow ST'],
+			['2', 'CEST', '0', 'Central European ST'],
+			['1', 'BST', '0', 'British ST'],
+			['0', 'GMT', '0', 'Accra'],
+			['-1', 'CVT', '0', 'Praia'],
+			['-2', 'WGST', '0', 'Nuuk'],
+			['-2.5', 'NDT', '0', 'St. John\'s'],
+			['-3', 'ART', '0', 'Buenos Aires'],
+			['-4', 'EDT', '0', 'New York'],
+			['-5', 'CDT', '0', 'Chicago'],
+			['-6', 'CST', '0', 'Mexico City'],
+			['-7', 'PDT', '0', 'Los Angeles'],
+			['-8', 'AKDT', '0', 'Anchorage'],
+			['-9', 'HADT', '0', 'Adak'],
+			['-9.5', 'MART', '0', 'Taiohae'],
+			['-10', 'HAST', '0', 'Honolulu'],
+			['-11', 'NUT', '0', 'Alofi'],
+			['-12', 'AoE', '0', 'Baker Island']
 		];
 
 		function getRandomColor() {
-			var letters = "0123456789ABCDEF";
-			var color = "#";
-			var letter;
-			var remaining = letters.split("").length;
-			for (var i = 0; i < 6; i++) {
+			let letters = '0123456789ABCDEF';
+			let color = '#';
+			let letter;
+			let remaining = letters.split('').length;
+			for (let i = 0; i < 6; i++) {
 				letter = letters[Math.floor(Math.random() * remaining)];
 				color += letter;
 				// stabilize luminosity
@@ -67,10 +67,10 @@
 				return -1;
 			}
 
-			var max = arr[0];
-			var maxIndex = 0;
+			let max = arr[0];
+			let maxIndex = 0;
 
-			for (var i = 1; i < arr.length; i++) {
+			for (let i = 1; i < arr.length; i++) {
 				if (arr[i] > max) {
 					maxIndex = i;
 					max = arr[i];
@@ -85,10 +85,10 @@
 				return -1;
 			}
 
-			var min = arr[0];
-			var minIndex = 0;
+			let min = arr[0];
+			let minIndex = 0;
 
-			for (var i = 1; i < arr.length; i++) {
+			for (let i = 1; i < arr.length; i++) {
 				if (arr[i] < min) {
 					minIndex = i;
 					min = arr[i];
@@ -98,11 +98,11 @@
 			return minIndex;
 		}
 
-		var select = $("#all-utc-offsets");
-		for (var t = 0; t < localTimes.length; t++) {
-			var localtime = localTimes[t];
+		const select = $('#all-utc-offsets');
+		for (let t = 0; t < localTimes.length; t++) {
+			const localtime = localTimes[t];
 			localtime.push(getRandomColor());
-			var option = $("<option>", {
+			const option = $('<option>', {
 				value: localtime[0],
 				title: localtime[3]
 			});
@@ -115,28 +115,28 @@
 		timezoneJS.timezone.init();
 
 		function populateGraph(selectedLocalTimes) {
-			var utcDate = new Date();
-			var year = utcDate.getFullYear();
-			var month = utcDate.getMonth();
-			var day = utcDate.getDay();
-			var spanPrime = [];
-			var spanAlt = [];
-			var spans = [];
-			var differentWorkingHoursBegin;
-			var differentWorkingHoursEnd;
-			var lineColor;
-			var localTime;
-			var minutes = 0;
-			var hourTrunc;
-			var safeScheduleArrayIndexOffset;
-			var timeZoneSize = selectedLocalTimes.length;
-			var indexToTzMap = {};
-			for (var j = 0; j < timeZoneSize; j++) {
+			const utcDate = new Date();
+			const year = utcDate.getFullYear();
+			const month = utcDate.getMonth();
+			const day = utcDate.getDay();
+			let spanPrime = [];
+			let spanAlt = [];
+			const spans = [];
+			let differentWorkingHoursBegin;
+			let differentWorkingHoursEnd;
+			let lineColor;
+			let localTime;
+			let minutes = 0;
+			let hourTrunc;
+			let safeScheduleArrayIndexOffset;
+			const timeZoneSize = selectedLocalTimes.length;
+			const indexToTzMap = {};
+			for (let j = 0; j < timeZoneSize; j++) {
 				safeScheduleArrayIndexOffset = 0;
 				spanPrime = [];
 				spanAlt = [];
 				localTime = selectedLocalTimes[j];
-				var offset = (new Date().getTimezoneOffset()) / -60;
+				let offset = (new Date().getTimezoneOffset()) / -60;
 				differentWorkingHoursBegin = parseFloat(localTime[0]);
 				offset = differentWorkingHoursBegin - offset;
 				differentWorkingHoursBegin = 9 - offset;
@@ -154,7 +154,7 @@
 				} else {
 					minutes = 0;
 				}
-				var k = 0;
+				let k = 0;
 				if (differentWorkingHoursBegin > 16) {
 					spanAlt.push([Date.UTC(year, month, day, 0, 0, 0), j + 1]);
 					spanPrime.push([Date.UTC(year, month, day, 24, 0, 0), j + 1]);
@@ -188,10 +188,10 @@
 						spanPrime.push([Date.UTC(year, month, day, hourTrunc, minutes, 0), j + 1]);
 					}
 				}
-				var start = Math.floor(differentWorkingHoursBegin) * 4 + safeScheduleArrayIndexOffset + 96;
-				var end = Math.floor(differentWorkingHoursEnd) * 4 + safeScheduleArrayIndexOffset + 96;
-				for (var safeIndexSpan = start; safeIndexSpan < end; safeIndexSpan++) {
-					for (var multiplier = 1; multiplier <= parseInt(localTime[2]); multiplier++) {
+				const start = Math.floor(differentWorkingHoursBegin) * 4 + safeScheduleArrayIndexOffset + 96;
+				const end = Math.floor(differentWorkingHoursEnd) * 4 + safeScheduleArrayIndexOffset + 96;
+				for (let safeIndexSpan = start; safeIndexSpan < end; safeIndexSpan++) {
+					for (let multiplier = 1; multiplier <= parseInt(localTime[2]); multiplier++) {
 						safeScheduleArray[safeIndexSpan % 96]++;
 					}
 				}
@@ -229,8 +229,8 @@
 					max: timeZoneSize + 1,
 					reserveSpace: true,
 					tickFormatter: function (val, axis) {
-						var tz = indexToTzMap[val];
-						var result = "";
+						const tz = indexToTzMap[val];
+						let result = '';
 						if(tz) {
 							result = "GMT " + (tz < 0 ? "" : "+") + tz;
 						}
@@ -241,12 +241,12 @@
 		}
 
 		function getTimestamp(indexOfValue) {
-			var niceTime;
-			var niceTimeIndicator;
-			var indexOfValueIndex = indexOfValue / 4;
+			let niceTime;
+			let niceTimeIndicator;
+			let indexOfValueIndex = indexOfValue / 4;
 			indexOfValueIndex = Math.round(indexOfValueIndex * 100) / 100;
-			var minutes = indexOfValueIndex - Math.floor(indexOfValueIndex);
-			var minutesStr = ":00";
+			const minutes = indexOfValueIndex - Math.floor(indexOfValueIndex);
+			let minutesStr = ':00';
 			if (minutes >= 0.75) {
 				minutesStr = ":45";
 			} else if (minutes >= 0.5) {
@@ -266,25 +266,25 @@
 		}
 
 		$("#best-time").on("click", function () {
-			var afterHoursStart = 68;
-			var beforeHoursStart = 36;
-			var afterHoursArray = safeScheduleArray.slice(afterHoursStart, safeScheduleArray.length).concat(safeScheduleArray.slice(0, afterHoursStart));
-			var beforeHoursArray = safeScheduleArray.slice(beforeHoursStart, safeScheduleArray.length).concat(safeScheduleArray.slice(0, beforeHoursStart));
-			var indexOfMinRaw = (indexOfMin(afterHoursArray) + afterHoursStart) % safeScheduleArray.length;
-			var indexOfMaxRaw = (indexOfMax(beforeHoursArray) + beforeHoursStart) % safeScheduleArray.length;
-			var indexOfMinValue = getTimestamp(indexOfMinRaw);
-			var indexOfMaxValue = getTimestamp(indexOfMaxRaw);
+			const afterHoursStart = 68;
+			const beforeHoursStart = 36;
+			const afterHoursArray = safeScheduleArray.slice(afterHoursStart, safeScheduleArray.length).concat(safeScheduleArray.slice(0, afterHoursStart));
+			const beforeHoursArray = safeScheduleArray.slice(beforeHoursStart, safeScheduleArray.length).concat(safeScheduleArray.slice(0, beforeHoursStart));
+			const indexOfMinRaw = (indexOfMin(afterHoursArray) + afterHoursStart) % safeScheduleArray.length;
+			const indexOfMaxRaw = (indexOfMax(beforeHoursArray) + beforeHoursStart) % safeScheduleArray.length;
+			const indexOfMinValue = getTimestamp(indexOfMinRaw);
+			const indexOfMaxValue = getTimestamp(indexOfMaxRaw);
 			$("#meeting").text(indexOfMaxValue);
 			$("#downtime").text(indexOfMinValue);
 		});
 
 		$("#chart-it").on("click", function () {
-			var selectedTimeZoneIndex = $("#all-utc-offsets").prop("selectedIndex") - 1;
+			const selectedTimeZoneIndex = $('#all-utc-offsets').prop('selectedIndex') - 1;
 			if (selectedTimeZoneIndex < 0) {
 				return false;
 			}
 			$(this).next("#best-time").prop("disabled", false);
-			var getTimeZone = localTimes[selectedTimeZoneIndex];
+			const getTimeZone = localTimes[selectedTimeZoneIndex];
 			getTimeZone[2] = $("#weights").prop("selectedIndex") + 1;
 			selectedLocalTimes.push(getTimeZone);
 			if (safeScheduleArray) {
@@ -292,13 +292,13 @@
 			} else {
 				safeScheduleArray = [];
 			}
-			for (var safeScheduleArrayIndex = 0; safeScheduleArrayIndex < (24 * 4); safeScheduleArrayIndex++) {
+			for (let safeScheduleArrayIndex = 0; safeScheduleArrayIndex < (24 * 4); safeScheduleArrayIndex++) {
 				safeScheduleArray.push(0);
 			}
 			populateGraph(selectedLocalTimes);
 		});
 		$(window).on("resize", function () {
-			var currentWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+			const currentWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 			if (currentWidth !== savedClientWidth) {
 				if (populateGraphTimer) {
 					clearTimeout(populateGraphTimer);
@@ -312,14 +312,15 @@
 		}
 		$("#footer").prepend("Flot " + $.plot.version + " &ndash; ");
 
-		var list = document.getElementsByTagName("script");
-		var i = list.length, jumpship = false;
-		var re1 = "(?:http|https)(?::\\/{2}[\\w]+)((?:[\\/|\\.]?)(?:[^\\s\"]*))";
-		var p = new RegExp(re1, ["i"]);
+		const list = document.getElementsByTagName('script');
+		let i = list.length;
+		let jumpship = false;
+		const re1 = '(?:http|https)(?::\\/{2}[\\w]+)((?:[\\/|\\.]?)(?:[^\\s"]*))';
+		const p = new RegExp(re1, ['i']);
 		while (i--) {
-			var m = p.exec(list[i].src);
+			const m = p.exec(list[i].src);
 			if (m === null) {
-				continue;
+
 			} else {
 				if (m[1] && m[1].indexOf("js/jumpship.js") !== -1) {
 					jumpship = true;
