@@ -1,0 +1,13 @@
+<div class="home-container">
+  <h2>Welcome to Brightmatter Tools</h2>
+
+  <div class="tools-grid">
+    <div class="tool-card" *ngFor="let tool of tools">
+      <img [src]="'assets/images/' + tool.icon" [alt]="tool.name">
+      <h3>{{tool.name}}</h3>
+      <p>{{tool.description}}</p>
+      <button class="btn btn-primary" (click)="openTool(tool.route)">Open Tool</button>
+    </div>
+  </div>
+</div>
+

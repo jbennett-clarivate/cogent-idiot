@@ -1,0 +1,49 @@
+/* Listcleaner Component Specific Styles */
+
+/* Component-specific input margin */
+input:not([type="range"]) {
+  margin: 0 4px;
+}
+
+/* File input label styling */
+label[for="file_theinputlist"] {
+  display: inline-block;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+label[for="file_theinputlist"]:hover {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Textarea styling */
+textarea[name="theinputlist"] {
+  resize: none;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  flex: 1;
+  border: none;
+}
+
+
+/* Component-specific layout classes */
+.height-500 {
+  padding: 10px;
+  overflow: auto;
+  flex: 1;
+  height: 500px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.width-full {
+  width: 100%;
+  max-width: 30%;
+}
+
+/* Override hr width for listcleaner component */
+hr {
+  width: 100%;
+}

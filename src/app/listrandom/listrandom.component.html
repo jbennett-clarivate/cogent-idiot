@@ -1,0 +1,39 @@
+<div class="white-bg">
+	<form>
+		<div>
+			<div class="flex-c h-center h-spaced lv-spaced strong v-padding">
+				<label for="stringquantity" class="flex-c h-center">
+					<span data-title="How many random strings to generate">Quantity:</span>
+					<input type="number" class="standard-input" name="stringquantity" [(ngModel)]="stringQuantity" min="1" max="999" step="1"/>
+				</label>
+				<label for="stringlength" class="flex-c h-center">
+					<span data-title="Length of each string">Length:</span>
+					<input type="number" class="standard-input" name="stringlength" [(ngModel)]="stringLength" min="5" max="999" step="1"/>
+				</label>
+			</div>
+			<div class="flex-r h-center h-spaced v-padding">
+				<label><input type="checkbox" name="lowercase" [(ngModel)]="lowercase"/><span data-title="Include lowercase letters">Lowercase</span></label>
+				<label><input type="checkbox" name="uppercase" [(ngModel)]="uppercase"/><span data-title="Include uppercase letters">Uppercase</span></label>
+				<label><input type="checkbox" name="numbers" [(ngModel)]="numbers"/><span data-title="Include numbers">Numbers</span></label>
+				<label><input type="checkbox" name="special" [(ngModel)]="special"/><span data-title="Include special characters">Special</span></label>
+				<label><input type="checkbox" name="utf8" [(ngModel)]="utf8"/><span data-title="Include UTF-8 characters">UTF-8</span></label>
+			</div>
+			<div class="flex-r h-center h-spaced">
+				<div class="flex-c height-500 width-half">
+					<label class="top-spaced">May Contain:<span>{{ stringQuantity || '' }}</span></label>
+					<hr>
+					<div class="output-display" [innerHTML]="mayContainListDisplay"></div>
+				</div>
+				<div class="flex-c height-500 width-half">
+					<label class="top-spaced">Must Contain:<span>{{ stringQuantity || '' }}</span></label>
+					<hr>
+					<div class="output-display" [innerHTML]="mustContainListDisplay"></div>
+				</div>
+			</div>
+		</div>
+		<div class="flex-r h-center h-spaced v-padding">
+			<button class="standard-button-action" type="button" (click)="generateIt()">Generate</button>
+			<button type="button" class="standard-button-reset" (click)="reset()">⎚&nbsp;Reset</button>
+		</div>
+	</form>
+</div>

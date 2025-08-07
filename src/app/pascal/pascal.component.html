@@ -1,0 +1,42 @@
+<div class="white-bg">
+  <form>
+    <!-- nCk Section -->
+    <div class="flex-c h-center h-spaced lv-spaced strong v-padding">
+      <label for="nInput">
+        <span>N:</span>
+        <input id="nInput" type="text" class="standard-input digitonly" placeholder="N" [value]="n" (input)="onNInput($event)" [attr.max]="maxInputValue" />
+      </label>
+      <label for="kInput">
+        <span>K:</span>
+        <input id="kInput" type="text" class="standard-input digitonly" placeholder="K" [value]="k" (input)="onKInput($event)" [attr.max]="n" />
+      </label>
+      <div class="formula">
+        <span>nCk = </span>
+        <span id="nVal">{{n}}</span>
+        <span>C</span>
+        <span id="kVal">{{k}}</span>
+        <span> = </span>
+        <span id="nChooseK">{{nChooseK?.toLocaleString()}}</span>
+      </div>
+    </div>
+
+    <!-- Triangle Display -->
+    <div class="flex-c height-500 v-padding">
+      <label class="top-spaced">Pascal's Triangle ({{rows}} rows):</label>
+      <div class="output-display" id="landing">
+        <div *ngFor="let row of pascal; let i = index"
+             class="pascal-row"
+             [style.line-height]="'var(--dynamic-line-height, 1.33em)'">
+          <span *ngFor="let val of row; let j = index"
+                [class.highlightValue]="isHighlighted(i, j)"
+                class="pascal-cell"
+                [style.font-size]="'var(--dynamic-font-size, 1em)'">{{val}}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-r h-center h-spaced v-padding">
+      <button type="button" class="standard-button-reset" (click)="reset()">Reset</button>
+    </div>
+  </form>
+</div>

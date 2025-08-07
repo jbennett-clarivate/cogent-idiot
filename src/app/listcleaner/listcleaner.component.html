@@ -1,0 +1,42 @@
+<div class="white-bg">
+	<form>
+		<div>
+			<div class="flex-r h-center h-spaced">
+				<div class="flex-c height-500 width-full">
+					<input name="file_theinputlist" type="file" (change)="onFileSelected($event)"/>
+					<label for="file_theinputlist" data-title="Text files only please" class="top-spaced">Input:<span>{{ theInputListCount || '' }}</span></label>
+					<hr>
+					<textarea tabindex="20" name="theinputlist" [(ngModel)]="theInputList" (paste)="onPaste($event)" placeholder="Enter your list here..."></textarea>
+				</div>
+				<div class="flex-c height-500 width-full">
+					<label class="top-spaced">Clean Output:<span>{{ theCleanListCount || '' }}</span></label>
+					<hr>
+					<div [innerHTML]="theCleanListDisplay"></div>
+				</div>
+				<div class="flex-c height-500 width-full">
+					<label class="top-spaced">Dirty Output:<span>{{ theDirtyListCount || '' }}</span></label>
+					<hr>
+					<div [innerHTML]="theDirtyListDisplay"></div>
+				</div>
+			</div>
+		</div>
+		<div>
+			<div class="flex-r h-center h-spaced v-padding">
+				<label><input tabindex="21" type="checkbox" name="lowercase" [(ngModel)]="lowercase"/><span data-title="Lower the case prior to compare"> Lowercase</span></label>
+				<label><input tabindex="22" type="text" name="customchar" maxlength="1" size="2" [(ngModel)]="customchar"/><span data-title="Delimit on custom character"> Custom</span></label>
+			</div>
+			<hr>
+			<div class="flex-r h-center h-spaced v-padding">
+				<label><input tabindex="23" type="checkbox" name="tabs" [(ngModel)]="tabs"/><span data-title="Delimit on tabs">Tabs</span></label>
+				<label><input tabindex="24" type="checkbox" name="commas" [(ngModel)]="commas"/><span data-title="Delimit on commas">Commas</span></label>
+				<label><input tabindex="25" type="checkbox" name="spaces" [(ngModel)]="spaces"/><span data-title="Delimit on spaces">Spaces</span></label>
+				<label><input tabindex="26" type="checkbox" name="doublequote" [(ngModel)]="doublequote"/><span data-title="Delimit on quotation marks">Quotes</span></label>
+				<label><input tabindex="27" type="checkbox" name="semicolons" [(ngModel)]="semicolons"/><span data-title="Delimit on semicolons">Semicolons</span></label>
+				<label><input tabindex="28" type="checkbox" name="singlequote" [(ngModel)]="singlequote"/><span data-title="Delimit on apostrophes">Apostrophes</span></label>
+			</div>
+		</div>
+		<div class="flex-r h-center h-spaced v-padding">
+			<button class="standard-button-action" tabindex="29" type="button" (click)="cleanList()">Clean</button>
+		</div>
+	</form>
+</div>

@@ -1,0 +1,32 @@
+<div class="white-bg">
+  <form>
+    <div class="flex-c h-center h-spaced lv-spaced strong v-padding">
+      <label for="all-utc-offsets" class="widthLimit">
+        <span>Time Zone (Required):</span>
+        <select id="all-utc-offsets" class="standard-input widthLimit" [(ngModel)]="selectedZone" name="selectedZone">
+          <option disabled value="">--Time Zone (Required)--</option>
+          <option *ngFor="let zone of timeZones" [value]="zone.value">{{ zone.label }}</option>
+        </select>
+      </label>
+      <label for="weights" class="widthLimit">
+        <span>Importance (Optional):</span>
+        <select id="weights" class="standard-input widthLimit" [(ngModel)]="selectedWeight" name="selectedWeight">
+          <option disabled value="">--Importance (Optional)--</option>
+          <option *ngFor="let weight of weights" [value]="weight">{{ weight }}</option>
+        </select>
+      </label>
+      <div class="widthLimit flex-r h-center h-spaced">
+        <button type="button" class="standard-button-action pull-left" (click)="addZone()">Add Zone</button>
+        <button type="button" class="standard-button-reset pull-right" [disabled]="!canComputeSafeTime()" (click)="computeSafeTime()">Safe Time</button>
+      </div>
+    </div>
+    <div class="flex-r h-center h-spaced v-padding">
+      <div>Schedule meeting:&nbsp;<span id="meeting">{{ meetingTime }}</span></div>
+      <div>Schedule downtime:&nbsp;<span id="downtime">{{ downtime }}</span></div>
+    </div>
+  </form>
+  <div class="cron-container">
+    <div id="cronUTC" class="cron-chart" style="padding: 0px; position: relative;"></div>
+  </div>
+</div>
+

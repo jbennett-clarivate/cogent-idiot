@@ -1,0 +1,191 @@
+/* Global Styles */
+
+* {
+  font-family: "Trebuchet MS", Helvetica, sans-serif !important;
+  font-size: 20px !important;
+  line-height: normal;
+  vertical-align: top;
+}
+
+/* Input Styles */
+input:not([type="range"]) {
+  height: 1.5em;
+  border-radius: 3px;
+  text-align: center;
+  border: 1px solid darkslategray;
+  padding: 4px 8px;
+}
+
+input[readonly] {
+  background-color: #f8f9fa;
+}
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hide number input spinners for Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* File input styling */
+input[type="file"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* Layout Classes */
+.flex-c {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-r {
+  display: flex;
+  flex-direction: row;
+}
+
+.h-center {
+  justify-content: center;
+  align-items: center;
+}
+
+.h-spaced {
+  justify-content: space-around;
+}
+
+.v-padding {
+  padding: 10px;
+}
+
+.top-spaced {
+  margin-top: 10px;
+}
+
+/* Text Styles */
+.strong {
+  font-weight: bold;
+}
+
+/* Background Styles */
+.white-bg {
+  background-color: white;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+/* Standard Input */
+.standard-input {
+  width: 9em;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Standard Buttons */
+.standard-button-action {
+  background-color: #00b318;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.standard-button-action:hover {
+  background-color: #009f16;
+}
+
+.standard-button-action:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.standard-button-reset {
+  background-color: #f8f9fa;
+  color: #212529;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.standard-button-reset:hover {
+  background-color: #e2e6ea;
+}
+
+.standard-button-reset:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* HR Styles */
+hr {
+  height: 1px;
+  background-color: #000;
+  border: none;
+}
+
+/* Tooltip Styles */
+[data-title] {
+  position: relative;
+  cursor: help;
+  display: grid;
+  text-align: center;
+}
+
+[data-title]:hover::after {
+  content: attr(data-title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 5px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+[data-title]:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(1px);
+  border: 5px solid transparent;
+  border-top-color: #333;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Label Styles */
+label {
+  font-weight: bold;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  align-self: center;
+  white-space: nowrap;
+}
+
+label input[type="checkbox"] {
+  margin-right: 0.5em;
+  flex-shrink: 0;
+}
+
+label span {
+  flex-shrink: 0;
+}

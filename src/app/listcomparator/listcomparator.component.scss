@@ -1,0 +1,76 @@
+/* Listcomparator Component Specific Styles */
+
+/* Component-specific input margin */
+input:not([type="range"]) {
+  margin: 0 4px;
+}
+
+/* File input label styling */
+label[for^="file_input_list"] {
+  display: inline-block;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+label[for^="file_input_list"]:hover {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Textarea styling */
+textarea[name^="input_list"] {
+  resize: none;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  flex: 1;
+  border: none;
+  padding: 10px;
+}
+
+/* Component-specific layout classes */
+.height-500 {
+  height: 500px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.width-half {
+  width: 100%;
+  max-width: 45%;
+}
+
+/* Output grid layout */
+.output-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.output-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.output-label {
+  font-weight: bold;
+  text-align: center;
+  font-size: 16px;
+  padding: 10px;
+  display: flex;
+}
+
+.output-display {
+  height: 15em;
+  border-top: 1px solid #000000;
+  padding: 10px;
+  overflow-y: auto;
+  background-color: #fff;
+  flex: 1;
+}
+
+/* Override hr width for listcomparator component */
+hr {
+  width: 100%;
+}

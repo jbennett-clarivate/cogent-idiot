@@ -1,0 +1,56 @@
+<div class="white-bg">
+	<form>
+		<div>
+			<div class="flex-r h-center h-spaced">
+				<div class="flex-c height-500 width-half">
+					<input name="file_input_list_a" type="file" (change)="onFileSelectedA($event)"/>
+					<label for="file_input_list_a" data-title="Text files only please" class="top-spaced">List A:<span>{{ inputListACount || '' }}</span></label>
+					<hr>
+					<textarea tabindex="10" name="input_list_a" [(ngModel)]="inputListA" (paste)="onPaste($event)" placeholder="Enter list A here..."></textarea>
+				</div>
+				<div class="flex-c height-500 width-half">
+					<input name="file_input_list_b" type="file" (change)="onFileSelectedB($event)"/>
+					<label for="file_input_list_b" data-title="Text files only please" class="top-spaced">List B:<span>{{ inputListBCount || '' }}</span></label>
+					<hr>
+					<textarea tabindex="11" name="input_list_b" [(ngModel)]="inputListB" (paste)="onPaste($event)" placeholder="Enter list B here..."></textarea>
+				</div>
+			</div>
+		</div>
+		<div>
+			<div class="flex-r h-center h-spaced v-padding">
+				<label><input tabindex="13" type="checkbox" name="lowercase" [(ngModel)]="lowercase"/><span data-title="Lower the case prior to compare"> Lowercase</span></label>
+			</div>
+			<hr>
+			<div class="flex-r h-center h-spaced v-padding">
+				<label><input tabindex="14" type="checkbox" name="tabs" [(ngModel)]="tabs"/><span data-title="Delimit on tabs">Tabs</span></label>
+				<label><input tabindex="15" type="checkbox" name="commas" [(ngModel)]="commas"/><span data-title="Delimit on commas">Commas</span></label>
+				<label><input tabindex="16" type="checkbox" name="spaces" [(ngModel)]="spaces"/><span data-title="Delimit on spaces">Spaces</span></label>
+				<label><input tabindex="17" type="checkbox" name="doublequote" [(ngModel)]="doublequote"/><span data-title="Delimit on quotation marks">Quotes</span></label>
+				<label><input tabindex="18" type="checkbox" name="semicolons" [(ngModel)]="semicolons"/><span data-title="Delimit on semicolons">Semicolons</span></label>
+				<label><input tabindex="19" type="checkbox" name="singlequote" [(ngModel)]="singlequote"/><span data-title="Delimit on apostrophes">Apostrophes</span></label>
+			</div>
+		</div>
+		<div class="flex-r h-center h-spaced v-padding">
+			<button class="standard-button-action" tabindex="19" type="button" (click)="compareIt()">Compare</button>
+		</div>
+	</form>
+	<div class="output-grid">
+		<div class="output-column height-500">
+			<label class="output-label" data-title="{ x ∈ A : x ∉ B }">Unique to A:<span>{{ outputListACount || '' }}</span></label>
+			<div class="output-display" [innerHTML]="outputListA"></div>
+		</div>
+		<div class="output-column height-500">
+			<label class="output-label" data-title="{ x ∈ B : x ∉ A }">Unique to B:<span>{{ outputListBCount || '' }}</span></label>
+			<div class="output-display" [innerHTML]="outputListB"></div>
+		</div>
+		<div class="output-column height-500">
+			<label class="output-label" data-title="{ A ∩ B }">Intersection:<span>{{ outputListIntersectionCount || '' }}</span></label>
+			<div class="output-display" [innerHTML]="outputListIntersection"></div>
+		</div>
+		<div class="output-column height-500">
+			<label class="output-label" data-title="{ B ∪ A }">Combination:<span>{{ outputListUnionCount || '' }}</span></label>
+			<div class="output-display" [innerHTML]="outputListUnion"></div>
+		</div>
+	</div>
+</div>
+

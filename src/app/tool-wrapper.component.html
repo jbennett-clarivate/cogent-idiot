@@ -1,0 +1,28 @@
+<div class="tool-bg">
+  <div class="toolbar">
+    <ng-container *ngFor="let tool of tools">
+      <button class="icon-btn" [class.active]="isActive(tool.route)" (click)="navigate(tool.route)"
+              (mouseenter)="showTooltip($event, 'Navigate to ' + tool.name + ' tool')"
+              (mouseleave)="hideTooltip()">
+        <img [src]="'assets/images/' + tool.icon" [alt]="tool.name" />
+      </button>
+    </ng-container>
+    <span class="spacer"></span>
+    <button class="icon-btn" id="info-text-button"
+            (mouseenter)="showTooltip($event, 'Show application information')"
+            (mouseleave)="hideTooltip()">
+      <img src="assets/images/info.svg" alt="Info" />
+    </button>
+    <button class="icon-btn" id="logout-button"
+            (mouseenter)="showTooltip($event, 'Logout from application')"
+            (mouseleave)="hideTooltip()">
+      <img src="assets/images/logout.svg" alt="Logout" />
+    </button>
+  </div>
+  <div class="tool-title">
+    {{ toolTitle$ | async }}
+  </div>
+  <div class="tool-content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

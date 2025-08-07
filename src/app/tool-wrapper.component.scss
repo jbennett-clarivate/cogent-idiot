@@ -1,0 +1,97 @@
+.tool-bg {
+  min-height: 100vh;
+  background: #b3b3b3 url('/assets/images/concrete.jpg') repeat;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 0 0 8px 8px;
+  margin: 0 auto 16px auto;
+  max-width: 900px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  margin-right: 4px;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+}
+
+.icon-btn.active, .icon-btn:hover {
+  background: #e0e0e0;
+}
+
+.icon-btn img {
+  width: 28px;
+  height: 28px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.tool-title {
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 400;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.tool-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.icon-btn.tooltip-active::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.2s;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.icon-btn.tooltip-top::after {
+  bottom: 100%;
+  margin-bottom: 5px;
+}
+
+.icon-btn.tooltip-bottom::after {
+  top: 100%;
+  margin-top: 5px;
+}
+
+.icon-btn.tooltip-active::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  z-index: 1001;
+}
+
+.icon-btn.tooltip-top::before {
+  top: 100%;
+  border-top-color: rgba(0, 0, 0, 0.9);
+}
+
+.icon-btn.tooltip-bottom::before {
+  bottom: 100%;
+  border-bottom-color: rgba(0, 0, 0, 0.9);
+}

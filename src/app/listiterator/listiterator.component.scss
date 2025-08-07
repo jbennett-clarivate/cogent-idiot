@@ -1,0 +1,28 @@
+/* Local overrides for listiterator component */
+
+.output-display {
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  white-space: pre-wrap;
+  overflow-y: auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.arbitrary-input {
+  width: 15em;
+}
+
+.height-500 {
+  height: 500px;
+}
+
+.width-full {
+  width: 100%;
+}
+
+.lv-spaced {
+  gap: 1rem;
+}

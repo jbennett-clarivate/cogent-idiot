@@ -1,0 +1,35 @@
+.output-display {
+  min-height: 200px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: #f8f9fa;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 10px;
+  white-space: nowrap;
+}
+
+.height-500 {
+  min-height: 300px;
+  max-height: 500px;
+  margin: 10px 0;
+}
+
+.width-full {
+  width: 100%;
+}
+
+.width-half {
+  width: 50%;
+  padding: 0 10px;
+}
+
+.top-spaced {
+  margin-top: 10px;
+}
+
+/* Label specific for the may/must contain sections */
+label span {
+  margin-left: 5px;
+}

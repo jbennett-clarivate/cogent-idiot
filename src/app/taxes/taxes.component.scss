@@ -1,0 +1,30 @@
+.tax-container {
+  margin-top: 2em;
+  margin-bottom: 2em;
+  display: flex;
+  justify-content: center;
+}
+
+.tax-chart {
+  min-height: 300px;
+  min-width: 300px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  overflow: auto;
+}
+
+.widthLimit {
+  min-width: 120px;
+  max-width: 200px;
+}
+
+.standard-button-action {
+  margin-right: 1em;
+}
+
+.standard-button-reset {
+  margin-left: 1em;
+}
+
