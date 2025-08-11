@@ -9,7 +9,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "server": "node server.js",
+    "server": "node --no-deprecation server.js",
     "dev": "concurrently \"npm run server\" \"ng serve --proxy-config proxy.conf.json\"",
     "build:prod": "ng build --configuration production"
   },

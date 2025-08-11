@@ -124,14 +124,19 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/api/auth/pepper', (req, res) => {
-  const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let pepper = '';
-  for (let i = 0; i < 12; i++) {
-    pepper += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
+	res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+	res.set('Pragma', 'no-cache');
+	res.set('Expires', '0');
+	res.set('Surrogate-Control', 'no-store');
 
-  req.session.pepper = pepper;
-  res.json({ pepper });
+	const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	let pepper = '';
+	for (let i = 0; i < 12; i++) {
+		pepper += characters.charAt(Math.floor(Math.random() * characters.length));
+	}
+
+	req.session.pepper = pepper;
+	res.json({ pepper });
 });
 
 app.post('/api/auth/salt', async (req, res) => {
@@ -186,7 +191,9 @@ app.post('/api/login', async (req, res) => {
 			  return res.status(401).json({error: 'Authentication failed'});
 		  }
 	  } else {
-		  rows.push({PASSWORD: '123456', EMAIL: 'test@clarivate.com'});
+		  // Mock DHP: sha256('123456' + 'salt123')
+		  const mockDHP = crypto.createHash('sha256').update('salt123' + '123456').digest('hex');
+		  rows.push({PASSWORD: mockDHP, EMAIL: 'test@clarivate.com'});
 	  }
 
 
@@ -266,15 +273,14 @@ app.get('/api/tools', (req, res) => {
 });
 
 app.get('*', (req, res) => {
-  
-  if (!req.path.startsWith('/api') && !req.path.includes('.')) {
-    if (!req.session || !req.session.login) {
-      
-      return res.redirect('/login');
-    }
-  }
-
-  res.sendFile(path.join(__dirname, 'dist/cogent-idiot/index.html'));
+	if (!req.path.startsWith('/api') && !req.path.includes('.')) {
+		if (!req.session || !req.session.login) {
+			if (req.path !== '/login') {
+				return res.redirect('/login');
+			}
+		}
+	}
+	res.sendFile(path.join(__dirname, 'dist/cogent-idiot/index.html'));
 });
 
 app.listen(PORT, () => {
