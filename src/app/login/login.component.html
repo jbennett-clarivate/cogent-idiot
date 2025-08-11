@@ -1,0 +1,56 @@
+<div class="login-container">
+  <div class="login-form">
+    <h2>Login</h2>
+
+    <!-- Step #6: Hidden inputs for pepper, salt, and username -->
+    <input type="hidden" [(ngModel)]="pepper" name="pepper">
+    <input type="hidden" [(ngModel)]="salt" name="salt" *ngIf="salt">
+    <input type="hidden" [(ngModel)]="username" name="username" *ngIf="showPasswordField">
+
+    <!-- Step #7: Username input (always visible) -->
+    <div class="form-group">
+      <label for="username">Username:</label>
+      <input
+        type="text"
+        id="username"
+        [(ngModel)]="username"
+        name="username"
+        [disabled]="showPasswordField"
+        class="form-control">
+    </div>
+
+    <!-- Password field (only shown after first Next) -->
+    <div class="form-group" *ngIf="showPasswordField">
+      <label for="password">Password:</label>
+      <input
+        type="password"
+        id="password"
+        [(ngModel)]="password"
+        name="password"
+        class="form-control">
+    </div>
+
+    <!-- Error message -->
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <!-- First Next button (step #7) -->
+    <button
+      type="button"
+      class="btn btn-primary"
+      *ngIf="!showPasswordField"
+      (click)="onFirstNext()">
+      Next
+    </button>
+
+    <!-- Second Next button (different functionality) -->
+    <button
+      type="button"
+      class="btn btn-primary"
+      *ngIf="showPasswordField"
+      (click)="onSecondNext()">
+      Login
+    </button>
+  </div>
+</div>

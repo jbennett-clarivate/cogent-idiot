@@ -17,55 +17,55 @@ export class HomeComponent {
       name: 'Bayes Calculator',
       description: 'Calculate Bayesian probabilities',
       icon: 'bayes.svg',
-      route: '/bayes'
+      route: '/tools/bayes'
     },
     {
       name: 'List Cleaner',
       description: 'Clean and format lists',
       icon: 'cleaner.svg',
-      route: '/cleaner'
+      route: '/tools/cleaner'
     },
     {
       name: 'List Comparator',
       description: 'Compare two lists',
       icon: 'comparator.svg',
-      route: '/comparator'
+      route: '/tools/comparator'
     },
     {
       name: 'List Iterator',
       description: 'Iterate through lists',
       icon: 'iterator.svg',
-      route: '/iterator'
+      route: '/tools/iterator'
     },
     {
       name: 'List Random',
       description: 'Generate random items from lists',
       icon: 'random.svg',
-      route: '/random'
+      route: '/tools/random'
     },
     {
       name: 'Message Tool',
       description: 'Message handling utilities',
       icon: 'message.svg',
-      route: '/message'
+      route: '/tools/message'
     },
     {
       name: 'Pascal Triangle',
       description: 'Generate Pascal\'s triangle',
       icon: 'pascal.svg',
-      route: '/pascal'
+      route: '/tools/pascal'
     },
     {
       name: 'Safe Cron',
-      description: 'Cron job utilities',
+      description: 'Safe time zone scheduling',
       icon: 'cron.svg',
-      route: '/safecron'
+      route: '/tools/safecron'
     },
     {
       name: 'Tax Calculator',
-      description: 'Tax calculation tools',
+      description: 'Calculate taxes',
       icon: 'taxes.svg',
-      route: '/taxes'
+      route: '/tools/taxes'
     }
   ];
 
