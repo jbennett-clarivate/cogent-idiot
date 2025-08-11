@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule, NavigationEnd } from '@angular/router';
+import { AuthService } from './services/auth.service';
 import { CommonModule } from '@angular/common';
 import { filter, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
@@ -13,18 +14,18 @@ import { Observable } from 'rxjs';
 })
 export class ToolWrapperComponent {
   tools = [
-    { name: "Bayes' Theorem", icon: 'bayes.svg', route: '/bayes' },
-    { name: 'List Cleaner', icon: 'cleaner.svg', route: '/cleaner' },
-    { name: 'List Comparator', icon: 'comparator.svg', route: '/comparator' },
-    { name: 'List Iterator', icon: 'iterator.svg', route: '/iterator' },
-    { name: 'List Random', icon: 'random.svg', route: '/random' },
-    { name: 'Message Tool', icon: 'message.svg', route: '/message' },
-    { name: 'Pascal Triangle', icon: 'pascal.svg', route: '/pascal' },
-    { name: 'Safe Cron', icon: 'cron.svg', route: '/safecron' },
-    { name: 'Tax Calculator', icon: 'taxes.svg', route: '/taxes' }
+    { name: "Bayes' Theorem", icon: 'bayes.svg', route: '/tools/bayes' },
+    { name: 'List Cleaner', icon: 'cleaner.svg', route: '/tools/cleaner' },
+    { name: 'List Comparator', icon: 'comparator.svg', route: '/tools/comparator' },
+    { name: 'List Iterator', icon: 'iterator.svg', route: '/tools/iterator' },
+    { name: 'List Random', icon: 'random.svg', route: '/tools/random' },
+    { name: 'Message Tool', icon: 'message.svg', route: '/tools/message' },
+    { name: 'Pascal Triangle', icon: 'pascal.svg', route: '/tools/pascal' },
+    { name: 'Safe Cron', icon: 'cron.svg', route: '/tools/safecron' },
+    { name: 'Tax Calculator', icon: 'taxes.svg', route: '/tools/taxes' }
   ];
   toolTitle$: Observable<string>;
-  constructor(private router: Router, private route: ActivatedRoute) {
+  constructor(private router: Router, private route: ActivatedRoute, private authService: AuthService) {
     this.toolTitle$ = this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
       map(() => {
@@ -34,6 +35,14 @@ export class ToolWrapperComponent {
       })
     );
   }
+	logout(): void {
+		this.authService.logout().subscribe({
+			next: () => {
+				console.log('Logged out successfully');
+				window.location.href = '/login';
+			}
+		});
+	}
   navigate(route: string) {
     this.router.navigate([route]);
   }

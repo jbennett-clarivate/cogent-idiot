@@ -14,6 +14,7 @@
       <img src="assets/images/info.svg" alt="Info" />
     </button>
     <button class="icon-btn" id="logout-button"
+						(click)="logout()"
             (mouseenter)="showTooltip($event, 'Logout from application')"
             (mouseleave)="hideTooltip()">
       <img src="assets/images/logout.svg" alt="Logout" />
