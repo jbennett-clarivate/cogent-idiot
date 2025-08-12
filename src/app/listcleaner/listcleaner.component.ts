@@ -212,4 +212,28 @@ export class ListcleanerComponent implements OnInit, OnDestroy {
       this.customchar = localStorage.getItem("delimitOnListCustomChar") || '';
     }
   }
+
+  reset() {
+    // Clear input field
+    this.theInputList = '';
+
+    // Clear output fields
+    this.theCleanList = '';
+    this.theInputListCount = 0;
+    this.theCleanListCount = 0;
+    this.theDirtyListCount = 0;
+
+    // Remove data from localStorage
+    if (typeof Storage !== "undefined") {
+      localStorage.removeItem("cleanList");
+      localStorage.removeItem("cleanListLower");
+      localStorage.removeItem("delimitOnListSpaces");
+      localStorage.removeItem("delimitOnListTab");
+      localStorage.removeItem("delimitOnListCommas");
+      localStorage.removeItem("delimitOnListSemicolons");
+      localStorage.removeItem("delimitOnListSinglequote");
+      localStorage.removeItem("delimitOnListDoublequote");
+      localStorage.removeItem("delimitOnListCustomChar");
+    }
+  }
 }

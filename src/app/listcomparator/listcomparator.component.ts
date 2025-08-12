@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './listcomparator.component.html',
   styleUrl: './listcomparator.component.scss'
 })
-export class ListcomparatorComponent {
+export class ListcomparatorComponent implements OnInit {
   inputListA: string = '';
   inputListB: string = '';
 
@@ -33,12 +33,17 @@ export class ListcomparatorComponent {
   semicolons: boolean = false;
   singlequote: boolean = false;
 
+  ngOnInit(): void {
+    this.loadFromLocalStorage();
+  }
+
   onFileSelectedA(event: any): void {
     const file = event.target.files[0];
     if (file && file.type === 'text/plain') {
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.inputListA = e.target.result;
+        this.saveToLocalStorage();
       };
       reader.readAsText(file);
     }
@@ -50,6 +55,7 @@ export class ListcomparatorComponent {
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.inputListB = e.target.result;
+        this.saveToLocalStorage();
       };
       reader.readAsText(file);
     }
@@ -57,6 +63,7 @@ export class ListcomparatorComponent {
 
   onPaste(event: ClipboardEvent): void {
     // Handle paste events if needed
+    this.saveToLocalStorage();
   }
 
   compareIt(): void {
@@ -94,6 +101,41 @@ export class ListcomparatorComponent {
     this.outputListB = this.textToHtml(uniqueToB);
     this.outputListIntersection = this.textToHtml(intersection);
     this.outputListUnion = this.textToHtml(union);
+
+    // Save settings to localStorage
+    this.saveToLocalStorage();
+  }
+
+  reset(): void {
+    // Clear input lists
+    this.inputListA = '';
+    this.inputListB = '';
+
+    // Reset count values
+    this.inputListACount = 0;
+    this.inputListBCount = 0;
+    this.outputListACount = 0;
+    this.outputListBCount = 0;
+    this.outputListIntersectionCount = 0;
+    this.outputListUnionCount = 0;
+
+    // Clear output lists
+    this.outputListA = '';
+    this.outputListB = '';
+    this.outputListIntersection = '';
+    this.outputListUnion = '';
+
+    // Reset delimiter options
+    this.lowercase = false;
+    this.tabs = false;
+    this.commas = false;
+    this.spaces = false;
+    this.doublequote = false;
+    this.semicolons = false;
+    this.singlequote = false;
+
+    // Clear localStorage
+    this.clearLocalStorage();
   }
 
   private dedupe(srcInputList: string): string {
@@ -178,5 +220,45 @@ export class ListcomparatorComponent {
   private textToHtml(text: string): string {
     if (!text) return '';
     return text.split('\n').join('<br>');
+  }
+
+  private saveToLocalStorage(): void {
+    localStorage.setItem('listComparator_inputListA', this.inputListA || '');
+    localStorage.setItem('listComparator_inputListB', this.inputListB || '');
+    localStorage.setItem('listComparator_lowercase', this.lowercase.toString());
+    localStorage.setItem('listComparator_tabs', this.tabs.toString());
+    localStorage.setItem('listComparator_commas', this.commas.toString());
+    localStorage.setItem('listComparator_spaces', this.spaces.toString());
+    localStorage.setItem('listComparator_doublequote', this.doublequote.toString());
+    localStorage.setItem('listComparator_semicolons', this.semicolons.toString());
+    localStorage.setItem('listComparator_singlequote', this.singlequote.toString());
+  }
+
+  private loadFromLocalStorage(): void {
+    const inputListA = localStorage.getItem('listComparator_inputListA');
+    const inputListB = localStorage.getItem('listComparator_inputListB');
+
+    if (inputListA) this.inputListA = inputListA;
+    if (inputListB) this.inputListB = inputListB;
+
+    this.lowercase = localStorage.getItem('listComparator_lowercase') === 'true';
+    this.tabs = localStorage.getItem('listComparator_tabs') === 'true';
+    this.commas = localStorage.getItem('listComparator_commas') === 'true';
+    this.spaces = localStorage.getItem('listComparator_spaces') === 'true';
+    this.doublequote = localStorage.getItem('listComparator_doublequote') === 'true';
+    this.semicolons = localStorage.getItem('listComparator_semicolons') === 'true';
+    this.singlequote = localStorage.getItem('listComparator_singlequote') === 'true';
+  }
+
+  private clearLocalStorage(): void {
+    localStorage.removeItem('listComparator_inputListA');
+    localStorage.removeItem('listComparator_inputListB');
+    localStorage.removeItem('listComparator_lowercase');
+    localStorage.removeItem('listComparator_tabs');
+    localStorage.removeItem('listComparator_commas');
+    localStorage.removeItem('listComparator_spaces');
+    localStorage.removeItem('listComparator_doublequote');
+    localStorage.removeItem('listComparator_semicolons');
+    localStorage.removeItem('listComparator_singlequote');
   }
 }

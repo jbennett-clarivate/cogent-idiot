@@ -5,12 +5,12 @@
   "main": "server.js",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --proxy-config proxy.conf.json --no-open",
-    "build": "ng build",
+    "start": "ng serve cogent-idiot",
+    "build:dev": "ng build --configuration development",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "server": "node --no-deprecation server.js",
-    "dev": "concurrently \"npm run server\" \"ng serve --proxy-config proxy.conf.json --no-open\"",
+    "dev": "concurrently \"node --no-deprecation server.js\" \"ng serve\"",
     "build:prod": "ng build --configuration production"
   },
   "dependencies": {

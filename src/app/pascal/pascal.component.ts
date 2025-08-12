@@ -1,4 +1,4 @@
-import { Component, ElementRef, Renderer2, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, Renderer2, AfterViewInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -20,7 +20,12 @@ export class PascalComponent implements AfterViewInit {
   nChooseK: number = 10;
   fullTriangle: number[][] = [];
 
-  constructor(private elementRef: ElementRef, private renderer: Renderer2) {
+  constructor(
+    private elementRef: ElementRef,
+    private renderer: Renderer2,
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef
+  ) {
     this.buildFullTriangle();
   }
 
@@ -74,17 +79,25 @@ export class PascalComponent implements AfterViewInit {
     this.generatePascal();
     this.nChooseK = this.pascal[this.n] ? this.pascal[this.n][this.k] : 0;
 
-    // Apply dynamic font sizing like original
-    const container = this.elementRef.nativeElement.querySelector('.white-bg');
-    if (container) {
-      const containerSize = container.offsetWidth || 600;
-      const elemCount = this.pascal[this.n] ? this.pascal[this.n].join(" ").length : 0;
-      const textSize = Math.min(1, containerSize / (elemCount * 10));
-      const lineHeight = textSize + 0.33;
+    // Run UI updates outside Angular zone to prevent ExpressionChangedAfterItHasBeenCheckedError
+    this.ngZone.runOutsideAngular(() => {
+      setTimeout(() => {
+        // Apply dynamic font sizing like original
+        const container = this.elementRef.nativeElement.querySelector('.white-bg');
+        if (container) {
+          const containerSize = container.offsetWidth || 600;
+          const elemCount = this.pascal[this.n] ? this.pascal[this.n].join(" ").length : 0;
+          const textSize = Math.min(1, containerSize / (elemCount * 10));
+          const lineHeight = textSize + 0.33;
 
-      this.elementRef.nativeElement.style.setProperty('--dynamic-font-size', `${textSize}em`);
-      this.elementRef.nativeElement.style.setProperty('--dynamic-line-height', `${lineHeight}em`);
-    }
+          this.elementRef.nativeElement.style.setProperty('--dynamic-font-size', `${textSize}em`);
+          this.elementRef.nativeElement.style.setProperty('--dynamic-line-height', `${lineHeight}em`);
+
+          // Re-enter Angular zone and detect changes
+          this.ngZone.run(() => this.cdr.detectChanges());
+        }
+      });
+    });
   }
 
   setupMaxInputRange() {

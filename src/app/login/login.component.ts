@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -19,6 +19,8 @@ export class LoginComponent implements OnInit {
   salt = '';
   showPasswordField = false;
   errorMessage = '';
+
+  @ViewChild('passwordInput') passwordInput!: ElementRef;
 
   constructor(
     private router: Router,
@@ -50,6 +52,11 @@ export class LoginComponent implements OnInit {
         this.salt = response.salt;
         this.showPasswordField = true;
         this.errorMessage = '';
+
+        // Focus the password input after the view updates
+        setTimeout(() => {
+          this.passwordInput?.nativeElement.focus();
+        }, 0);
       },
       error: (error) => {
         this.errorMessage = 'User not found';

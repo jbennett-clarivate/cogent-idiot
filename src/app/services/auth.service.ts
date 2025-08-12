@@ -36,6 +36,7 @@ export class AuthService {
         if (response.success) {
           this.isAuthenticatedSubject.next(false);
           this.currentUserSubject.next(null);
+          localStorage.clear();
         }
       }),
       catchError(error => {
@@ -43,6 +44,7 @@ export class AuthService {
         // Even if logout fails, clear local state
         this.isAuthenticatedSubject.next(false);
         this.currentUserSubject.next(null);
+        localStorage.clear();
         return of({ success: true });
       })
     );

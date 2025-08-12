@@ -4,8 +4,12 @@
 
     <!-- Step #6: Hidden inputs for pepper, salt, and username -->
     <input type="hidden" [(ngModel)]="pepper" name="pepper">
-    <input type="hidden" [(ngModel)]="salt" name="salt" *ngIf="salt">
-    <input type="hidden" [(ngModel)]="username" name="username" *ngIf="showPasswordField">
+    @if (salt) {
+      <input type="hidden" [(ngModel)]="salt" name="salt">
+    }
+    @if (showPasswordField) {
+      <input type="hidden" [(ngModel)]="username" name="username">
+    }
 
     <!-- Step #7: Username input (always visible) -->
     <div class="form-group">
@@ -16,41 +20,50 @@
         [(ngModel)]="username"
         name="username"
         [disabled]="showPasswordField"
+        (keyup.enter)="onFirstNext()"
         class="form-control">
     </div>
 
     <!-- Password field (only shown after first Next) -->
-    <div class="form-group" *ngIf="showPasswordField">
-      <label for="password">Password:</label>
-      <input
-        type="password"
-        id="password"
-        [(ngModel)]="password"
-        name="password"
-        class="form-control">
-    </div>
+    @if (showPasswordField) {
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input
+          type="password"
+          id="password"
+          #passwordInput
+          [(ngModel)]="password"
+          name="password"
+          (keyup.enter)="onSecondNext()"
+          class="form-control">
+      </div>
+    }
 
     <!-- Error message -->
-    <div class="error-message" *ngIf="errorMessage">
-      {{ errorMessage }}
-    </div>
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
 
     <!-- First Next button (step #7) -->
-    <button
-      type="button"
-      class="btn btn-primary"
-      *ngIf="!showPasswordField"
-      (click)="onFirstNext()">
-      Next
-    </button>
+    @if (!showPasswordField) {
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="onFirstNext()">
+        Next
+      </button>
+    }
 
     <!-- Second Next button (different functionality) -->
-    <button
-      type="button"
-      class="btn btn-primary"
-      *ngIf="showPasswordField"
-      (click)="onSecondNext()">
-      Login
-    </button>
+    @if (showPasswordField) {
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="onSecondNext()">
+        Login
+      </button>
+    }
   </div>
 </div>
