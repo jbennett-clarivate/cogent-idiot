@@ -179,11 +179,6 @@ export class ListcleanerComponent implements OnInit, OnDestroy {
     this.theInputList += '\n' + pastedData;
   }
 
-  onInputChange(event: Event) {
-    const target = event.target as HTMLElement;
-    this.theInputList = target.innerHTML || '';
-  }
-
   private saveToStorage() {
     if (typeof Storage !== "undefined") {
       localStorage.setItem("cleanList", this.theInputList);
