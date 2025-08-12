@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
+import { EnvironmentService } from './environment.service';
 
 export interface AuthResponse {
   success: boolean;
@@ -19,14 +20,15 @@ export interface AuthStatus {
   providedIn: 'root'
 })
 export class AuthService {
-  private baseUrl = '/api';
+  private baseUrl: string;
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   private currentUserSubject = new BehaviorSubject<string | null>(null);
 
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private environmentService: EnvironmentService) {
+    this.baseUrl = this.environmentService.apiBaseUrl;
     this.checkAuthStatus();
   }
 

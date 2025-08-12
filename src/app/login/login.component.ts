@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../services/auth.service';
+import { EnvironmentService } from '../services/environment.service';
 
 @Component({
   selector: 'app-login',
@@ -19,18 +20,22 @@ export class LoginComponent implements OnInit {
   salt = '';
   showPasswordField = false;
   errorMessage = '';
+  private baseUrl: string;
 
   @ViewChild('passwordInput') passwordInput!: ElementRef;
 
   constructor(
     private router: Router,
     private http: HttpClient,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private environmentService: EnvironmentService
+  ) {
+    this.baseUrl = this.environmentService.apiBaseUrl;
+  }
 
   ngOnInit() {
     // Step #2 & #5: Get pepper when page loads
-    this.http.get<{pepper: string}>('/api/auth/pepper').subscribe({
+    this.http.get<{pepper: string}>(`${this.baseUrl}/auth/pepper`).subscribe({
       next: (response) => {
         this.pepper = response.pepper;
       },
@@ -47,7 +52,7 @@ export class LoginComponent implements OnInit {
     }
 
     // Step #4: Get user salt
-    this.http.post<{salt: string}>('/api/auth/salt', { username: this.username }).subscribe({
+    this.http.post<{salt: string}>(`${this.baseUrl}/auth/salt`, { username: this.username }).subscribe({
       next: (response) => {
         this.salt = response.salt;
         this.showPasswordField = true;
@@ -82,7 +87,7 @@ export class LoginComponent implements OnInit {
       const hashedPepperedPassword = await this.sha256(pepperedDHP);
 
       // 3. Send to server
-      this.http.post<{success: boolean, email?: string, error?: string}>('/api/login', {
+      this.http.post<{success: boolean, email?: string, error?: string}>(`${this.baseUrl}/login`, {
         hashedPepperedPassword
       }).subscribe({
         next: (response) => {
