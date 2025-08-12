@@ -7,11 +7,14 @@ node_modules/
 # Build outputs
 dist/
 build/
+public_html/
+deploy-temp/
 
 # IDE files
 .vscode/
 .idea/
 *.iml
+.angular/
 
 # Logs
 *.log
@@ -38,4 +41,4 @@ coverage/
 ehthumbs.db
 Thumbs.db
 /package-lock.json
-/.angular/
+/cogent-idiot-deploy.zip
