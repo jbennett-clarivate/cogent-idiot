@@ -4,9 +4,8 @@ import {DecimalPipe} from '@angular/common';
 
 @Component({
 	selector: 'app-bayes',
-	templateUrl: './bayes.component.html',
-	styleUrls: ['./bayes.component.scss'],
-	standalone: true,
+	templateUrl: './bayes.html',
+	styleUrls: ['./bayes.scss'],
 	imports: [FormsModule, DecimalPipe]
 })
 export class BayesComponent {

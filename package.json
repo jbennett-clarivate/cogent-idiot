@@ -6,12 +6,12 @@
   "scripts": {
     "ng": "ng",
     "start": "node server.js",
-    "build:dev": "ng build --configuration development",
-    "watch": "ng build --watch --configuration development",
+    "build:dev": "ng build --configuration development --output-path=public_html",
+    "watch": "ng build --watch --configuration development --output-path=public_html",
     "test": "ng test",
     "server": "node --no-deprecation server.js",
     "dev": "concurrently \"node --no-deprecation server.js\" \"ng serve\"",
-    "build:prod": "ng build --configuration production"
+    "build:prod": "ng build --configuration production --output-path=public_html"
   },
   "dependencies": {
     "@angular/animations": "^20.0.0",

@@ -4,10 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-listiterator',
-  standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './listiterator.component.html',
-  styleUrls: ['./listiterator.component.scss']
+  templateUrl: './listiterator.html',
+  styleUrls: ['./listiterator.scss']
 })
 export class ListiteratorComponent implements OnInit, OnDestroy {
   numberOfIterations: number | null = null;

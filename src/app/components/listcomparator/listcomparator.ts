@@ -4,10 +4,9 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-listcomparator',
-  standalone: true,
   imports: [FormsModule, CommonModule],
-  templateUrl: './listcomparator.component.html',
-  styleUrl: './listcomparator.component.scss'
+  templateUrl: './listcomparator.html',
+  styleUrl: './listcomparator.scss'
 })
 export class ListcomparatorComponent implements OnInit {
   inputListA: string = '';

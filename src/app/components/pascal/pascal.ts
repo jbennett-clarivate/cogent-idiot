@@ -4,10 +4,9 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-pascal',
-  standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './pascal.component.html',
-  styleUrls: ['./pascal.component.scss']
+  templateUrl: './pascal.html',
+  styleUrls: ['./pascal.scss']
 })
 export class PascalComponent implements AfterViewInit {
   rows: number | null = null;

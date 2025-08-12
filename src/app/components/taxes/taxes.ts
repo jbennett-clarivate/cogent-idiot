@@ -4,10 +4,9 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-taxes',
-  standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './taxes.component.html',
-  styleUrls: ['./taxes.component.scss']
+  templateUrl: './taxes.html',
+  styleUrls: ['./taxes.scss']
 })
 export class TaxesComponent {
   corporate: number = 59000;

@@ -9,10 +9,9 @@ interface TimeZoneOption {
 
 @Component({
   selector: 'app-safecron',
-  standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './safecron.component.html',
-  styleUrl: './safecron.component.scss'
+  templateUrl: './safecron.html',
+  styleUrl: './safecron.scss'
 })
 export class SafecronComponent {
   timeZones: TimeZoneOption[] = [

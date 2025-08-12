@@ -4,9 +4,8 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-message',
-  templateUrl: './message.component.html',
-  styleUrls: ['./message.component.scss'],
-  standalone: true,
+  templateUrl: './message.html',
+  styleUrls: ['./message.scss'],
   imports: [FormsModule, CommonModule]
 })
 export class MessageComponent {

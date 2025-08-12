@@ -4,10 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-listrandom',
-  standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './listrandom.component.html',
-  styleUrls: ['./listrandom.component.scss']
+  templateUrl: './listrandom.html',
+  styleUrls: ['./listrandom.scss']
 })
 export class ListrandomComponent {
   stringQuantity = 10;

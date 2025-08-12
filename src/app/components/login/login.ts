@@ -3,15 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../services/auth.service';
-import { EnvironmentService } from '../services/environment.service';
+import { AuthService } from '@services/auth.service';
+import { EnvironmentService } from '@services/environment.service';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  templateUrl: './login.html',
+  styleUrls: ['./login.scss']
 })
 export class LoginComponent implements OnInit {
   username = '';

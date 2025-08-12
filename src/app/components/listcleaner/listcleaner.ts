@@ -4,10 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-listcleaner',
-  standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './listcleaner.component.html',
-  styleUrls: ['./listcleaner.component.scss']
+  templateUrl: './listcleaner.html',
+  styleUrls: ['./listcleaner.scss']
 })
 export class ListcleanerComponent implements OnInit, OnDestroy {
   theInputList: string = '';
