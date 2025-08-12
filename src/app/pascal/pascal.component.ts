@@ -129,18 +129,6 @@ export class PascalComponent implements AfterViewInit {
     return Math.ceil(this.rows / 10) + 1; // Dynamic width based on number of rows, minimum 1em
   }
 
-  get pascalDisplay(): string {
-    if (!this.pascal.length) return '';
-
-    // Format as HTML with divs for flexbox layout
-    const rows = this.pascal.map(row => {
-      const cells = row.map(num => `<div class="pascal-cell">${num}</div>`).join('');
-      return `<div class="pascal-row">${cells}</div>`;
-    }).join('');
-
-    return `<div class="pascal-triangle">${rows}</div>`;
-  }
-
   generatePascal(): void {
     if (!this.rows || this.rows < 1 || this.rows > 50) return;
     this.pascal = [];
