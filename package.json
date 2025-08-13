@@ -39,7 +39,7 @@
     "@angular/cli": "^20.0.0",
     "@angular/compiler-cli": "^20.0.0",
     "@types/jasmine": "~5.1.0",
-    "@types/node": "^18.7.0",
+    "@types/node": "^18.19.122",
     "concurrently": "^7.6.0",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",
