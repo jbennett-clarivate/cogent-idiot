@@ -16,10 +16,6 @@ input:not([type="range"]) {
   padding: 4px 8px;
 }
 
-input[readonly] {
-  background-color: #f8f9fa;
-}
-
 /* Hide number input spinners */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
@@ -82,29 +78,38 @@ input[type="file"] {
   padding: 10px;
 }
 
+select:not(.non-standard-select) {
+  padding: 0.5rem;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #fff;
+  min-width: 233px;
+  transition: border-color 0.8s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  }
+}
+
 /* Standard Input */
 input:not([type="range"]):not(.non-standard-input) {
   box-sizing: border-box;
   padding: 8px;
-  border: 1px solid #ccc;
   border-radius: 4px;
 }
 
 /* Standard Buttons */
 button:not(.non-standard-button-action):not(.non-standard-button-reset) {
-  background-color: #00b318;
-  color: white;
   border: none;
   border-radius: 4px;
   padding: 8px 16px;
   cursor: pointer;
 }
 
-button:not(.non-standard-button-action):not(.non-standard-button-reset):hover {
-  background-color: #009f16;
-}
-
-button:not(.non-standard-button-action):not(.non-standard-button-reset):disabled {
+input[readonly], button:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
 }
@@ -168,4 +173,25 @@ label input[type="checkbox"] {
 
 label span {
   flex-shrink: 0;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+.btn-reset {
+  background-color: #6c757d;
+  color: white;
+}
+.btn-reset:hover {
+  background-color: #5a6268;
+}
+.btn:hover {
+  opacity: 0.8;
 }

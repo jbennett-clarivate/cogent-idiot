@@ -1,31 +1,34 @@
 <div class="white-bg">
   <form>
     <div class="flex-c h-center h-spaced lv-spaced strong v-padding">
-      <label for="all-utc-offsets" class="widthLimit">
+      <label for="all-utc-offsets" class="width-limit">
         <span>Time Zone (Required):</span>
-        <select id="all-utc-offsets" .[(ngModel)]="selectedZone" name="selectedZone">
-          <option disabled value="">--Time Zone (Required)--</option>
-          <option *ngFor="let zone of timeZones" [value]="zone.value">{{ zone.label }}</option>
+        <select id="all-utc-offsets" [(ngModel)]="selectedZone" name="selectedZone">
+          <option disabled value="">Select timezone...</option>
+          @for (zone of timeZones(); track zone.value) {
+            <option [value]="zone.value" [title]="getTooltipText(zone.value)">{{ zone.label }}</option>
+          }
         </select>
       </label>
-      <label for="weights" class="widthLimit">
+      <label for="weights" class="width-limit">
         <span>Importance (Optional):</span>
-        <select id="weights" .[(ngModel)]="selectedWeight" name="selectedWeight">
-          <option disabled value="">--Importance (Optional)--</option>
-          <option *ngFor="let weight of weights" [value]="weight">{{ weight }}</option>
+        <select id="weights" [(ngModel)]="selectedWeight" name="selectedWeight">
+          @for (weight of weights; track weight) {
+            <option [value]="weight">{{ weight }}</option>
+          }
         </select>
       </label>
-      <div class="widthLimit flex-r h-center h-spaced">
-        <button type="button" .(click)="addZone()">Add Zone</button>
-        <button type="button" .[disabled]="!canComputeSafeTime()" (click)="computeSafeTime()">Safe Time</button>
+      <div class="width-limit flex-r h-center h-spaced">
+        <button type="button" class="btn btn-primary" (click)="addZone()">Chart It</button>
+        <button type="button" class="btn btn-primary" [disabled]="!canComputeSafeTime()" (click)="computeSafeTime()">Best Time</button>
       </div>
     </div>
     <div class="flex-r h-center h-spaced v-padding">
-      <div>Schedule meeting:&nbsp;<span id="meeting">{{ meetingTime }}</span></div>
-      <div>Schedule downtime:&nbsp;<span id="downtime">{{ downtime }}</span></div>
+      <div>Schedule meeting:&nbsp;<span id="meeting">{{ meetingTime() }}</span></div>
+      <div>Schedule downtime:&nbsp;<span id="downtime">{{ downtime() }}</span></div>
     </div>
   </form>
   <div class="cron-container">
-    <div id="cronUTC" class="cron-chart" style="padding: 0px; position: relative;"></div>
+    <canvas #cronChart class="cron-chart"></canvas>
   </div>
 </div>

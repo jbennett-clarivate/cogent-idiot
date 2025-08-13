@@ -4,21 +4,21 @@
 			<div class="flex-c h-center h-spaced lv-spaced strong v-padding">
 				<label for="numberOfIterations" class="flex-c h-center">
 					<span data-title="Number of iterations to generate">Number Of Iterations:</span>
-					<input type="number" .name="numberOfIterations" [(ngModel)]="numberOfIterations" min="1" max="10000" step="1"/>
+					<input type="number" name="numberOfIterations" [(ngModel)]="numberOfIterations" min="1" max="10000" step="1"/>
 				</label>
 			</div>
 			<div class="flex-r h-center h-spaced lv-spaced strong v-padding">
 				<label for="prefixInput" class="flex-c h-center">
 					<span data-title="Text to add before each iteration">Prefix:</span>
-					<input type="text" .name="prefixInput" [(ngModel)]="prefixInput"/>
+					<input type="text" name="prefixInput" [(ngModel)]="prefixInput"/>
 				</label>
 				<label for="bodyInput" class="flex-c h-center">
 					<span data-title="Text to use as body (leave empty to use iteration value)">Body:</span>
-					<input type="text" .name="bodyInput" [(ngModel)]="bodyInput"/>
+					<input type="text" name="bodyInput" [(ngModel)]="bodyInput"/>
 				</label>
 				<label for="suffixInput" class="flex-c h-center">
 					<span data-title="Text to add after each iteration">Suffix:</span>
-					<input type="text" .name="suffixInput" [(ngModel)]="suffixInput"/>
+					<input type="text" name="suffixInput" [(ngModel)]="suffixInput"/>
 				</label>
 			</div>
 			<div class="flex-c height-500 width-full v-padding">
@@ -32,13 +32,13 @@
 				<label><input type="checkbox" name="numeric" [(ngModel)]="numeric" (change)="onAlphaNumericChange()"/><span data-title="Use Numeric Characters in Your Base"> Numeric</span></label>
 				<label for="arbitraryCharacterInput">
 					<span data-title="Additional characters to use in iteration">Arbitrary Characters:</span>
-					<input type="text" .name="arbitraryCharacterInput" [(ngModel)]="arbitraryCharacterInput" (input)="onArbitraryCharacterInputChange()"/>
+					<input type="text" name="arbitraryCharacterInput" [(ngModel)]="arbitraryCharacterInput" (input)="onArbitraryCharacterInputChange()"/>
 				</label>
 			</div>
 		</div>
 		<div class="flex-r h-center h-spaced v-padding">
-			<button .type="button" (click)="generateIt()">Generate</button>
-			<button type="button" .(click)="reset()">⎚&nbsp;Reset</button>
+			<button type="button" (click)="generateIt()">Generate</button>
+			<button type="button" (click)="reset()">⎚&nbsp;Reset</button>
 		</div>
 	</form>
 </div>

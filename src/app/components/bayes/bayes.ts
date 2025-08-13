@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, signal, computed} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {DecimalPipe} from '@angular/common';
 
@@ -9,37 +9,30 @@ import {DecimalPipe} from '@angular/common';
 	imports: [FormsModule, DecimalPipe]
 })
 export class BayesComponent {
-	suspicion: number | null = null;
-	confirmedSuspicion: number | null = null;
-	falseSuspicion: number | null = null;
-	confirmedFalseSuspicion: number | null = null;
-	answer: number | null = null;
-	rawAnswer: number = 0;
+	suspicion = signal<number | null>(null);
+	confirmedSuspicion = signal<number | null>(null);
 
-	onSuspicionChange(): void {
-		if (this.suspicion === null || this.suspicion < 0 || this.suspicion > 100) {
-			return;
+	// Computed signals for derived values
+	falseSuspicion = computed(() => {
+		const suspicionVal = this.suspicion();
+		return suspicionVal !== null ? 100 - suspicionVal : null;
+	});
+
+	confirmedFalseSuspicion = computed(() => {
+		const confirmedSuspicionVal = this.confirmedSuspicion();
+		return confirmedSuspicionVal !== null ? 100 - confirmedSuspicionVal : null;
+	});
+
+	rawAnswer = computed(() => {
+		const suspicionVal = this.suspicion();
+		const confirmedSuspicionVal = this.confirmedSuspicion();
+		const falseSuspicionVal = this.falseSuspicion();
+		const confirmedFalseSuspicionVal = this.confirmedFalseSuspicion();
+
+		if (suspicionVal === null || confirmedSuspicionVal === null ||
+			falseSuspicionVal === null || confirmedFalseSuspicionVal === null) {
+			return 0;
 		}
-		this.falseSuspicion = (100 - this.suspicion);
-		this.calculateAnswer();
-	}
-
-	onConfirmedSuspicionChange(): void {
-		if (this.confirmedSuspicion === null || this.confirmedSuspicion < 0 || this.confirmedSuspicion > 100) {
-			return;
-		}
-		this.confirmedFalseSuspicion = (100 - this.confirmedSuspicion);
-		this.calculateAnswer();
-
-	}
-
-	private calculateAnswer(): void {
-		if (this.suspicion === null || this.confirmedSuspicion === null ||
-			this.falseSuspicion === null || this.confirmedFalseSuspicion === null) {
-			return;
-		}
-		const suspicionVal = this.suspicion;
-		const confirmedSuspicionVal = this.confirmedSuspicion;
 
 		// Convert percentage inputs to decimal values
 		const suspicionDecimal = suspicionVal / 100;
@@ -51,30 +44,43 @@ export class BayesComponent {
 		const p_E_NotH = falseSuspicionDecimal * confirmedFalseSuspicionDecimal;
 		const displayAnswer = p_E_H / (p_E_H + p_E_NotH);
 
-		this.rawAnswer = Number((displayAnswer).toFixed(3));
-		this.answer = Math.round(1000 * displayAnswer) / 10;
+		return Number((displayAnswer).toFixed(3));
+	});
 
+	onSuspicionChange(): void {
+		const suspicionVal = this.suspicion();
+		if (suspicionVal === null || suspicionVal < 0 || suspicionVal > 100) {
+			return;
+		}
+		// The falseSuspicion is automatically computed, no manual calculation needed
+	}
+
+	onConfirmedSuspicionChange(): void {
+		const confirmedSuspicionVal = this.confirmedSuspicion();
+		if (confirmedSuspicionVal === null || confirmedSuspicionVal < 0 || confirmedSuspicionVal > 100) {
+			return;
+		}
+		// The confirmedFalseSuspicion is automatically computed, no manual calculation needed
 	}
 
 	reset(): void {
-		this.suspicion = null;
-		this.confirmedSuspicion = null;
-		this.falseSuspicion = null;
-		this.confirmedFalseSuspicion = null;
-		this.rawAnswer = 0;
-		this.answer = null;
+		this.suspicion.set(null);
+		this.confirmedSuspicion.set(null);
+		// falseSuspicion, confirmedFalseSuspicion, rawAnswer, and answer are computed signals
+		// so they will automatically update when the base signals are reset
 	}
 
 	regenerateIt(): void {
-		if (this.rawAnswer === null || this.rawAnswer === 0) {
-			this.suspicion = this.rawAnswer;
+		const rawAnswerVal = this.rawAnswer();
+		if (rawAnswerVal === null || rawAnswerVal === 0) {
+			this.suspicion.set(rawAnswerVal);
 			this.onSuspicionChange();
 		}
 
-		const suspicionVal = this.suspicion;
-		const confirmedSuspicionVal = this.confirmedSuspicion;
-		const falseSuspicionVal = this.falseSuspicion;
-		const confirmedFalseSuspicionVal = this.confirmedFalseSuspicion;
+		const suspicionVal = this.suspicion();
+		const confirmedSuspicionVal = this.confirmedSuspicion();
+		const falseSuspicionVal = this.falseSuspicion();
+		const confirmedFalseSuspicionVal = this.confirmedFalseSuspicion();
 
 		if (suspicionVal !== null && confirmedSuspicionVal !== null &&
 			falseSuspicionVal !== null && confirmedFalseSuspicionVal !== null) {
@@ -83,16 +89,16 @@ export class BayesComponent {
 			const p_E_NotH = falseSuspicionVal * confirmedFalseSuspicionVal;
 			const displayAnswer = p_E_H / (p_E_H + p_E_NotH);
 
-			this.rawAnswer = Number((displayAnswer).toFixed(3));
-			this.suspicion = Math.round(1000 * displayAnswer) / 10;
+			const newRawAnswer = Number((displayAnswer).toFixed(3));
+			const newSuspicion = Math.round(1000 * displayAnswer) / 10;
+			this.suspicion.set(newSuspicion);
 			this.onSuspicionChange();
-			this.calculateAnswer();
 		} else {
 			this.reset();
 		}
 	}
 
 	get startButtonLabel(): string {
-		return !this.rawAnswer ? '✓ Start' : '♺ Reuse';
+		return !this.rawAnswer() ? '✓ Start' : '♺ Reuse';
 	}
 }

@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {CommonModule, NgOptimizedImage} from '@angular/common';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule],
+	imports: [CommonModule, NgOptimizedImage],
   templateUrl: './home.html',
   styleUrls: ['./home.scss']
 })

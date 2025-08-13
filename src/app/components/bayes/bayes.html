@@ -9,30 +9,30 @@
 			<div class="flex-r h-center h-spaced lv-spaced strong v-padding">
 				<label for="suspicion">
 					<span data-title="Known Positive Probibility">P(H)%:</span>
-					<input type="number" name="suspicion" [(ngModel)]="suspicion" (keyup)="onSuspicionChange()" min="0" max="100" step="1"/>
+					<input type="number" name="suspicion" [ngModel]="suspicion()" (ngModelChange)="suspicion.set($event); onSuspicionChange()" min="0" max="100" step="1"/>
 				</label>
 				<label for="confirmedSuspicion">
 					<span data-title="Confirmed Positive With Test">P(E|H)%:</span>
-					<input type="number" name="confirmedSuspicion" [(ngModel)]="confirmedSuspicion" (keyup)="onConfirmedSuspicionChange()" min="0" max="100" step="1"/>
+					<input type="number" name="confirmedSuspicion" [ngModel]="confirmedSuspicion()" (ngModelChange)="confirmedSuspicion.set($event); onConfirmedSuspicionChange()" min="0" max="100" step="1"/>
 				</label>
 				<label for="falseSuspicion">
 					<span data-title="Known Negative Probibility">P(¬H)%:</span>
-					<input type="number" name="falseSuspicion" [value]="falseSuspicion | number:'1.3-3'" min="0" max="100" readonly="readonly"/>
+					<input type="number" name="falseSuspicion" [value]="falseSuspicion() | number:'1.3-3'" min="0" max="100" readonly="readonly"/>
 				</label>
 				<label for="confirmedFalseSuspicion">
 					<span data-title="Confirmed Negative With Test">P(E|¬H)%:</span>
-					<input type="number" name="confirmedFalseSuspicion" [value]="confirmedFalseSuspicion | number:'1.3-3'" min="0" max="100" readonly="readonly"/>
+					<input type="number" name="confirmedFalseSuspicion" [value]="confirmedFalseSuspicion() | number:'1.3-3'" min="0" max="100" readonly="readonly"/>
 				</label>
 			</div>
 			<div class="flex-r h-center h-spaced lv-spaced strong v-padding">
 				<label for="answer">
 					<span data-title="New Known Probibility">P(H|E)%:</span>
-					<input type="number" name="answer" [value]="rawAnswer * 100 | number:'1.3-3'" min="0" max="100" readonly="readonly"/>
+					<input type="number" name="answer" [value]="rawAnswer() * 100 | number:'1.3-3'" min="0" max="100" readonly="readonly"/>
 				</label>
 			</div>
 			<div class="flex-r h-center h-spaced lv-spaced strong v-padding">
-				<button type="button" (click)="regenerateIt()">{{ startButtonLabel }}</button>
-				<button type="button" (click)="reset()">⎚&nbsp;Reset</button>
+				<button type="button" class="btn btn-primary" (click)="regenerateIt()">{{ startButtonLabel }}</button>
+				<button type="button" class="btn btn-reset" (click)="reset()">⎚&nbsp;Reset</button>
 			</div>
 		</div>
 	</form>

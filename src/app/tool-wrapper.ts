@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule, NavigationEnd } from '@angular/router';
 import { AuthService } from '@services/auth.service';
-import { CommonModule } from '@angular/common';
+import {CommonModule, NgOptimizedImage} from '@angular/common';
 import { filter, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-tool-wrapper',
-  imports: [CommonModule, RouterModule],
+	imports: [CommonModule, RouterModule, NgOptimizedImage],
   templateUrl: './tool-wrapper.html',
   styleUrls: ['./tool-wrapper.scss']
 })

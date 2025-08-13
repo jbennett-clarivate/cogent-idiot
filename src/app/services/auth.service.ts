@@ -21,7 +21,7 @@ export interface AuthStatus {
 })
 export class AuthService {
   private baseUrl: string;
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  private isAuthenticatedSubject = new BehaviorSubject<boolean | null>(null);
   private currentUserSubject = new BehaviorSubject<string | null>(null);
 
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();

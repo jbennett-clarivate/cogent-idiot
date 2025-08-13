@@ -1,25 +1,89 @@
+// Component-specific styling for safecron
+// Note: Basic flex utilities, .white-bg, .strong, .v-padding, .top-spaced are defined globally
+
+// Form layout extensions
+.lv-spaced {
+  align-items: stretch;
+}
+
+label {
+  // Extends global label styles for this component
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: left;
+
+  span {
+    font-size: 0.9rem;
+    color: #333;
+    font-weight: 600;
+  }
+}
+
+// Button container styling
+.width-limit {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+}
+
+// Meeting/downtime display - specific to this component
+.flex-r.h-center.h-spaced.v-padding {
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-top: 1rem;
+
+  div {
+    font-size: 1rem;
+    color: #495057;
+
+    span {
+      font-weight: bold;
+      color: #007bff;
+    }
+  }
+}
+
+// Cron container styling - component specific
 .cron-container {
-  margin-top: 2em;
-  margin-bottom: 2em;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
   display: flex;
   justify-content: center;
 }
 
 .cron-chart {
-  min-height: 300px;
-  min-width: 300px;
+  min-height: 400px;
+  min-width: 600px;
   background: #fff;
-  border: 1px solid #ccc;
+  border: 2px solid #e1e5e9;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: auto;
+  padding: 1rem;
 }
 
-.widthLimit {
-  min-width: 120px;
-  max-width: 200px;
+// Responsive design
+@media (max-width: 768px) {
+  .flex-c.h-center.h-spaced.lv-spaced.strong.v-padding {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .flex-r.h-center.h-spaced.v-padding {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .cron-chart {
+    min-width: 100%;
+    min-height: 300px;
+  }
 }
 
+// Legacy class support
 .standard-button-action {
   margin-right: 1em;
 }
