@@ -83,8 +83,7 @@ input[type="file"] {
 }
 
 /* Standard Input */
-.standard-input {
-  width: 9em;
+input:not([type="range"]):not(.non-standard-input) {
   box-sizing: border-box;
   padding: 8px;
   border: 1px solid #ccc;
@@ -92,7 +91,7 @@ input[type="file"] {
 }
 
 /* Standard Buttons */
-.standard-button-action {
+button:not(.non-standard-button-action):not(.non-standard-button-reset) {
   background-color: #00b318;
   color: white;
   border: none;
@@ -101,31 +100,12 @@ input[type="file"] {
   cursor: pointer;
 }
 
-.standard-button-action:hover {
+button:not(.non-standard-button-action):not(.non-standard-button-reset):hover {
   background-color: #009f16;
 }
 
-.standard-button-action:disabled {
+button:not(.non-standard-button-action):not(.non-standard-button-reset):disabled {
   background-color: #6c757d;
-  cursor: not-allowed;
-}
-
-.standard-button-reset {
-  background-color: #f8f9fa;
-  color: #212529;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  padding: 8px 16px;
-  cursor: pointer;
-}
-
-.standard-button-reset:hover {
-  background-color: #e2e6ea;
-}
-
-.standard-button-reset:disabled {
-  background-color: #f8f9fa;
-  color: #6c757d;
   cursor: not-allowed;
 }
 

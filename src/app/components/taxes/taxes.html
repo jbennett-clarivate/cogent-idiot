@@ -3,13 +3,13 @@
     <div class="flex-c h-center h-spaced lv-spaced strong v-padding">
       <label for="corporateInput" class="pull-left">
         Corporate:&nbsp;
-        <input id="corporateInput" type="text" class="standard-input" maxlength="12" [(ngModel)]="corporate" name="corporate" [disabled]="taxType !== 'Corporate'" />
+        <input id="corporateInput" type="text" .maxlength="12" [(ngModel)]="corporate" name="corporate" [disabled]="taxType !== 'Corporate'" />
       </label>
       <label for="personalInput" class="pull-right">
         Personal:&nbsp;
-        <input id="personalInput" type="text" class="standard-input" maxlength="12" [(ngModel)]="personal" name="personal" [disabled]="taxType !== 'Personal'" />
+        <input id="personalInput" type="text" .maxlength="12" [(ngModel)]="personal" name="personal" [disabled]="taxType !== 'Personal'" />
       </label>
-      <select id="tax-types" class="standard-input widthLimit" [(ngModel)]="taxType" name="taxType">
+      <select id="tax-types" .[(ngModel)]="taxType" name="taxType">
         <option disabled value="">--Tax Type--</option>
         <option value="Personal">Personal</option>
         <option value="Corporate">Corporate</option>
@@ -18,15 +18,15 @@
     <div class="flex-c h-center v-padding">
       <label for="quantityInput">
         Quantity:&nbsp;
-        <input id="quantityInput" type="number" class="standard-input" [(ngModel)]="quantity" name="quantity" [min]="minTaxable" [max]="maxTaxable" />
+        <input id="quantityInput" type="number" .[(ngModel)]="quantity" name="quantity" [min]="minTaxable" [max]="maxTaxable" />
       </label>
     </div>
     <div class="tax-container">
       <div id="taxPlot" class="tax-chart" style="padding: 0px; position: relative;"></div>
     </div>
     <div class="flex-r h-center h-spaced v-padding">
-      <button type="button" class="standard-button-action" (click)="showTaxes()">Show Taxes</button>
-      <button type="button" class="standard-button-reset" (click)="reset()">Reset Taxes</button>
+      <button type="button" .(click)="showTaxes()">Show Taxes</button>
+      <button type="button" .(click)="reset()">Reset Taxes</button>
     </div>
   </form>
 </div>

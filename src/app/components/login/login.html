@@ -21,7 +21,7 @@
         name="username"
         [disabled]="showPasswordField"
         (keyup.enter)="onFirstNext()"
-        class="form-control">
+        class="form-control non-standard-input">
     </div>
 
     <!-- Password field (only shown after first Next) -->
@@ -35,7 +35,7 @@
           [(ngModel)]="password"
           name="password"
           (keyup.enter)="onSecondNext()"
-          class="form-control">
+          class="form-control non-standard-input">
       </div>
     }
 
@@ -48,22 +48,26 @@
 
     <!-- First Next button (step #7) -->
     @if (!showPasswordField) {
-      <button
-        type="button"
-        class="btn btn-primary"
-        (click)="onFirstNext()">
-        Next
-      </button>
+			<div class="form-group">
+				<button
+					type="button"
+					class="btn btn-primary non-standard-button-action"
+					(click)="onFirstNext()">
+					Next
+				</button>
+			</div>
     }
 
     <!-- Second Next button (different functionality) -->
     @if (showPasswordField) {
-      <button
-        type="button"
-        class="btn btn-primary"
-        (click)="onSecondNext()">
-        Login
-      </button>
+			<div class="form-group">
+				<button
+					type="button"
+					class="btn btn-primary non-standard-button-action"
+					(click)="onSecondNext()">
+					Login
+				</button>
+			</div>
     }
   </div>
 </div>

@@ -4,16 +4,16 @@
       <div class="flex-c h-center h-spaced lv-spaced strong v-padding">
         <label for="visibleMessageInput" class="flex-c h-center">
           <span data-title="Visible message for Teams">Visible Message:</span>
-          <input type="text" class="standard-input message-input" name="visibleMessageInput" [(ngModel)]="visibleMessage"/>
+          <input type="text" .name="visibleMessageInput" [(ngModel)]="visibleMessage"/>
         </label>
         <label for="titleMessageInput" class="flex-c h-center">
           <span data-title="Message title (tooltip)">Title:</span>
-          <input type="text" class="standard-input message-input" name="titleMessageInput" [(ngModel)]="titleMessage"/>
+          <input type="text" .name="titleMessageInput" [(ngModel)]="titleMessage"/>
         </label>
       </div>
       <div class="flex-r h-center h-spaced v-padding">
-        <button class="standard-button-action" type="button" (click)="createTeamsMessage()">Construct Message</button>
-        <button type="button" class="standard-button-reset" (click)="reset()">Reset</button>
+        <button .type="button" (click)="createTeamsMessage()">Construct Message</button>
+        <button type="button" .(click)="reset()">Reset</button>
       </div>
       <div class="flex-c height-500 width-full v-padding">
         <label class="top-spaced">Output:</label>

@@ -4,11 +4,11 @@
     <div class="flex-c h-center h-spaced lv-spaced strong v-padding">
       <label for="nInput">
         <span>N:</span>
-        <input id="nInput" type="text" class="standard-input digitonly" placeholder="N" [value]="n" (input)="onNInput($event)" [attr.max]="maxInputValue" />
+        <input id="nInput" type="text" .placeholder="N" [value]="n" (input)="onNInput($event)" [attr.max]="maxInputValue" />
       </label>
       <label for="kInput">
         <span>K:</span>
-        <input id="kInput" type="text" class="standard-input digitonly" placeholder="K" [value]="k" (input)="onKInput($event)" [attr.max]="n" />
+        <input id="kInput" type="text" .placeholder="K" [value]="k" (input)="onKInput($event)" [attr.max]="n" />
       </label>
       <div class="formula">
         <span>nCk = </span>
@@ -36,7 +36,7 @@
     </div>
 
     <div class="flex-r h-center h-spaced v-padding">
-      <button type="button" class="standard-button-reset" (click)="reset()">Reset</button>
+      <button type="button" .(click)="reset()">Reset</button>
     </div>
   </form>
 </div>
