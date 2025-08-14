@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 
 // Environment detection
 let pool;
-const isLocalhost = !process.env.DB_HOST || process.env.DB_HOST === 'localhost' || process.env.NODE_ENV === 'development';
+const isLocalhost = (process.env.DB_HOST === 'localhost') && (process.env.NODE_ENV === 'development');
 const API_URL = process.env.API_URL || (isLocalhost ? 'http://localhost:3000' : '');
 
 // Database pool setup for production
