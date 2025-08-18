@@ -9,15 +9,22 @@ const helmet = require('helmet');
 const crypto = require('crypto');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
+const isLocalhost = (process.env.DB_HOST === 'localhost') && (process.env.NODE_ENV === 'development');
+const isGoDaddy = process.env.HOSTING_PROVIDER === 'godaddy' || process.env.NODE_ENV === 'production';
 const app = express();
+
+if (!isLocalhost) {
+  if (!isGoDaddy) {
+    app.set('trust proxy', 1);  }
+}
+
+const FileStore = require('session-file-store')(session);
+
 const PORT = process.env.PORT || 3000;
 
-// Environment detection
 let pool;
-const isLocalhost = (process.env.DB_HOST === 'localhost') && (process.env.NODE_ENV === 'development');
 const API_URL = process.env.API_URL || (isLocalhost ? 'http://localhost:3000' : '');
 
-// Database pool setup for production
 if (!isLocalhost) {
   pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -30,17 +37,14 @@ if (!isLocalhost) {
   });
 }
 
-// Configure CORS based on environment
 const corsOptions = {
   origin: isLocalhost ?
-    ['http://localhost:4200', 'http://localhost:3000'] : // Allow Angular dev server in local mode
-    process.env.ALLOWED_ORIGIN || true,
+    ['http://localhost:4200', 'http://localhost:3000'] :    process.env.ALLOWED_ORIGIN || true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
   optionsSuccessStatus: 200
 };
 
-// Apply CORS with environment-specific configuration
 app.use(cors(corsOptions));
 
 app.use(helmet({
@@ -63,20 +67,44 @@ app.use(helmet({
   referrerPolicy: { policy: 'same-origin' }
 }));
 
-app.use(session({
+const sessionConfig = {
   secret: process.env.SESSION_SECRET || 'default_secret_for_development',
-  resave: false,
-  saveUninitialized: true, 
-  cookie: {
-    secure: !isLocalhost, // Use secure cookies in production
-    maxAge: 24 * 60 * 60 * 1000
-  }
-}));
+  resave: true,  saveUninitialized: true,
+  rolling: true,  cookie: {
+    secure: false,    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000,
+    sameSite: 'lax'  }
+};
+
+if (isGoDaddy || !isLocalhost) {
+  sessionConfig.store = new FileStore({
+    path: './sessions',
+    ttl: 86400,    retries: 2,
+    reapInterval: 3600,    logFn: function(message) {
+      console.log('FileStore:', message);
+    }
+  });
+  console.log('Using FileStore for session management');
+} else {
+  console.log('Using default MemoryStore for session management');
+}
+
+app.use(session(sessionConfig));
+
+app.use((req, res, next) => {
+  console.log('Session ID:', req.sessionID);
+  console.log('Session data:', JSON.stringify(req.session, null, 2));
+  next();
+});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public_html'), {
   setHeaders: (res, path) => {
     if (path.match(/\.(otf|ico|pdf|flv)$/)) {
@@ -91,10 +119,8 @@ app.use(express.static(path.join(__dirname, 'public_html'), {
   }
 }));
 
-// Add API URL info to requests
 app.use((req, res, next) => {
   req.apiBase = isLocalhost ? API_URL : '';
-  // Add X-Environment header to indicate environment
   res.setHeader('X-Environment', isLocalhost ? 'development' : 'production');
   next();
 });
@@ -122,7 +148,7 @@ const mockDatabase = {
  * @returns True if the strings are equal, false otherwise.
  */
 function safeStringCompare(str1, str2, caseSensitive = false) {
-	if (str1 == null || str2 == null) {
+	if (str1 === null || str2 === null) {
 		return str1 === str2;
 	}
 
@@ -154,7 +180,6 @@ async function queryDatabase(query, params) {
   }
 }
 
-// Define auth middleware
 const requireAuth = (req, res, next) => {
   if (req.session && req.session.login) {
     return next();
@@ -163,18 +188,21 @@ const requireAuth = (req, res, next) => {
   }
 };
 
-// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
     message: 'Server is running',
     environment: isLocalhost ? 'development' : 'production',
-    apiUrl: req.apiBase
+    apiUrl: req.apiBase,
+    timestamp: new Date().toISOString()
   });
 });
 
-// Auth routes
 app.get('/api/auth/pepper', (req, res) => {
+  console.log('=== PEPPER REQUEST START ===');
+  console.log('Session before pepper generation:', JSON.stringify(req.session, null, 2));
+  console.log('Session ID:', req.sessionID);
+  
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.set('Pragma', 'no-cache');
   res.set('Expires', '0');
@@ -187,10 +215,27 @@ app.get('/api/auth/pepper', (req, res) => {
   }
 
   req.session.pepper = pepper;
-  res.json({ pepper });
+  console.log('Generated pepper:', pepper);
+  console.log('Session after pepper storage:', JSON.stringify(req.session, null, 2));
+  
+  req.session.save((err) => {
+    if (err) {
+      console.error('Session save error:', err);
+      return res.status(500).json({ error: 'Session save failed' });
+    }
+    
+    console.log('Pepper session saved successfully');
+    console.log('=== PEPPER REQUEST END ===');
+    res.json({ pepper });
+  });
 });
 
 app.post('/api/auth/salt', async (req, res) => {
+  console.log('=== SALT REQUEST START ===');
+  console.log('Request body:', req.body);
+  console.log('Session before salt lookup:', JSON.stringify(req.session, null, 2));
+  console.log('Session ID:', req.sessionID);
+  
   const { username } = req.body;
 
   if (!username || username.length > 256) {
@@ -209,13 +254,27 @@ app.post('/api/auth/salt', async (req, res) => {
         return res.status(404).json({error: 'User not found'});
       }
     } else {
-      rows.push({SALT: "salt123"});
+      const slt = "salt123";
+      console.info("Mock salt: " + slt);
+      rows.push({SALT: slt});
     }
 
     req.session.username = username.toLowerCase().trim();
     req.session.salt = rows[0].SALT;
+    
+    console.log('Session after storing username and salt:', JSON.stringify(req.session, null, 2));
+    
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ error: 'Session save failed' });
+      }
+      
+      console.log('Session saved successfully');
+      console.log('=== SALT REQUEST END ===');
+      res.json({ salt: rows[0].SALT });
+    });
 
-    res.json({ salt: rows[0].SALT });
   } catch (error) {
     console.error('Database error:', error);
     res.status(500).json({ error: 'Server error' });
@@ -223,12 +282,25 @@ app.post('/api/auth/salt', async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
+  console.log('=== LOGIN REQUEST START ===');
+  console.log('Request body:', req.body);
+  console.log('Session before login:', JSON.stringify(req.session, null, 2));
+  
   const { hashedPepperedPassword } = req.body;
   const { username, salt, pepper } = req.session;
 
+  console.log('Extracted session values:', { username, salt, pepper: pepper ? 'present' : 'missing' });
+
   if (!hashedPepperedPassword || !username || !salt || !pepper) {
-    console.log('Missing session data:', { hashedPepperedPassword: !!hashedPepperedPassword, username, salt, pepper });
-    return res.status(400).json({ error: 'Invalid login attempt' });
+    console.log('Missing session data:', { 
+      hashedPepperedPassword: !!hashedPepperedPassword, 
+      username: username || 'missing', 
+      salt: salt || 'missing', 
+      pepper: pepper || 'missing',
+      sessionID: req.sessionID,
+      fullSession: req.session
+    });
+    return res.status(400).json({ error: 'Invalid login attempt - session data missing' });
   }
 
   try {
@@ -243,8 +315,6 @@ app.post('/api/login', async (req, res) => {
         return res.status(401).json({error: 'Authentication failed'});
       }
     } else {
-      // Mock DHP: sha256(salt + password) - matching frontend calculation order
-      // For test user with password '123456' and salt 'salt123'
       const mockDHP = crypto.createHash('sha256').update('salt123' + '123456').digest('hex');
       rows.push({PASSWORD: mockDHP, EMAIL: 'test@example.com'});
     }
@@ -268,14 +338,18 @@ app.post('/api/login', async (req, res) => {
 		  delete req.session.salt;
 		  delete req.session.pepper;
 
+		  console.log('Login successful, session after cleanup:', JSON.stringify(req.session, null, 2));
 		  res.json({success: true, email});
 	  } else {
+		  console.log('Password hash mismatch');
 		  res.status(401).json({error: 'Authentication failed'});
 	  }
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Server error' });
   }
+  
+  console.log('=== LOGIN REQUEST END ===');
 });
 
 app.get('/api/auth/status', (req, res) => {
@@ -313,7 +387,6 @@ app.post('/api/auth/refresh', (req, res) => {
   }
 });
 
-// Tools API endpoint
 app.get('/api/tools', (req, res) => {
   const tools = [
     { id: 'bayes', name: 'Bayes Calculator', description: 'Calculate Bayesian probabilities' },
@@ -329,7 +402,6 @@ app.get('/api/tools', (req, res) => {
   res.json(tools);
 });
 
-// If in local development and external API_URL is specified, set up proxy for external APIs
 if (isLocalhost && process.env.API_URL && process.env.API_URL !== 'http://localhost:3000') {
   app.use('/external-api', createProxyMiddleware({
     target: process.env.API_URL,
@@ -339,26 +411,51 @@ if (isLocalhost && process.env.API_URL && process.env.API_URL !== 'http://localh
     },
     logLevel: 'debug',
     onProxyReq: (proxyReq, req, res) => {
-      // Add source header for tracking
       proxyReq.setHeader('X-Source', 'local-proxy');
     }
   }));
   console.log(`Proxying external API requests to ${process.env.API_URL}`);
 }
 
-// Catch-all route for SPA
+app.use((err, req, res, next) => {
+  console.error('Express error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
 app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api') && !req.path.includes('.')) {
-    if (!req.session || !req.session.login) {
-      if (req.path !== '/login') {
-        return res.redirect('/login');
-      }
+  console.log(`Catch-all route hit: ${req.path}`);
+  
+  if (req.path.startsWith('/api') || req.path.includes('.')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  
+  if (!req.session || !req.session.login) {
+    if (req.path !== '/login') {
+      return res.redirect('/login');
     }
   }
-  res.sendFile(path.join(__dirname, 'public_html/index.html'));
+  
+  const indexPath = path.join(__dirname, 'public_html/index.html');
+  console.log(`Serving index.html from: ${indexPath}`);
+  
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Error serving index.html:', err);
+      res.status(500).send('Error loading page');
+    }
+  });
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
 app.listen(PORT, () => {
   console.log(`Server running in ${isLocalhost ? 'DEVELOPMENT' : 'PRODUCTION'} mode on port ${PORT}`);
   console.log(`API base URL: ${API_URL || 'Using relative paths'}`);
+  console.log(`Trust proxy enabled: ${app.get('trust proxy')}`);
 });
