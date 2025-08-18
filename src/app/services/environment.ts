@@ -1,20 +1,21 @@
 import { Injectable } from '@angular/core';
+import { AppUtils } from './app-utils';
 
 @Injectable({
   providedIn: 'root'
 })
-export class EnvironmentService {
-  private _isLocalhost: boolean;
-  private _apiBaseUrl: string;
+export class Environment {
+  private readonly _isLocalhost: boolean;
+  private readonly _apiBaseUrl: string;
 
-  constructor() {
+  constructor(private appUtils: AppUtils) {
     this._isLocalhost = this.detectLocalhost();
     this._apiBaseUrl = this.getApiBaseUrl();
   }
 
   private detectLocalhost(): boolean {
     const hostname = window.location.hostname;
-    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+    return this.appUtils.safeStringCompare(hostname, 'localhost') || hostname === '127.0.0.1' || hostname === '::1';
   }
 
   private getApiBaseUrl(): string {

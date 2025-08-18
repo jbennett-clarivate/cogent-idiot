@@ -114,6 +114,24 @@ const mockDatabase = {
   ]
 };
 
+/**
+ * Compares two strings in a safe manner, handling null or undefined values.
+ * @param str1 - The first string to compare.
+ * @param str2 - The second string to compare.
+ * @param caseSensitive - Whether the comparison should be case-sensitive.
+ * @returns True if the strings are equal, false otherwise.
+ */
+function safeStringCompare(str1, str2, caseSensitive = false) {
+	if (str1 == null || str2 == null) {
+		return str1 === str2;
+	}
+
+	const s1 = String(str1);
+	const s2 = String(str2);
+
+	return caseSensitive ? s1 === s2 : s1.toLowerCase() === s2.toLowerCase();
+}
+
 async function queryDatabase(query, params) {
   if (isLocalhost) {
     console.log('Mock DB Query:', query, 'Params:', params);
@@ -242,18 +260,18 @@ app.post('/api/login', async (req, res) => {
     console.log('Expected hash:', expectedHash);
     console.log('Received hash:', hashedPepperedPassword);
 
-    if (expectedHash === hashedPepperedPassword) {
-      req.session.login = email;
-      req.session.logged_in_at = Math.floor(Date.now() / 1000);
+	  if (safeStringCompare(expectedHash, hashedPepperedPassword)) {
+		  req.session.login = email;
+		  req.session.logged_in_at = Math.floor(Date.now() / 1000);
 
-      delete req.session.username;
-      delete req.session.salt;
-      delete req.session.pepper;
+		  delete req.session.username;
+		  delete req.session.salt;
+		  delete req.session.pepper;
 
-      res.json({ success: true, email });
-    } else {
-      res.status(401).json({ error: 'Authentication failed' });
-    }
+		  res.json({success: true, email});
+	  } else {
+		  res.status(401).json({error: 'Authentication failed'});
+	  }
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Server error' });

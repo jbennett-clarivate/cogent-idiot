@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { map, tap, catchError } from 'rxjs/operators';
-import { EnvironmentService } from './environment.service';
+import { tap, catchError } from 'rxjs/operators';
+import { Environment } from './environment';
 
 export interface AuthResponse {
   success: boolean;
@@ -27,7 +27,7 @@ export class AuthService {
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient, private environmentService: EnvironmentService) {
+  constructor(private http: HttpClient, private environmentService: Environment) {
     this.baseUrl = this.environmentService.apiBaseUrl;
     this.checkAuthStatus();
   }

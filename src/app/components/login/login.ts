@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '@services/auth.service';
-import { EnvironmentService } from '@services/environment.service';
+import { Environment } from '@services/environment';
 
 @Component({
   selector: 'app-login',
@@ -27,7 +27,7 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private http: HttpClient,
     private authService: AuthService,
-    private environmentService: EnvironmentService
+    private environmentService: Environment
   ) {
     this.baseUrl = this.environmentService.apiBaseUrl;
   }
