@@ -45,8 +45,8 @@ export class HomeComponent {
     {
       name: 'Message Tool',
       description: 'Message handling utilities',
-      icon: 'message.svg',
-      route: '/tools/message'
+      icon: 'localtime.svg',
+      route: '/tools/localtime'
     },
     {
       name: 'Pascal Triangle',

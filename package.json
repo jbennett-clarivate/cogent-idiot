@@ -31,6 +31,7 @@
     "helmet": "^8.1.0",
     "mysql2": "^3.14.3",
     "rxjs": "~7.8.0",
+    "session-file-store": "^1.5.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
@@ -38,6 +39,7 @@
     "@angular-devkit/build-angular": "^20.0.0",
     "@angular/cli": "^20.0.0",
     "@angular/compiler-cli": "^20.0.0",
+    "@types/express-session": "^1.18.2",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^18.19.122",
     "concurrently": "^7.6.0",

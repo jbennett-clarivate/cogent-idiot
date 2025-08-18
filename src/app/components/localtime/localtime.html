@@ -1,0 +1,42 @@
+<div class="white-bg">
+  <div class="container">
+    <div class="header">
+      <h2>Log Time Converter</h2>
+      <p>Convert log timestamps to your browser's local timezone</p>
+    </div>
+
+    <div class="input-section">
+      <label for="logInput">Log Timestamp:</label>
+      <input
+        id="logInput"
+        type="text"
+        [(ngModel)]="logInput"
+        placeholder="Enter log timestamp (e.g., YYYY-MM-DD HH:mm:ss,nnn)"
+        class="timestamp-input"
+      />
+      <div class="button-group">
+        <button type="button" (click)="translateLocaltime()" class="convert-btn">Convert</button>
+        <button type="button" (click)="reset()" class="reset-btn">Reset</button>
+      </div>
+    </div>
+
+    @if (hasOutput) {
+      <div class="output-section">
+        <label>Your Local Time:</label>
+        @if (localtimeOutput) {
+          <div class="output-box">
+            {{ localtimeOutput }}
+          </div>
+        }
+        @if (errorMessage) {
+          <div class="error-box">
+            {{ errorMessage }}
+          </div>
+        }
+      </div>
+    }
+    @else {
+      <ng-template></ng-template>
+    }
+  </div>
+</div>
