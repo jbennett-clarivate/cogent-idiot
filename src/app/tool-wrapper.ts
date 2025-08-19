@@ -18,7 +18,7 @@ export class ToolWrapperComponent {
     { name: 'List Comparator', icon: 'comparator.svg', route: '/tools/comparator' },
     { name: 'List Iterator', icon: 'iterator.svg', route: '/tools/iterator' },
     { name: 'List Random', icon: 'random.svg', route: '/tools/random' },
-    { name: 'Message Tool', icon: 'localtime.svg', route: '/tools/localtime' },
+    { name: 'TZ Tool', icon: 'localtime.svg', route: '/tools/localtime' },
     { name: 'Pascal Triangle', icon: 'pascal.svg', route: '/tools/pascal' },
     { name: 'Safe Cron', icon: 'cron.svg', route: '/tools/safecron' },
     { name: 'Tax Calculator', icon: 'taxes.svg', route: '/tools/taxes' }

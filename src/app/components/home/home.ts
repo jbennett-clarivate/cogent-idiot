@@ -43,8 +43,8 @@ export class HomeComponent {
       route: '/tools/random'
     },
     {
-      name: 'Message Tool',
-      description: 'Message handling utilities',
+      name: 'TZ Tool',
+      description: 'Converts log dates to localized datetimes',
       icon: 'localtime.svg',
       route: '/tools/localtime'
     },

@@ -394,7 +394,7 @@ app.get('/api/tools', (req, res) => {
     { id: 'listcomparator', name: 'List Comparator', description: 'Compare two lists' },
     { id: 'listiterator', name: 'List Iterator', description: 'Iterate through list items' },
     { id: 'listrandom', name: 'List Randomizer', description: 'Randomize list order' },
-    { id: 'message', name: 'Message Tool', description: 'Send messages' },
+    { id: 'message', name: 'TZ Tool', description: 'Send messages' },
     { id: 'pascal', name: 'Pascal Calculator', description: 'Pascal triangle calculations' },
     { id: 'safecron', name: 'Safe Cron', description: 'Manage cron jobs safely' },
     { id: 'taxes', name: 'Tax Calculator', description: 'Calculate taxes' }
