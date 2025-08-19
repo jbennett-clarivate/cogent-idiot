@@ -6,7 +6,7 @@
 </div>
 <div class="login-container">
   <div class="login-form">
-    <h2>Login</h2>
+    <h2 class="free-size">Login</h2>
 
     <!-- Step #6: Hidden inputs for pepper, salt, and username -->
     <input type="hidden" [(ngModel)]="pepper" name="pepper">
@@ -67,12 +67,20 @@
     <!-- Second Next button (different functionality) -->
     @if (showPasswordField) {
 			<div class="form-group">
-				<button
-					type="button"
-					class="btn btn-primary non-standard-button-action"
-					(click)="onSecondNext()">
-					Login
-				</button>
+				<div class="button-row">
+					<button
+						type="button"
+						class="btn btn-primary non-standard-button-action"
+						(click)="onSecondNext()">
+						Login
+					</button>
+					<button
+						type="button"
+						class="btn btn-reset non-standard-button-action"
+						(click)="reset()">
+						Reset
+					</button>
+				</div>
 			</div>
     }
   </div>

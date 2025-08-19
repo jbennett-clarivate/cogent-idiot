@@ -109,6 +109,20 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  reset() {
+    this.username = '';
+    this.password = '';
+    this.salt = '';
+    this.showPasswordField = false;
+    this.errorMessage = '';
+    setTimeout(() => {
+      const usernameInput = document.getElementById('username');
+      if (usernameInput) {
+        (usernameInput as HTMLInputElement).focus();
+      }
+    }, 0);
+  }
+
   private async sha256(message: string): Promise<string> {
     const msgBuffer = new TextEncoder().encode(message);
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);

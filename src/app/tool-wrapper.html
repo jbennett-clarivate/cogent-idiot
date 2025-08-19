@@ -1,7 +1,7 @@
 <div class="tool-bg">
   <div class="toolbar">
     @for (tool of tools; track tool) {
-      <button class="icon-btn non-standard-button-action" [class.active]="isActive(tool.route)" (click)="navigate(tool.route)"
+      <button class="icon-btn non-standard-button-action" [class.active]="isActive(tool.route)" [class.btn-secondary]="isActive(tool.route)" (click)="navigate(tool.route)"
               (mouseenter)="showTooltip($event, 'Navigate to ' + tool.name + ' tool')"
               (mouseleave)="hideTooltip()">
         <img [ngSrc]="'assets/images/' + tool.icon" [alt]="tool.name" width="24" height="24" />
