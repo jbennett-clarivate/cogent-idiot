@@ -9,22 +9,22 @@ import { CommonModule } from '@angular/common';
   imports: [FormsModule, CommonModule]
 })
 export class LocaltimeComponent {
-  logInput = '';
-  localtimeOutput = '';
-  errorMessage = '';
+  logInput: string = '';
+  localtimeOutput: string = '';
+  errorMessage: string = '';
 
-  translateLocaltime() {
+  translateLocaltime(): void {
     this.errorMessage = '';
     this.localtimeOutput = '';
 
-    if (!this.logInput.trim()) {
+    if (!this.logInput) {
       this.errorMessage = 'Please enter a timestamp';
       return;
     }
 
     try {
       // Parse the log timestamp format: 2025-08-18 20:15:38,371
-      const timestamp = this.parseLogTimestamp(this.logInput.trim());
+      const timestamp = this.parseLogTimestamp(this.logInput);
       if (!timestamp) {
         this.errorMessage = 'Invalid timestamp format. Expected: YYYY-MM-DD HH:mm:ss,SSS';
         return;
@@ -39,61 +39,50 @@ export class LocaltimeComponent {
 
   private parseLogTimestamp(input: string): Date | null {
     // Expected format: 2025-08-18 20:15:38,371
-    const regex = /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2}),(\d{3})$/;
-    const match = input.match(regex);
+    const regex = /^(\d{4})-(\d{2})-(\d{2})[\sT]+(\d{2}):(\d{2}):(\d{2})[.,]?(\d{3})?Z?$/;
+    const match = input.trim().match(regex);
 
     if (!match) {
       return null;
     }
 
-    const [, year, month, day, hour, minute, second, millisecond] = match;
+    const [, year, month, day, hour, minute, second, millisecond = '0'] = match;
 
-    // Create date object (month is 0-indexed in JavaScript)
-    const date = new Date(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-      parseInt(hour),
-      parseInt(minute),
-      parseInt(second),
-      parseInt(millisecond)
-    );
+    // assume UTC input
+	  const utcMillis = Date.UTC(
+		  parseInt(year),
+		  parseInt(month) - 1,
+		  parseInt(day),
+		  parseInt(hour),
+		  parseInt(minute),
+		  parseInt(second),
+		  parseInt(millisecond)
+	  );
 
-    // Validate the date
-    if (isNaN(date.getTime())) {
-      return null;
-    }
-
-    return date;
+    return new Date(utcMillis);
   }
 
-  private formatLocalTime(date: Date): string {
-    try {
-      // Get timezone abbreviation
-      const tzAbbrev = this.getShortTimezoneAbbrev(date);
-      const timezoneName = this.getUserTimezoneName();
+	private formatLocalTime(date: Date): string {
+		try {
+			const tzAbbrev = this.getShortTimezoneAbbrev(date);
+			const timezoneName = this.getUserTimezoneName();
 
-      // Format the date in local timezone
-      const localDate = new Date(date.getTime());
+			const year = date.getFullYear();
+			const month = (date.getMonth() + 1).toString().padStart(2, '0');
+			const day = date.getDate().toString().padStart(2, '0');
+			let hours = date.getHours();
+			const minutes = date.getMinutes().toString().padStart(2, '0');
+			const seconds = date.getSeconds().toString().padStart(2, '0');
+			const milliseconds = date.getMilliseconds().toString().padStart(3, '0');
+			const period = hours >= 12 ? 'PM' : 'AM';
+			const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
 
-      const year = localDate.getFullYear();
-      const month = (localDate.getMonth() + 1).toString().padStart(2, '0');
-      const day = localDate.getDate().toString().padStart(2, '0');
-
-      let hours = localDate.getHours();
-      const minutes = localDate.getMinutes().toString().padStart(2, '0');
-      const seconds = localDate.getSeconds().toString().padStart(2, '0');
-      const milliseconds = localDate.getMilliseconds().toString().padStart(3, '0');
-
-      // 12-hour format
-      const period = hours >= 12 ? 'PM' : 'AM';
-      const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-
-      return `${year}-${month}-${day} ${displayHours}:${minutes}:${seconds}.${milliseconds} ${period} ${tzAbbrev} (${timezoneName})`;
-    } catch (error) {
-      return 'Error formatting local time';
-    }
-  }
+			return `${year}-${month}-${day} ${displayHours}:${minutes}:${seconds}.${milliseconds} ${period} ${tzAbbrev} (${timezoneName})`;
+		} catch (error) {
+			console.log(error);
+			return 'Error formatting local time';
+		}
+	}
 
   private getShortTimezoneAbbrev(date: Date): string {
     try {
@@ -131,7 +120,7 @@ export class LocaltimeComponent {
     return !!this.localtimeOutput || !!this.errorMessage;
   }
 
-  reset() {
+  reset(): void {
     this.logInput = '';
     this.localtimeOutput = '';
     this.errorMessage = '';
