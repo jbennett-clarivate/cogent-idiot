@@ -18,6 +18,10 @@ input:not([type="range"]) {
   padding: 4px 8px;
 }
 
+li:not(.bulleted) {
+  list-style-type: none;
+}
+
 /* Hide number input spinners */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
@@ -128,7 +132,6 @@ hr {
   position: relative;
   cursor: help;
   display: grid;
-  text-align: center;
 }
 
 [data-title]:hover::after {
@@ -187,6 +190,7 @@ label span {
   font-size: 1rem;
   font-weight: bold;
   transition: background-color 0.3s;
+  white-space: nowrap;
 }
 
 .btn:hover, .btn:focus, .btn:active {

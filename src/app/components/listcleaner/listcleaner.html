@@ -3,7 +3,7 @@
 		<div>
 			<div class="flex-r h-center h-spaced">
 				<div class="flex-c height-500 width-full">
-					<input name="file_theinputlist" type="file" (change)="onFileSelected($event)"/>
+					<input id="file_theinputlist" name="file_theinputlist" type="file" (change)="onFileSelected($event)"/>
 					<label for="file_theinputlist" data-title="Text files only please" class="top-spaced">Input:<span>{{ theInputListCount || '' }}</span></label>
 					<hr>
 					<textarea tabindex="20" name="theinputlist" [(ngModel)]="theInputList" (paste)="onPaste($event)" placeholder="Enter your list here..."></textarea>

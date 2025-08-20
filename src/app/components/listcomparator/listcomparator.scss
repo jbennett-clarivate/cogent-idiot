@@ -51,6 +51,9 @@ textarea[name^="input_list"] {
 .output-column {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  overflow: auto;
 }
 
 .output-label {
@@ -73,4 +76,8 @@ textarea[name^="input_list"] {
 /* Override hr width for listcomparator component */
 hr {
   width: 100%;
+}
+
+button:not(.allow-small) {
+  min-width: 130px;
 }

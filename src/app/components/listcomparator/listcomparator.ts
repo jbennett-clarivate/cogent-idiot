@@ -1,263 +1,183 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-listcomparator',
-  imports: [FormsModule, CommonModule],
-  templateUrl: './listcomparator.html',
-  styleUrl: './listcomparator.scss'
+	selector: 'app-listcomparator',
+	imports: [FormsModule, CommonModule],
+	templateUrl: './listcomparator.html',
+	styleUrl: './listcomparator.scss'
 })
 export class ListcomparatorComponent implements OnInit {
-  inputListA: string = '';
-  inputListB: string = '';
+	inputListA = signal('');
+	inputListB = signal('');
+	caseSensitive = signal(false);
+	fuzzyMatch = signal(false);
+	selectedDelimiters = signal<string[]>([]);
+	loadingA = signal(false);
+	loadingB = signal(false);
+	errorA = signal('');
+	errorB = signal('');
 
-  inputListACount: number = 0;
-  inputListBCount: number = 0;
-  outputListACount: number = 0;
-  outputListBCount: number = 0;
-  outputListIntersectionCount: number = 0;
-  outputListUnionCount: number = 0;
+	processedListA = computed(() => this.processInput(this.inputListA()));
+	processedListB = computed(() => this.processInput(this.inputListB()));
+	uniqueToA = computed(() => this.compareLists(this.processedListA(), this.processedListB()));
+	uniqueToB = computed(() => this.compareLists(this.processedListB(), this.processedListA()));
+	intersection = computed(() => this.processedListA().filter(x => this.processedListB().includes(x)));
+	union = computed(() => Array.from(new Set([...this.processedListA(), ...this.processedListB()])));
+	inputListACount = computed(() => this.processedListA().length);
+	inputListBCount = computed(() => this.processedListB().length);
+	outputListACount = computed(() => this.uniqueToA().length);
+	outputListBCount = computed(() => this.uniqueToB().length);
+	outputListIntersectionCount = computed(() => this.intersection().length);
+	outputListUnionCount = computed(() => this.union().length);
 
-  outputListA: string = '';
-  outputListB: string = '';
-  outputListIntersection: string = '';
-  outputListUnion: string = '';
+	ngOnInit(): void {
+		this.loadFromLocalStorage();
+	}
 
-  lowercase: boolean = false;
-  tabs: boolean = false;
-  commas: boolean = false;
-  spaces: boolean = false;
-  doublequote: boolean = false;
-  semicolons: boolean = false;
-  singlequote: boolean = false;
+	processInput(input: string): string[] {
+		const delimiters = this.selectedDelimiters();
+		const regex = delimiters.length ? new RegExp(`[${delimiters.join('')}]`, 'g') : /[\n]/g;
+		let items = input.split(regex).map(x => x.trim()).filter(x => x);
+		if (!this.caseSensitive()) items = items.map(x => x.toLowerCase());
+		return Array.from(new Set(items));
+	}
 
-  ngOnInit(): void {
-    this.loadFromLocalStorage();
-  }
+	compareLists(listA: string[], listB: string[]): string[] {
+		if (this.fuzzyMatch()) {
+			return listA.filter(a => !listB.some(b => this.fuzzyEqual(a, b)));
+		}
+		return listA.filter(a => !listB.includes(a));
+	}
 
-  onFileSelectedA(event: any): void {
-    const file = event.target.files[0];
-    if (file && file.type === 'text/plain') {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.inputListA = e.target.result;
-        this.saveToLocalStorage();
-      };
-      reader.readAsText(file);
-    }
-  }
+	fuzzyEqual(a: string, b: string): boolean {
+		return this.levenshtein(a, b) <= 2;
+	}
 
-  onFileSelectedB(event: any): void {
-    const file = event.target.files[0];
-    if (file && file.type === 'text/plain') {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.inputListB = e.target.result;
-        this.saveToLocalStorage();
-      };
-      reader.readAsText(file);
-    }
-  }
+	levenshtein(a: string, b: string): number {
+		const matrix = Array(a.length + 1).fill(null).map(() => Array(b.length + 1).fill(null));
+		for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+		for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+		for (let i = 1; i <= a.length; i++) {
+			for (let j = 1; j <= b.length; j++) {
+				const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+				matrix[i][j] = Math.min(
+					matrix[i - 1][j] + 1,
+					matrix[i][j - 1] + 1,
+					matrix[i - 1][j - 1] + cost
+				);
+			}
+		}
+		return matrix[a.length][b.length];
+	}
 
-  onPaste(event: ClipboardEvent): void {
-    // Handle paste events if needed
-    this.saveToLocalStorage();
-  }
+	onFileSelectedA(event: any): void {
+		const file = event.target.files[0];
+		if (!file) return;
+		this.loadingA.set(true);
+		this.errorA.set('');
+		if (!['text/plain', 'text/csv', 'text/tab-separated-values'].includes(file.type) && !file.name.match(/\.(txt|csv|tsv)$/i)) {
+			this.errorA.set('Unsupported file type');
+			this.loadingA.set(false);
+			return;
+		}
+		const reader = new FileReader();
+		reader.onload = (e: any) => {
+			let content = e.target.result.replace(/\n\n+/g, '\n');
+			this.inputListA.set(content);
+			this.loadingA.set(false);
+			this.saveToLocalStorage();
+		};
+		reader.onerror = () => {
+			this.errorA.set('Error reading file');
+			this.loadingA.set(false);
+		};
+		reader.readAsText(file);
+	}
 
-  compareIt(): void {
-    if (!this.inputListA || !this.inputListB) {
-      return;
-    }
+	onFileSelectedB(event: any): void {
+		const file = event.target.files[0];
+		if (!file) return;
+		this.loadingB.set(true);
+		this.errorB.set('');
+		if (!['text/plain', 'text/csv', 'text/tab-separated-values'].includes(file.type) && !file.name.match(/\.(txt|csv|tsv)$/i)) {
+			this.errorB.set('Unsupported file type');
+			this.loadingB.set(false);
+			return;
+		}
+		const reader = new FileReader();
+		reader.onload = (e: any) => {
+			let content = e.target.result.replace(/\n\n+/g, '\n');
+			this.inputListB.set(content);
+			this.loadingB.set(false);
+			this.saveToLocalStorage();
+		};
+		reader.onerror = () => {
+			this.errorB.set('Error reading file');
+			this.loadingB.set(false);
+		};
+		reader.readAsText(file);
+	}
 
-    // Reset outputs
-    this.outputListA = '';
-    this.outputListB = '';
-    this.outputListIntersection = '';
-    this.outputListUnion = '';
+	reset(): void {
+		this.inputListA.set('');
+		this.inputListB.set('');
+		this.selectedDelimiters.set([]);
+		this.caseSensitive.set(false);
+		this.fuzzyMatch.set(false);
+		this.errorA.set('');
+		this.errorB.set('');
+		this.saveToLocalStorage();
+	}
 
-    // Process and dedupe input lists
-    const processedListA = this.dedupe(this.inputListA);
-    const processedListB = this.dedupe(this.inputListB);
+	saveToLocalStorage(): void {
+		localStorage.setItem('inputListA', this.inputListA());
+		localStorage.setItem('inputListB', this.inputListB());
+		localStorage.setItem('selectedDelimiters', JSON.stringify(this.selectedDelimiters()));
+		localStorage.setItem('caseSensitive', JSON.stringify(this.caseSensitive()));
+		localStorage.setItem('fuzzyMatch', JSON.stringify(this.fuzzyMatch()));
+	}
 
-    this.inputListACount = processedListA.split('\n').length;
-    this.inputListBCount = processedListB.split('\n').length;
+	loadFromLocalStorage(): void {
+		this.inputListA.set(localStorage.getItem('inputListA') || '');
+		this.inputListB.set(localStorage.getItem('inputListB') || '');
+		this.selectedDelimiters.set(JSON.parse(localStorage.getItem('selectedDelimiters') || '[]'));
+		this.caseSensitive.set(JSON.parse(localStorage.getItem('caseSensitive') || 'false'));
+		this.fuzzyMatch.set(JSON.parse(localStorage.getItem('fuzzyMatch') || 'false'));
+	}
 
-    // Generate outputs
-    const uniqueToA = this.uniqueToLeftList(processedListA, processedListB);
-    const uniqueToB = this.uniqueToLeftList(processedListB, processedListA);
-    const intersection = this.intersection(processedListA, processedListB);
-    const union = this.union(processedListA, processedListB);
+	exportResults(type: 'csv' | 'txt'): void {
+		const data = {
+			uniqueToA: this.uniqueToA().join('\n'),
+			uniqueToB: this.uniqueToB().join('\n'),
+			intersection: this.intersection().join('\n'),
+			union: this.union().join('\n')
+		};
+		let content = '';
+		if (type === 'csv') {
+			content = `Unique to A,Unique to B,Intersection,Union\n"${data.uniqueToA}","${data.uniqueToB}","${data.intersection}","${data.union}"`;
+		} else {
+			content = `Unique to A:\n${data.uniqueToA}\n\nUnique to B:\n${data.uniqueToB}\n\nIntersection:\n${data.intersection}\n\nUnion:\n${data.union}`;
+		}
+		const blob = new Blob([content], { type: type === 'csv' ? 'text/csv' : 'text/plain' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `listcompare.${type}`;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	}
 
-    // Set counts
-    this.outputListACount = uniqueToA ? uniqueToA.split('\n').length : 0;
-    this.outputListBCount = uniqueToB ? uniqueToB.split('\n').length : 0;
-    this.outputListIntersectionCount = intersection ? intersection.split('\n').length : 0;
-    this.outputListUnionCount = union ? union.split('\n').length : 0;
-
-    // Convert to HTML for display
-    this.outputListA = this.textToHtml(uniqueToA);
-    this.outputListB = this.textToHtml(uniqueToB);
-    this.outputListIntersection = this.textToHtml(intersection);
-    this.outputListUnion = this.textToHtml(union);
-
-    // Save settings to localStorage
-    this.saveToLocalStorage();
-  }
-
-  reset(): void {
-    // Clear input lists
-    this.inputListA = '';
-    this.inputListB = '';
-
-    // Reset count values
-    this.inputListACount = 0;
-    this.inputListBCount = 0;
-    this.outputListACount = 0;
-    this.outputListBCount = 0;
-    this.outputListIntersectionCount = 0;
-    this.outputListUnionCount = 0;
-
-    // Clear output lists
-    this.outputListA = '';
-    this.outputListB = '';
-    this.outputListIntersection = '';
-    this.outputListUnion = '';
-
-    // Reset delimiter options
-    this.lowercase = false;
-    this.tabs = false;
-    this.commas = false;
-    this.spaces = false;
-    this.doublequote = false;
-    this.semicolons = false;
-    this.singlequote = false;
-
-    // Clear localStorage
-    this.clearLocalStorage();
-  }
-
-  private dedupe(srcInputList: string): string {
-    if (!srcInputList) return '';
-
-    let inputList = (this.lowercase ? srcInputList.toLowerCase() : srcInputList).trim();
-
-    const combinedRegex = ['\\n', '\\r'];
-    if (this.tabs) combinedRegex.push('\\t');
-    if (this.spaces) combinedRegex.push(' ');
-    if (this.semicolons) combinedRegex.push(';');
-    if (this.commas) combinedRegex.push(',');
-    if (this.singlequote) combinedRegex.push("'");
-    if (this.doublequote) combinedRegex.push('"');
-
-    const newRegex = '(' + combinedRegex.join('|') + ')+';
-    const re = new RegExp(newRegex, 'g');
-
-    const theListArray = inputList.replace(re, '\n').split(/\n/g);
-    const map: { [key: string]: number } = {};
-    let cleanList = '';
-
-    theListArray.forEach(value => {
-      const trimmed = value.trim();
-      if (trimmed !== '' && map[trimmed] !== 1) {
-        cleanList += value + '\n';
-        map[trimmed] = 1;
-      }
-    });
-
-    return cleanList.trim();
-  }
-
-  private uniqueToLeftList(left: string, right: string): string {
-    if (!left || !right) return '';
-
-    const leftArray = left.split('\n');
-    const rightArray = right.split('\n');
-    const map: { [key: string]: number } = {};
-    let uniqueList = '';
-
-    rightArray.forEach(value => {
-      map[value] = 1;
-    });
-
-    leftArray.forEach(value => {
-      if (map[value] !== 1) {
-        uniqueList += value + '\n';
-      }
-    });
-
-    return uniqueList.trim();
-  }
-
-  private intersection(left: string, right: string): string {
-    if (!left || !right) return '';
-
-    const leftArray = left.split('\n');
-    const rightArray = right.split('\n');
-    const map: { [key: string]: number } = {};
-    let intersectionList = '';
-
-    rightArray.forEach(value => {
-      map[value.trim()] = 1;
-    });
-
-    leftArray.forEach(value => {
-      const trimmed = value.trim();
-      if (map[trimmed] === 1) {
-        intersectionList += trimmed + '\n';
-      }
-    });
-
-    return intersectionList.trim();
-  }
-
-  private union(left: string, right: string): string {
-    if (!left || !right) return '';
-    return this.dedupe(left + '\n' + right);
-  }
-
-  private textToHtml(text: string): string {
-    if (!text) return '';
-    return text.split('\n').join('<br>');
-  }
-
-  private saveToLocalStorage(): void {
-    localStorage.setItem('listComparator_inputListA', this.inputListA || '');
-    localStorage.setItem('listComparator_inputListB', this.inputListB || '');
-    localStorage.setItem('listComparator_lowercase', this.lowercase.toString());
-    localStorage.setItem('listComparator_tabs', this.tabs.toString());
-    localStorage.setItem('listComparator_commas', this.commas.toString());
-    localStorage.setItem('listComparator_spaces', this.spaces.toString());
-    localStorage.setItem('listComparator_doublequote', this.doublequote.toString());
-    localStorage.setItem('listComparator_semicolons', this.semicolons.toString());
-    localStorage.setItem('listComparator_singlequote', this.singlequote.toString());
-  }
-
-  private loadFromLocalStorage(): void {
-    const inputListA = localStorage.getItem('listComparator_inputListA');
-    const inputListB = localStorage.getItem('listComparator_inputListB');
-
-    if (inputListA) this.inputListA = inputListA;
-    if (inputListB) this.inputListB = inputListB;
-
-    this.lowercase = localStorage.getItem('listComparator_lowercase') === 'true';
-    this.tabs = localStorage.getItem('listComparator_tabs') === 'true';
-    this.commas = localStorage.getItem('listComparator_commas') === 'true';
-    this.spaces = localStorage.getItem('listComparator_spaces') === 'true';
-    this.doublequote = localStorage.getItem('listComparator_doublequote') === 'true';
-    this.semicolons = localStorage.getItem('listComparator_semicolons') === 'true';
-    this.singlequote = localStorage.getItem('listComparator_singlequote') === 'true';
-  }
-
-  private clearLocalStorage(): void {
-    localStorage.removeItem('listComparator_inputListA');
-    localStorage.removeItem('listComparator_inputListB');
-    localStorage.removeItem('listComparator_lowercase');
-    localStorage.removeItem('listComparator_tabs');
-    localStorage.removeItem('listComparator_commas');
-    localStorage.removeItem('listComparator_spaces');
-    localStorage.removeItem('listComparator_doublequote');
-    localStorage.removeItem('listComparator_semicolons');
-    localStorage.removeItem('listComparator_singlequote');
-  }
+	toggleDelimiter(delim: string, checked: boolean): void {
+		const current = this.selectedDelimiters();
+		if (checked && !current.includes(delim)) {
+			this.selectedDelimiters.set([...current, delim]);
+		} else if (!checked && current.includes(delim)) {
+			this.selectedDelimiters.set(current.filter(d => d !== delim));
+		}
+		this.saveToLocalStorage();
+	}
 }

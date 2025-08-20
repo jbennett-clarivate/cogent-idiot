@@ -3,54 +3,84 @@
 		<div>
 			<div class="flex-r h-center h-spaced">
 				<div class="flex-c height-500 width-half">
-					<input name="file_input_list_a" type="file" (change)="onFileSelectedA($event)"/>
-					<label for="file_input_list_a" data-title="Text files only please" class="top-spaced">List A:<span>{{ inputListACount || '' }}</span></label>
+					<input id="file_input_list_a" name="file_input_list_a" type="file" accept=".txt,.csv,.tsv,text/plain,text/csv,text/tab-separated-values" (change)="onFileSelectedA($event)" aria-label="Upload List A"/>
+					@if (errorA()) {
+						<div class="error">{{ errorA() }}</div>
+					}
+					@if (loadingA()) {
+						<div class="loading">Loading...</div>
+					}
+					<label for="file_input_list_a" data-title="Text, CSV, TSV files only" class="top-spaced">List A:<span>{{ inputListACount() }}</span></label>
 					<hr>
-					<textarea tabindex="10" name="input_list_a" [(ngModel)]="inputListA" (paste)="onPaste($event)" placeholder="Enter list A here..."></textarea>
+					<textarea #inputA tabindex="10" name="input_list_a" [value]="inputListA()" (input)="inputListA.set(inputA.value)" aria-label="List A" placeholder="Enter list A here..."></textarea>
 				</div>
 				<div class="flex-c height-500 width-half">
-					<input name="file_input_list_b" type="file" (change)="onFileSelectedB($event)"/>
-					<label for="file_input_list_b" data-title="Text files only please" class="top-spaced">List B:<span>{{ inputListBCount || '' }}</span></label>
+					<input id="file_input_list_b" name="file_input_list_b" type="file" accept=".txt,.csv,.tsv,text/plain,text/csv,text/tab-separated-values" (change)="onFileSelectedB($event)" aria-label="Upload List B"/>
+					@if (errorB()) {
+						<div class="error">{{ errorB() }}</div>
+					}
+					@if (loadingB()) {
+						<div class="loading">Loading...</div>
+					}
+					<label for="file_input_list_b" data-title="Text, CSV, TSV files only" class="top-spaced">List B:<span>{{ inputListBCount() }}</span></label>
 					<hr>
-					<textarea tabindex="11" name="input_list_b" [(ngModel)]="inputListB" (paste)="onPaste($event)" placeholder="Enter list B here..."></textarea>
+					<textarea #inputB tabindex="11" name="input_list_b" [value]="inputListB()" (input)="inputListB.set(inputB.value)" aria-label="List B" placeholder="Enter list B here..."></textarea>
 				</div>
 			</div>
 		</div>
 		<div>
 			<div class="flex-r h-center h-spaced v-padding">
-				<label><input tabindex="13" type="checkbox" name="lowercase" [(ngModel)]="lowercase"/><span data-title="Lower the case prior to compare"> Lowercase</span></label>
+				<label><input tabindex="14" type="checkbox" [checked]="caseSensitive()" (change)="caseSensitive.set($event.target.checked)" [attr.aria-label]="'Case Sensitive'"/><span data-title="Case sensitive compare"> Case Sensitive</span></label>
+				<label><input tabindex="15" type="checkbox" [checked]="fuzzyMatch()" (change)="fuzzyMatch.set($event.target.checked)" [attr.aria-label]="'Fuzzy Match'"/><span data-title="Fuzzy match (Levenshtein distance)"> Fuzzy Match</span></label>
 			</div>
 			<hr>
 			<div class="flex-r h-center h-spaced v-padding">
-				<label><input tabindex="14" type="checkbox" name="tabs" [(ngModel)]="tabs"/><span data-title="Delimit on tabs">Tabs</span></label>
-				<label><input tabindex="15" type="checkbox" name="commas" [(ngModel)]="commas"/><span data-title="Delimit on commas">Commas</span></label>
-				<label><input tabindex="16" type="checkbox" name="spaces" [(ngModel)]="spaces"/><span data-title="Delimit on spaces">Spaces</span></label>
-				<label><input tabindex="17" type="checkbox" name="doublequote" [(ngModel)]="doublequote"/><span data-title="Delimit on quotation marks">Quotes</span></label>
-				<label><input tabindex="18" type="checkbox" name="semicolons" [(ngModel)]="semicolons"/><span data-title="Delimit on semicolons">Semicolons</span></label>
-				<label><input tabindex="19" type="checkbox" name="singlequote" [(ngModel)]="singlequote"/><span data-title="Delimit on apostrophes">Apostrophes</span></label>
+				@for (delim of ['\t','\n',',',' ','"',';','\'']; track delim) {
+					<label>
+						<input type="checkbox" [checked]="selectedDelimiters().includes(delim)" (change)="toggleDelimiter(delim, $event.target.checked)" [attr.aria-label]="'Delimiter: ' + delim"/>
+						<span>{{ delim === '\t' ? 'Tab' : delim === '\n' ? 'Newline' : delim === ',' ? 'Comma' : delim === ' ' ? 'Space' : delim === '"' ? 'Quote' : delim === ';' ? 'Semicolon' : 'Apostrophe' }}</span>
+					</label>
+				}
 			</div>
 		</div>
 		<div class="flex-r h-center h-spaced v-padding">
-			<button tabindex="19" type="button" (click)="compareIt()">Compare</button>
-			<button tabindex="20" type="button" (click)="reset()">Reset</button>
+			<button tabindex="19" type="button" (click)="reset()" aria-label="Reset">Reset</button>
+			<button tabindex="20" type="button" (click)="exportResults('csv')" aria-label="Export CSV">Export CSV</button>
+			<button tabindex="21" type="button" (click)="exportResults('txt')" aria-label="Export TXT">Export TXT</button>
 		</div>
 	</form>
 	<div class="output-grid">
 		<div class="output-column height-500">
-			<label class="output-label" data-title="{ x ∈ A : x ∉ B }">Unique to A:<span>{{ outputListACount || '' }}</span></label>
-			<div class="output-display" [innerHTML]="outputListA"></div>
+			<label class="output-label" data-title="{ x ∈ A : x ∉ B }">Unique to A:<span>{{ outputListACount() }}</span></label>
+			<ul>
+				@for (item of uniqueToA(); track item) {
+					<li>{{ item }}</li>
+				}
+			</ul>
 		</div>
 		<div class="output-column height-500">
-			<label class="output-label" data-title="{ x ∈ B : x ∉ A }">Unique to B:<span>{{ outputListBCount || '' }}</span></label>
-			<div class="output-display" [innerHTML]="outputListB"></div>
+			<label class="output-label" data-title="{ x ∈ B : x ∉ A }">Unique to B:<span>{{ outputListBCount() }}</span></label>
+			<ul>
+				@for (item of uniqueToB(); track item) {
+					<li>{{ item }}</li>
+				}
+			</ul>
 		</div>
 		<div class="output-column height-500">
-			<label class="output-label" data-title="{ A ∩ B }">Intersection:<span>{{ outputListIntersectionCount || '' }}</span></label>
-			<div class="output-display" [innerHTML]="outputListIntersection"></div>
+			<label class="output-label" data-title="{ A ∩ B }">Intersection:<span>{{ outputListIntersectionCount() }}</span></label>
+			<ul>
+				@for (item of intersection(); track item) {
+					<li>{{ item }}</li>
+				}
+			</ul>
 		</div>
 		<div class="output-column height-500">
-			<label class="output-label" data-title="{ B ∪ A }">Combination:<span>{{ outputListUnionCount || '' }}</span></label>
-			<div class="output-display" [innerHTML]="outputListUnion"></div>
+			<label class="output-label" data-title="{ B ∪ A }">Combination:<span>{{ outputListUnionCount() }}</span></label>
+			<ul>
+				@for (item of union(); track item) {
+					<li>{{ item }}</li>
+				}
+			</ul>
 		</div>
 	</div>
 </div>

@@ -9,8 +9,8 @@ const helmet = require('helmet');
 const crypto = require('crypto');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
-const isLocalhost = (process.env.DB_HOST === 'localhost') && (process.env.NODE_ENV === 'development');
-const isGoDaddy = process.env.HOSTING_PROVIDER === 'godaddy' || process.env.NODE_ENV === 'production';
+const isGoDaddy = process.env.HOSTING_PROVIDER === 'godaddy';
+const isLocalhost = !isGoDaddy;
 const app = express();
 
 if (!isLocalhost) {

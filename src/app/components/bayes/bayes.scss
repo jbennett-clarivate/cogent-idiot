@@ -6,3 +6,8 @@ hr {
   height: 2px;
   margin: 10px 0;
 }
+
+label > span {
+  text-align: right;
+  width: 100px;
+}

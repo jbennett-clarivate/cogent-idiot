@@ -6,7 +6,7 @@
 				<hr>
 				<label>P(H)P(E|H)+P(¬H)P(E|¬H)</label>
 			</div>
-			<div class="flex-r h-center h-spaced lv-spaced strong v-padding">
+			<div [class.flex-r]="isFlexRow()" [class.flex-c]="!isFlexRow()" class="h-center h-spaced lv-spaced strong v-padding">
 				<label for="suspicion">
 					<span data-title="Known Positive Probibility">P(H)%:</span>
 					<input type="number" name="suspicion" [ngModel]="suspicion()" (ngModelChange)="suspicion.set($event); onSuspicionChange()" min="0" max="100" step="1"/>

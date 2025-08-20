@@ -1,6 +1,7 @@
 import {Component, signal, computed} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {DecimalPipe} from '@angular/common';
+import { BreakpointObserver } from '@angular/cdk/layout';
 
 @Component({
 	selector: 'app-bayes',
@@ -11,6 +12,7 @@ import {DecimalPipe} from '@angular/common';
 export class BayesComponent {
 	suspicion = signal<number | null>(null);
 	confirmedSuspicion = signal<number | null>(null);
+	isFlexRow = signal(true);
 
 	// Computed signals for derived values
 	falseSuspicion = computed(() => {
@@ -46,6 +48,24 @@ export class BayesComponent {
 
 		return Number((displayAnswer).toFixed(3));
 	});
+
+	private resizeTimeout: any;
+
+	constructor(private breakpointObserver: BreakpointObserver) {
+		this.setFlexDirection();
+		window.addEventListener('resize', () => {
+			clearTimeout(this.resizeTimeout);
+			this.resizeTimeout = setTimeout(() => {
+				this.setFlexDirection();
+			}, 150);
+		});
+	}
+
+	setFlexDirection() {
+		const isWide = window.innerWidth > 730;
+		this.isFlexRow.set(isWide);
+		console.log('Flex direction set:', isWide ? 'row' : 'column');
+	}
 
 	onSuspicionChange(): void {
 		const suspicionVal = this.suspicion();
