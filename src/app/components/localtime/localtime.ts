@@ -48,16 +48,30 @@ export class LocaltimeComponent {
 
     const [, year, month, day, hour, minute, second, millisecond = '0'] = match;
 
+	  const y = parseInt(year);
+	  const m = parseInt(month);
+	  const d = parseInt(day);
+	  const h = parseInt(hour);
+	  const min = parseInt(minute);
+	  const s = parseInt(second);
+	  const ms = parseInt(millisecond);
+
+	  if (
+		  y < 1970 ||
+		  y > 2100 ||
+		  m < 1 ||
+		  m > 12 ||
+		  d < 1 ||
+		  d > 31 ||
+		  h > 23 ||
+		  min > 59 ||
+		  s > 59
+	  ) {
+		  return null;
+	  }
+
     // assume UTC input
-	  const utcMillis = Date.UTC(
-		  parseInt(year),
-		  parseInt(month) - 1,
-		  parseInt(day),
-		  parseInt(hour),
-		  parseInt(minute),
-		  parseInt(second),
-		  parseInt(millisecond)
-	  );
+	  const utcMillis = Date.UTC(y, m - 1, d, h, min, s, ms);
 
     return new Date(utcMillis);
   }
