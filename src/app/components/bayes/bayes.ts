@@ -1,13 +1,13 @@
-import {Component, signal, computed} from '@angular/core';
-import {FormsModule} from '@angular/forms';
-import {DecimalPipe} from '@angular/common';
-import { BreakpointObserver } from '@angular/cdk/layout';
+import { Component, signal, computed } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { DecimalPipe } from "@angular/common";
+import { BreakpointObserver } from "@angular/cdk/layout";
 
 @Component({
-	selector: 'app-bayes',
-	templateUrl: './bayes.html',
-	styleUrls: ['./bayes.scss'],
-	imports: [FormsModule, DecimalPipe]
+	selector: "app-bayes",
+	templateUrl: "./bayes.html",
+	styleUrls: ["./bayes.scss"],
+	imports: [FormsModule, DecimalPipe],
 })
 export class BayesComponent {
 	suspicion = signal<number | null>(null);
@@ -53,7 +53,7 @@ export class BayesComponent {
 
 	constructor(private breakpointObserver: BreakpointObserver) {
 		this.setFlexDirection();
-		window.addEventListener('resize', () => {
+		window.addEventListener("resize", () => {
 			clearTimeout(this.resizeTimeout);
 			this.resizeTimeout = setTimeout(() => {
 				this.setFlexDirection();
@@ -64,7 +64,7 @@ export class BayesComponent {
 	setFlexDirection() {
 		const isWide = window.innerWidth > 730;
 		this.isFlexRow.set(isWide);
-		console.log('Flex direction set:', isWide ? 'row' : 'column');
+		console.log("Flex direction set:", isWide ? "row" : "column");
 	}
 
 	onSuspicionChange(): void {
@@ -119,6 +119,6 @@ export class BayesComponent {
 	}
 
 	get startButtonLabel(): string {
-		return !this.rawAnswer() ? '✓ Start' : '♺ Reuse';
+		return !this.rawAnswer() ? "✓ Start" : "♺ Reuse";
 	}
 }

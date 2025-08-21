@@ -1,0 +1,66 @@
+{
+	"root": true,
+	"ignorePatterns": ["sessions/*" ,"public_html/*", "node_modules/*",".vscode/*", ".idea/*", ".github/*", ".angular/*"],
+	"env": {
+		"browser": true,
+		"es2023": true
+	},
+	"overrides": [
+		{
+			"files": [
+				"*.ts"
+			],
+			"extends": [
+				"eslint:recommended",
+				"plugin:@typescript-eslint/recommended",
+				"plugin:@angular-eslint/recommended",
+				"plugin:@angular-eslint/template/process-inline-templates"
+			],
+			"rules": {
+				"@typescript-eslint/no-unused-expressions": "warn",
+				"@typescript-eslint/no-empty-object-type": "warn",
+				"@typescript-eslint/no-explicit-any": "warn",
+				"@typescript-eslint/no-unused-vars": "warn",
+				"@typescript-eslint/no-non-null-assertion": "off",
+				"@angular-eslint/directive-selector": [
+					"error",
+					{
+						"type": "attribute",
+						"prefix": "app",
+						"style": "camelCase"
+					}
+				],
+				"@angular-eslint/component-selector": [
+					"error",
+					{
+						"type": "element",
+						"style": "kebab-case"
+					}
+				],
+				"quotes": ["error", "double"],
+				"no-console": "off"
+			}
+		},
+		{
+			"files": [
+				"*.html"
+			],
+			"extends": [
+				"plugin:@angular-eslint/template/recommended"
+			],
+			"rules": {}
+		},
+		{
+			"files": ["*.js"],
+			"env": { "node": true },
+			"parser": "espree",
+			"rules": {
+				"@typescript-eslint/no-require-imports": "off"
+			}
+		}
+	],
+	"rules": {
+		"semi": ["error", "always"],
+		"indent": ["error", "tab"]
+	}
+}

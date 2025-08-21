@@ -1,23 +1,23 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, computed } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { CommonModule } from "@angular/common";
 
 @Component({
-	selector: 'app-listcomparator',
+	selector: "app-listcomparator",
 	imports: [FormsModule, CommonModule],
-	templateUrl: './listcomparator.html',
-	styleUrl: './listcomparator.scss'
+	templateUrl: "./listcomparator.html",
+	styleUrl: "./listcomparator.scss",
 })
 export class ListcomparatorComponent implements OnInit {
-	inputListA = signal('');
-	inputListB = signal('');
+	inputListA = signal("");
+	inputListB = signal("");
 	caseSensitive = signal(false);
 	fuzzyMatch = signal(false);
 	selectedDelimiters = signal<string[]>([]);
 	loadingA = signal(false);
 	loadingB = signal(false);
-	errorA = signal('');
-	errorB = signal('');
+	errorA = signal("");
+	errorB = signal("");
 
 	processedListA = computed(() => this.processInput(this.inputListA()));
 	processedListB = computed(() => this.processInput(this.inputListB()));
@@ -38,7 +38,7 @@ export class ListcomparatorComponent implements OnInit {
 
 	processInput(input: string): string[] {
 		const delimiters = this.selectedDelimiters();
-		const regex = delimiters.length ? new RegExp(`[${delimiters.join('')}]`, 'g') : /[\n]/g;
+		const regex = delimiters.length ? new RegExp(`[${delimiters.join("")}]`, "g") : /[\n]/g;
 		let items = input.split(regex).map(x => x.trim()).filter(x => x);
 		if (!this.caseSensitive()) items = items.map(x => x.toLowerCase());
 		return Array.from(new Set(items));
@@ -65,7 +65,7 @@ export class ListcomparatorComponent implements OnInit {
 				matrix[i][j] = Math.min(
 					matrix[i - 1][j] + 1,
 					matrix[i][j - 1] + 1,
-					matrix[i - 1][j - 1] + cost
+					matrix[i - 1][j - 1] + cost,
 				);
 			}
 		}
@@ -76,21 +76,21 @@ export class ListcomparatorComponent implements OnInit {
 		const file = event.target.files[0];
 		if (!file) return;
 		this.loadingA.set(true);
-		this.errorA.set('');
-		if (!['text/plain', 'text/csv', 'text/tab-separated-values'].includes(file.type) && !file.name.match(/\.(txt|csv|tsv)$/i)) {
-			this.errorA.set('Unsupported file type');
+		this.errorA.set("");
+		if (!["text/plain", "text/csv", "text/tab-separated-values"].includes(file.type) && !file.name.match(/\.(txt|csv|tsv)$/i)) {
+			this.errorA.set("Unsupported file type");
 			this.loadingA.set(false);
 			return;
 		}
 		const reader = new FileReader();
 		reader.onload = (e: any) => {
-			let content = e.target.result.replace(/\n\n+/g, '\n');
+			const content = e.target.result.replace(/\n\n+/g, "\n");
 			this.inputListA.set(content);
 			this.loadingA.set(false);
 			this.saveToLocalStorage();
 		};
 		reader.onerror = () => {
-			this.errorA.set('Error reading file');
+			this.errorA.set("Error reading file");
 			this.loadingA.set(false);
 		};
 		reader.readAsText(file);
@@ -100,69 +100,69 @@ export class ListcomparatorComponent implements OnInit {
 		const file = event.target.files[0];
 		if (!file) return;
 		this.loadingB.set(true);
-		this.errorB.set('');
-		if (!['text/plain', 'text/csv', 'text/tab-separated-values'].includes(file.type) && !file.name.match(/\.(txt|csv|tsv)$/i)) {
-			this.errorB.set('Unsupported file type');
+		this.errorB.set("");
+		if (!["text/plain", "text/csv", "text/tab-separated-values"].includes(file.type) && !file.name.match(/\.(txt|csv|tsv)$/i)) {
+			this.errorB.set("Unsupported file type");
 			this.loadingB.set(false);
 			return;
 		}
 		const reader = new FileReader();
 		reader.onload = (e: any) => {
-			let content = e.target.result.replace(/\n\n+/g, '\n');
+			const content = e.target.result.replace(/\n\n+/g, "\n");
 			this.inputListB.set(content);
 			this.loadingB.set(false);
 			this.saveToLocalStorage();
 		};
 		reader.onerror = () => {
-			this.errorB.set('Error reading file');
+			this.errorB.set("Error reading file");
 			this.loadingB.set(false);
 		};
 		reader.readAsText(file);
 	}
 
 	reset(): void {
-		this.inputListA.set('');
-		this.inputListB.set('');
+		this.inputListA.set("");
+		this.inputListB.set("");
 		this.selectedDelimiters.set([]);
 		this.caseSensitive.set(false);
 		this.fuzzyMatch.set(false);
-		this.errorA.set('');
-		this.errorB.set('');
+		this.errorA.set("");
+		this.errorB.set("");
 		this.saveToLocalStorage();
 	}
 
 	saveToLocalStorage(): void {
-		localStorage.setItem('inputListA', this.inputListA());
-		localStorage.setItem('inputListB', this.inputListB());
-		localStorage.setItem('selectedDelimiters', JSON.stringify(this.selectedDelimiters()));
-		localStorage.setItem('caseSensitive', JSON.stringify(this.caseSensitive()));
-		localStorage.setItem('fuzzyMatch', JSON.stringify(this.fuzzyMatch()));
+		localStorage.setItem("inputListA", this.inputListA());
+		localStorage.setItem("inputListB", this.inputListB());
+		localStorage.setItem("selectedDelimiters", JSON.stringify(this.selectedDelimiters()));
+		localStorage.setItem("caseSensitive", JSON.stringify(this.caseSensitive()));
+		localStorage.setItem("fuzzyMatch", JSON.stringify(this.fuzzyMatch()));
 	}
 
 	loadFromLocalStorage(): void {
-		this.inputListA.set(localStorage.getItem('inputListA') || '');
-		this.inputListB.set(localStorage.getItem('inputListB') || '');
-		this.selectedDelimiters.set(JSON.parse(localStorage.getItem('selectedDelimiters') || '[]'));
-		this.caseSensitive.set(JSON.parse(localStorage.getItem('caseSensitive') || 'false'));
-		this.fuzzyMatch.set(JSON.parse(localStorage.getItem('fuzzyMatch') || 'false'));
+		this.inputListA.set(localStorage.getItem("inputListA") || "");
+		this.inputListB.set(localStorage.getItem("inputListB") || "");
+		this.selectedDelimiters.set(JSON.parse(localStorage.getItem("selectedDelimiters") || "[]"));
+		this.caseSensitive.set(JSON.parse(localStorage.getItem("caseSensitive") || "false"));
+		this.fuzzyMatch.set(JSON.parse(localStorage.getItem("fuzzyMatch") || "false"));
 	}
 
-	exportResults(type: 'csv' | 'txt'): void {
+	exportResults(type: "csv" | "txt"): void {
 		const data = {
-			uniqueToA: this.uniqueToA().join('\n'),
-			uniqueToB: this.uniqueToB().join('\n'),
-			intersection: this.intersection().join('\n'),
-			union: this.union().join('\n')
+			uniqueToA: this.uniqueToA().join("\n"),
+			uniqueToB: this.uniqueToB().join("\n"),
+			intersection: this.intersection().join("\n"),
+			union: this.union().join("\n"),
 		};
-		let content = '';
-		if (type === 'csv') {
+		let content = "";
+		if (type === "csv") {
 			content = `Unique to A,Unique to B,Intersection,Union\n"${data.uniqueToA}","${data.uniqueToB}","${data.intersection}","${data.union}"`;
 		} else {
 			content = `Unique to A:\n${data.uniqueToA}\n\nUnique to B:\n${data.uniqueToB}\n\nIntersection:\n${data.intersection}\n\nUnion:\n${data.union}`;
 		}
-		const blob = new Blob([content], { type: type === 'csv' ? 'text/csv' : 'text/plain' });
+		const blob = new Blob([content], { type: type === "csv" ? "text/csv" : "text/plain" });
 		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
+		const a = document.createElement("a");
 		a.href = url;
 		a.download = `listcompare.${type}`;
 		document.body.appendChild(a);
