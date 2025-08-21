@@ -180,12 +180,15 @@ label span {
   flex-shrink: 0;
 }
 
+.btn:not(.unlock-width) {
+  max-width: 125px;
+}
+
 .btn {
   border: none;
   border-radius: 4px;
   cursor: pointer;
   width: 100%;
-  max-width: 105px;
   padding: 0.75rem;
   font-size: 1rem;
   font-weight: bold;
