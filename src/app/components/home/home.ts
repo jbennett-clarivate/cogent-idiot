@@ -45,7 +45,7 @@ export class HomeComponent {
 		},
 		{
 			name: "TZ Tool",
-			description: "Converts log dates to localized datetimes",
+			description: "Log dates to localized datetimes",
 			icon: "localtime.svg",
 			route: "/tools/localtime",
 		},

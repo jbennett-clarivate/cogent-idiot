@@ -93,7 +93,7 @@ export class LoginComponent implements OnInit {
 					if (response.success && response.email) {
 						// Update auth service state
 						this.authService.setAuthenticatedUser(response.email);
-						this.router.navigate(["/"]);
+						this.router.navigate(["/home"]);
 					} else {
 						this.errorMessage = response.error || "Login failed";
 					}

@@ -46,6 +46,9 @@ export class ToolWrapperComponent {
 	}
 
 	navigate(route: string) {
+		if (route === "/" || route === "") {
+			route = "/home";
+		}
 		this.router.navigate([route]);
 	}
 
