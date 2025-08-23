@@ -21,14 +21,14 @@
     </div>
 
     <!-- Triangle Display -->
-    <div class="flex-c height-500 v-padding">
+    <div class="flex-c height-500 v-padding overflow">
       <label class="top-spaced">Pascal's Triangle ({{rows}} rows):</label>
       <div class="output-display" id="landing">
         @for (row of pascal; track $index; let i = $index) {
           <div class="pascal-row"
                [style.line-height]="'var(--dynamic-line-height, 1.33em)'">
             @for (val of row; track $index; let j = $index) {
-              <span [class.highlightValue]="isHighlighted(i, j)"
+              <span [class.highlight-value]="isHighlighted(i, j)"
                     class="pascal-cell"
                     [style.font-size]="'var(--dynamic-font-size, 1em)'">{{val}}</span>
             }

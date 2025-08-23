@@ -1,4 +1,11 @@
 /* Pascal Component Specific Styles */
+#landing {
+ width: fit-content;
+}
+
+.overflow {
+  overflow: auto;
+}
 
 .height-500 {
   height: 500px;
@@ -6,6 +13,11 @@
 
 .width-full {
   width: 100%;
+}
+
+.highlight-value {
+  background-color: gold;
+  border-radius: 1rem;
 }
 
 .output-display {
