@@ -3,3 +3,9 @@ RewriteEngine On
 # Proxy /api requests to Node.js server on port 3000
 RewriteCond %{REQUEST_URI} ^/api/
 RewriteRule ^(.*)$ http://localhost:3000/$1 [P,L]
+
+# Serve index.html for all other requests except existing files and directories
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^.*$ /index.html [L]
