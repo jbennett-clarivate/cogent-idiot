@@ -1,9 +1,10 @@
 import { Component, signal, inject } from "@angular/core";
 import { Router, NavigationError, RouterOutlet } from "@angular/router";
+import { ExitPopupComponent } from "./components/exit/exit";
 
 @Component({
 	selector: "app-root",
-	imports: [RouterOutlet],
+	imports: [RouterOutlet, ExitPopupComponent],
 	templateUrl: "./app.html",
 	styleUrls: ["./app.scss"],
 })

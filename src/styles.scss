@@ -115,7 +115,8 @@ button:not(.non-standard-button-action):not(.non-standard-button-reset) {
   cursor: pointer;
 }
 
-input[readonly], button:disabled {
+input[readonly],
+button:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
 }
@@ -196,7 +197,9 @@ label span {
   white-space: nowrap;
 }
 
-.btn:hover, .btn:focus, .btn:active {
+.btn:hover,
+.btn:focus,
+.btn:active {
   opacity: 0.8;
 }
 
@@ -205,7 +208,9 @@ label span {
   color: white;
 }
 
-.btn-primary:hover, .btn-primary:active, .btn-primary:focus {
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:focus {
   background-color: #0056b3;
 }
 
@@ -214,7 +219,9 @@ label span {
   color: white;
 }
 
-.btn-reset:hover, .btn-reset:active, .btn-reset:focus {
+.btn-reset:hover,
+.btn-reset:active,
+.btn-reset:focus {
   background-color: #5a6268;
 }
 
@@ -223,6 +230,8 @@ label span {
   color: black;
 }
 
-.btn-secondary:hover, .btn-secondary:active, .btn-secondary:focus {
+.btn-secondary:hover,
+.btn-secondary:active,
+.btn-secondary:focus {
   background-color: #5a6fa0;
 }

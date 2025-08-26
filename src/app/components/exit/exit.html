@@ -1,0 +1,10 @@
+@if (visible()) {
+<div class="overlay" (click)="close()">
+  <div class="popup" (click)="$event.stopPropagation()">
+    <p class="creepy">
+      BOO!
+    </p>
+    <button (click)="close()">A Button To Click</button>
+  </div>
+</div>
+}
