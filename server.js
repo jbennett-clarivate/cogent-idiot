@@ -1,22 +1,21 @@
+
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const bodyParser = require("body-parser");
 const path = require("path");
 const mysql = require("mysql2/promise");
 const session = require("express-session");
 const helmet = require("helmet");
 const crypto = require("crypto");
-const {createProxyMiddleware} = require("http-proxy-middleware");
 
 const isGoDaddy = process.env.HOSTING_PROVIDER === "godaddy";
 const isLocalhost = !isGoDaddy;
 const app = express();
 
+// Behind a reverse proxy (e.g. hosting platform) in non-local environments,
+// trust the first proxy hop so secure cookies and req.ip behave correctly.
 if (!isLocalhost) {
-	if (!isGoDaddy) {
-		app.set("trust proxy", 1);
-	}
+	app.set("trust proxy", 1);
 }
 
 const FileStore = require("session-file-store")(session);
@@ -93,14 +92,20 @@ if (isGoDaddy || !isLocalhost) {
 
 app.use(session(sessionConfig));
 
-app.use((req, res, next) => {
-	console.log("Session ID:", req.sessionID);
-	console.log("Session data:", JSON.stringify(req.session, null, 2));
-	next();
-});
+// Verbose session logging is opt-in only. It dumps salts/peppers/session
+// contents and must never be on by default. Enable with DEBUG_AUTH=true.
+const DEBUG_AUTH = process.env.DEBUG_AUTH === "true";
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+if (DEBUG_AUTH) {
+	app.use((req, res, next) => {
+		console.log("Session ID:", req.sessionID);
+		console.log("Session data:", JSON.stringify(req.session, null, 2));
+		next();
+	});
+}
+
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 
 app.use((req, res, next) => {
 	console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
@@ -158,6 +163,31 @@ function safeStringCompare(str1, str2, caseSensitive = false) {
 	const s2 = String(str2);
 
 	return caseSensitive ? s1 === s2 : s1.toLowerCase() === s2.toLowerCase();
+}
+
+/**
+ * Constant-time comparison for security-sensitive values (e.g. password hashes).
+ * Avoids the early-exit timing leak of a normal string comparison.
+ */
+function timingSafeEqual(a, b) {
+	const bufA = Buffer.from(String(a));
+	const bufB = Buffer.from(String(b));
+	if (bufA.length !== bufB.length) {
+		return false;
+	}
+	return crypto.timingSafeEqual(bufA, bufB);
+}
+
+/**
+ * Produces a deterministic, salt-shaped value for unknown users so the salt
+ * endpoint never reveals whether an account exists (anti-enumeration). Derived
+ * from the username and SESSION_SECRET so it is stable per-user but unguessable.
+ */
+function deterministicFakeSalt(username) {
+	return crypto.createHmac("sha256", process.env.SESSION_SECRET || "default_secret_for_development")
+		.update(username)
+		.digest("hex")
+		.slice(0, 16);
 }
 
 async function queryDatabase(query, params) {
@@ -245,24 +275,24 @@ app.post("/api/auth/salt", async (req, res) => {
 	}
 
 	try {
-		let rows = [];
+		const normalizedUsername = username.toLowerCase().trim();
+		let salt;
 		if (!isLocalhost) {
-			[rows] = await queryDatabase(
+			const [rows] = await queryDatabase(
 				"SELECT SALT FROM USER WHERE EMAIL = ?",
-				[username.toLowerCase().trim()]
+				[normalizedUsername]
 			);
 
-			if (rows.length === 0) {
-				return res.status(404).json({error: "User not found"});
-			}
+			// Anti-enumeration: never reveal whether the user exists. Unknown
+			// users receive a deterministic, salt-shaped value derived from the
+			// username and a server secret, so responses are indistinguishable.
+			salt = rows.length > 0 ? rows[0].SALT : deterministicFakeSalt(normalizedUsername);
 		} else {
-			const slt = "salt123";
-			console.info("Mock salt: " + slt);
-			rows.push({SALT: slt});
+			salt = "salt123";
 		}
 
-		req.session.username = username.toLowerCase().trim();
-		req.session.salt = rows[0].SALT;
+		req.session.username = normalizedUsername;
+		req.session.salt = salt;
 
 		console.log("Session after storing username and salt:", JSON.stringify(req.session, null, 2));
 
@@ -274,7 +304,7 @@ app.post("/api/auth/salt", async (req, res) => {
 
 			console.log("Session saved successfully");
 			console.log("=== SALT REQUEST END ===");
-			res.json({salt: rows[0].SALT});
+			res.json({salt});
 		});
 
 	} catch (error) {
@@ -332,7 +362,7 @@ app.post("/api/login", async (req, res) => {
 		console.log("Expected hash:", expectedHash);
 		console.log("Received hash:", hashedPepperedPassword);
 
-		if (safeStringCompare(expectedHash, hashedPepperedPassword)) {
+		if (timingSafeEqual(expectedHash, hashedPepperedPassword)) {
 			req.session.login = email;
 			req.session.logged_in_at = Math.floor(Date.now() / 1000);
 
@@ -403,21 +433,6 @@ app.get("/api/tools", (req, res) => {
 	];
 	res.json(tools);
 });
-
-if (isLocalhost && process.env.API_URL && process.env.API_URL !== "http://localhost:3000") {
-	app.use("/external-api", createProxyMiddleware({
-		target: process.env.API_URL,
-		changeOrigin: true,
-		pathRewrite: {
-			"^/external-api": "/api"
-		},
-		logLevel: "debug",
-		onProxyReq: (proxyReq, req, res) => {
-			proxyReq.setHeader("X-Source", "local-proxy");
-		}
-	}));
-	console.log(`Proxying external API requests to ${process.env.API_URL}`);
-}
 
 app.use((err, req, res, next) => {
 	console.error("Express error:", err);

@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
 import { AppUtils } from "./app-utils";
+import { APP_CONFIG, useMockBackend } from "@app/config/app.config";
 
 @Injectable({
 	providedIn: "root",
@@ -19,16 +20,24 @@ export class Environment {
 	}
 
 	private getApiBaseUrl(): string {
-		if (this._isLocalhost) {
-			// In local development, use full URL to backend server
-			return "http://localhost:3000/api";
-		} else {
-			// In production, use relative paths
+		// When no real server is configured we still speak to "/api"; the
+		// mock backend interceptor answers those calls in-browser. When a real
+		// server URL is set in app.config.ts, route to that origin's /api.
+		if (useMockBackend()) {
 			return "/api";
 		}
+		return `${APP_CONFIG.apiServerUrl.replace(/\/$/, "")}/api`;
 	}
 
 	get apiBaseUrl(): string {
 		return this._apiBaseUrl;
+	}
+
+	get isLocalhost(): boolean {
+		return this._isLocalhost;
+	}
+
+	get usingMockBackend(): boolean {
+		return useMockBackend();
 	}
 }
