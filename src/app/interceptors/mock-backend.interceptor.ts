@@ -26,9 +26,20 @@ import { useMockBackend } from "@app/config/app.config";
  */
 @Injectable()
 export class MockBackendInterceptor implements HttpInterceptor {
-	/** Demo accounts. storedDHP is computed lazily as sha256(salt + password). */
-	private readonly seedUsers: { email: string; salt: string; password: string }[] = [
-		{ email: "test@example.com", salt: "salt123", password: "123456" },
+	/**
+	 * Demo accounts. Mirrors a real USER table row: we store the salt and the
+	 * pre-computed storedDHP = sha256(salt + password) - never the plaintext
+	 * password. This keeps credentials out of the readable bundle, exactly as a
+	 * real database would only ever hold the hash.
+	 *
+	 *   GLaDOS@brightmatter.tools -> password "ABCDGH" (salt "salt123")
+	 */
+	private readonly seedUsers: { email: string; salt: string; storedDHP: string }[] = [
+		{
+			email: "glados@brightmatter.tools",
+			salt: "salt123",
+			storedDHP: "bcfa442fe2e65153c13ce1f4da73883d72c59b0083393d8caa87dab4e0dbc4d1",
+		},
 	];
 
 	/** Per-"session" handshake state, mirroring express-session fields. */
@@ -137,7 +148,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
 		// For unknown users we still compute against a value that will never match,
 		// keeping timing/shape similar and avoiding an existence oracle.
 		const storedDHP = known
-			? await this.sha256(known.salt + known.password)
+			? known.storedDHP
 			: await this.sha256(salt + "\u0000no-such-user");
 
 		const expectedHash = await this.sha256(storedDHP + pepper);
