@@ -1,32 +1,121 @@
-<div class="white-bg">
-  <form>
-    <div class="flex-c h-center h-spaced lv-spaced strong v-padding">
-      <label for="corporateInput" class="pull-left">
-        Corporate:&nbsp;
-        <input id="corporateInput" type="text" maxlength="12" [(ngModel)]="corporate" name="corporate" [disabled]="taxType !== 'Corporate'" />
-      </label>
-      <label for="personalInput" class="pull-right">
-        Personal:&nbsp;
-        <input id="personalInput" type="text" maxlength="12" [(ngModel)]="personal" name="personal" [disabled]="taxType !== 'Personal'" />
-      </label>
-      <select id="tax-types" [(ngModel)]="taxType" name="taxType">
-        <option disabled value="">--Tax Type--</option>
-        <option value="Personal">Personal</option>
-        <option value="Corporate">Corporate</option>
-      </select>
+<div class="tax-page white-bg">
+  <section class="intro">
+    <p>
+      This tool shows a proposed tax system where your tax rate is based only on how your income compares to the federal poverty line.
+      There are no brackets. Change the two poverty-line numbers below and the full curve redraws immediately.
+    </p>
+  </section>
+
+  <section class="entry-section" aria-label="Poverty line inputs">
+    <div class="question-card">
+      <label for="baselineInput">What was the federal poverty line for a single adult in the year this system was adopted?</label>
+      <p class="hint">
+        This number acts as a permanent anchor. Once set, it does not change; it defines what the tax curve looks like under normal conditions.
+      </p>
+      <div class="money-input">
+        <span aria-hidden="true">$</span>
+        <input
+          id="baselineInput"
+          type="number"
+          min="1"
+          step="1"
+          [(ngModel)]="baseline"
+          (ngModelChange)="recompute()"
+          name="baseline"
+          inputmode="numeric"
+          aria-describedby="baselineHelp"
+        />
+      </div>
     </div>
-    <div class="flex-c h-center v-padding">
-      <label for="quantityInput">
-        Quantity:&nbsp;
-        <input id="quantityInput" type="number" .[(ngModel)]="quantity" name="quantity" [min]="minTaxable" [max]="maxTaxable" />
-      </label>
+
+    <div class="question-card">
+      <label for="currentInput">What is the federal poverty line for a single adult today?</label>
+      <p class="hint">
+        This number changes the shape of the tax curve. When it is higher than the baseline, high earners pay more; when it is lower, they receive relief.
+      </p>
+      <div class="money-input">
+        <span aria-hidden="true">$</span>
+        <input
+          id="currentInput"
+          type="number"
+          min="1"
+          step="1"
+          [(ngModel)]="current"
+          (ngModelChange)="recompute()"
+          name="current"
+          inputmode="numeric"
+          aria-describedby="currentHelp"
+        />
+      </div>
     </div>
-    <div class="tax-container">
-      <div id="taxPlot" class="tax-chart" style="padding: 0px; position: relative;"></div>
+  </section>
+
+  <section class="derived-grid" aria-label="Calculated values">
+    <div class="derived-card">
+      <span class="derived-label">Curve steepness</span>
+      <strong>{{ exponent | number:'1.2-2' }}</strong>
+      <span class="derived-note">1.50 is neutral</span>
     </div>
-    <div class="flex-r h-center h-spaced v-padding">
-      <button type="button" .(click)="showTaxes()">Show Taxes</button>
-      <button type="button" .(click)="reset()">Reset Taxes</button>
+    <div class="derived-card">
+      <span class="derived-label">Income where you keep the most</span>
+      <strong>{{ formatMoney(peakIncome) }}</strong>
     </div>
-  </form>
+    <div class="derived-card">
+      <span class="derived-label">Your tax rate at peak take-home</span>
+      <strong>{{ peakTaxRate | number:'1.1-1' }}%</strong>
+    </div>
+    <div class="derived-card">
+      <span class="derived-label">Middle anchor point</span>
+      <strong>{{ formatMoney(middleAnchor) }}</strong>
+      <span class="derived-note">tax rate is always exactly 10%</span>
+    </div>
+  </section>
+
+  <section class="income-explorer" aria-label="Optional income explorer">
+    <div class="income-copy">
+      <label for="incomeSlider">Optional: where would your income sit on the curve?</label>
+      <p class="hint">
+        Move the slider or type your yearly income. The black dot marks that income on the proposed tax-rate line.
+      </p>
+    </div>
+    <div class="income-controls">
+      <input
+        id="incomeSlider"
+        class="income-slider"
+        type="range"
+        [min]="minIncome"
+        [max]="maxIncome"
+        step="1000"
+        [(ngModel)]="userIncome"
+        (ngModelChange)="onUserIncome()"
+        name="incomeSlider"
+      />
+      <div class="money-input compact">
+        <span aria-hidden="true">$</span>
+        <input
+          id="userIncomeInput"
+          type="number"
+          [min]="minIncome"
+          [max]="maxIncome"
+          step="1000"
+          [(ngModel)]="userIncome"
+          (ngModelChange)="onUserIncome()"
+          name="userIncome"
+          inputmode="numeric"
+        />
+      </div>
+    </div>
+    <div class="income-results">
+      <span>Tax rate: <strong>{{ userTaxRate | number:'1.1-1' }}%</strong></span>
+      <span>Tax paid: <strong>{{ formatMoney(userTax) }}</strong></span>
+      <span>Take-home: <strong>{{ formatMoney(userTakeHome) }}</strong></span>
+    </div>
+  </section>
+
+  <section class="chart-section" aria-label="Tax graph">
+    <h2>Your Tax Rate at Every Income Level</h2>
+    <div class="canvas-wrap">
+      <canvas #taxCanvas aria-label="Graph of proposed tax rate, current federal effective rate, and proposed take-home pay"></canvas>
+    </div>
+  </section>
 </div>

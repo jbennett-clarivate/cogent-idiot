@@ -8,9 +8,9 @@
       </button>
     }
     <span class="spacer"></span>
-    <button class="icon-btn non-standard-button-action" id="info-text-button"
+    <button class="icon-btn non-standard-button-action info-help" id="info-text-button"
             (click)="navigate('/home')"
-            (mouseenter)="showTooltip($event, 'Show application information')"
+            (mouseenter)="showTooltip($event, infoText())"
             (mouseleave)="hideTooltip()">
       <img ngSrc="assets/images/info.svg" alt="Info" width="24" height="24" />
     </button>
@@ -28,3 +28,4 @@
     <router-outlet></router-outlet>
   </div>
 </div>
+

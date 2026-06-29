@@ -21,8 +21,31 @@ export class ToolWrapperComponent {
 		{ name: "TZ Tool", icon: "localtime.svg", route: "/tools/localtime" },
 		{ name: "Pascal Triangle", icon: "pascal.svg", route: "/tools/pascal" },
 		{ name: "Safe Cron", icon: "cron.svg", route: "/tools/safecron" },
-		{ name: "Tax Calculator", icon: "taxes.svg", route: "/tools/taxes" },
+		{ name: "Tax vs. Poverty Line", icon: "taxes.svg", route: "/tools/taxes" },
 	];
+
+	// Plain-language descriptions shown when hovering the info button.
+	private descriptions: { [route: string]: string } = {
+		"/tools/bayes":
+			"Updates a probability after new evidence using Bayes' theorem. Enter how likely something is to be true to begin with and how reliable your test is, and it calculates the revised probability that it's actually true given a positive result. Handy for medical-test and false-positive style questions. Reuse the answer as the next starting point to chain several updates together.",
+		"/tools/cleaner":
+			"Cleans a messy list by splitting it on the delimiters you pick (tabs, commas, spaces, quotes, semicolons, apostrophes, or a custom character) and separating the duplicates from the unique entries. Paste a list or upload a text file, optionally lowercase everything before comparing, and you get a clean de-duplicated column alongside the discarded duplicates.",
+		"/tools/comparator":
+			"Compares two lists and shows you four results at once: entries only in list A, entries only in list B, the overlap they share, and the two lists combined. Paste them or upload text, CSV, or TSV files, choose case-sensitive or fuzzy matching, then export the results as CSV or TXT.",
+		"/tools/iterator":
+			"Generates a sequence of strings by counting through a character set you choose. Pick letters, numbers, and any extra characters, set how many iterations you want, and optionally wrap each one with a prefix and suffix. Useful for building test data, padded IDs, or any predictable counting pattern.",
+		"/tools/random":
+			"Generates random strings to your spec. Choose how many and how long, then tick which character types to allow: lowercase, uppercase, numbers, special characters, and UTF-8. It produces one column where each type may appear and another where every chosen type is guaranteed to appear in each string. Good for passwords, test fixtures, and sample tokens.",
+		"/tools/localtime":
+			"Converts a log timestamp into your browser's local time zone. Paste a timestamp in YYYY-MM-DD HH:mm:ss format (it assumes the input is UTC) and it returns the same moment in your local time, complete with your time-zone abbreviation and name. Built for reading server logs without doing the math in your head.",
+		"/tools/pascal":
+			"Draws Pascal's triangle and computes 'n choose k' (the binomial coefficient). Enter N and K to see how many ways you can pick K items from N, with the matching cell highlighted in the triangle below. A quick visual reference for combinatorics and binomial expansions.",
+		"/tools/safecron":
+			"Finds the best meeting and downtime windows across multiple time zones. Add each zone your team works in and give it an importance weight, then it overlaps everyone's 9-to-5 working hours on a chart (relative to your local time) and suggests the hour that suits the most people for a meeting and the quietest hour for maintenance or downtime.",
+		"/tools/taxes":
+			"This tool visualizes a proposed tax system where your tax rate is decided entirely by how your income compares to the poverty line. There are no brackets. The only two numbers needed to draw the whole tax curve are the poverty line from a fixed reference year and today's poverty line. Change those two numbers and watch the curve redraw.",
+	};
+
 	toolTitle$: Observable<string>;
 
 	constructor(private router: Router, private route: ActivatedRoute, private authService: AuthService) {
@@ -78,6 +101,11 @@ export class ToolWrapperComponent {
 		button.classList.add("tooltip-active");
 	}
 
+	infoText(): string {
+		const url = this.router.url.split("?")[0];
+		return this.descriptions[url] || "This page does not have a description yet.";
+	}
+
 	hideTooltip() {
 		const activeTooltips = document.querySelectorAll(".tooltip-active");
 		activeTooltips.forEach(element => {
@@ -86,3 +114,4 @@ export class ToolWrapperComponent {
 		});
 	}
 }
+

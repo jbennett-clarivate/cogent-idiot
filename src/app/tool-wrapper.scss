@@ -94,3 +94,22 @@
   bottom: 100%;
   border-bottom-color: rgba(0, 0, 0, 0.9);
 }
+
+/* Wrapping tooltip for the info/help description */
+.icon-btn.info-help.tooltip-active::after {
+  white-space: normal;
+  width: 320px;
+  max-width: 80vw;
+  line-height: 1.4;
+  left: auto;
+  right: 0;
+  transform: none;
+  text-align: left;
+}
+
+.icon-btn.info-help.tooltip-active::before {
+  left: auto;
+  right: 10px;
+  transform: none;
+}
+
