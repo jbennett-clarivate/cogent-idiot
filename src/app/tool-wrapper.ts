@@ -22,6 +22,7 @@ export class ToolWrapperComponent {
 		{ name: "Pascal Triangle", icon: "pascal.svg", route: "/tools/pascal" },
 		{ name: "Safe Cron", icon: "cron.svg", route: "/tools/safecron" },
 		{ name: "Tax vs. Poverty Line", icon: "taxes.svg", route: "/tools/taxes" },
+		{ name: "Password Breach Check", icon: "pwned.svg", route: "/tools/pwned" },
 	];
 
 	// Plain-language descriptions shown when hovering the info button.

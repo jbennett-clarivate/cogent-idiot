@@ -20,6 +20,7 @@ export const routes: Routes = [
 			{ path: "pascal", loadComponent: () => import("./components/pascal/pascal").then(m => m.PascalComponent), data: { title: "Pascal's Triangle" }, canActivate: [AuthGuard] },
 			{ path: "safecron", loadComponent: () => import("./components/safecron/safecron").then(m => m.SafecronComponent), data: { title: "Safe Time Zones" }, canActivate: [AuthGuard] },
 			{ path: "taxes", loadComponent: () => import("./components/taxes/taxes").then(m => m.TaxesComponent), data: { title: "Tax vs. Poverty Line" }, canActivate: [AuthGuard] },
+			{ path: "pwned", loadComponent: () => import("./components/pwned/pwned").then(m => m.PwnedComponent), data: { title: "Password Breach Check" }, canActivate: [AuthGuard] },
 		],
 	},
 	{ path: "**", redirectTo: "/home" },

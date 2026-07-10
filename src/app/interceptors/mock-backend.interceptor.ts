@@ -54,6 +54,13 @@ export class MockBackendInterceptor implements HttpInterceptor {
 			return next.handle(req);
 		}
 
+		// Only our own /api/* routes are mocked. Anything else (e.g. external
+		// services like api.pwnedpasswords.com) must pass through untouched even
+		// in self-contained mode.
+		if (!this.pathOf(req.url).includes("/api/")) {
+			return next.handle(req);
+		}
+
 		// Wrap in defer-like async pipeline; add a tiny delay to feel networky.
 		return of(null).pipe(
 			mergeMap(() => this.handleRoute(req)),

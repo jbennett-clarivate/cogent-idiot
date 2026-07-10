@@ -2,9 +2,9 @@
   <form>
     <div class="flex-c h-center h-spaced lv-spaced strong v-padding">
       <label for="all-utc-offsets" class="width-limit">
-        <span>Time Zone (Required):</span>
+        <span>City (Required):</span>
         <select id="all-utc-offsets" [(ngModel)]="selectedZone" name="selectedZone">
-          <option disabled value="">Select timezone...</option>
+          <option disabled value="">Select a city...</option>
           @for (zone of timeZones(); track zone.value) {
             <option [value]="zone.value" [title]="getTooltipText(zone.value)">{{ zone.label }}</option>
           }

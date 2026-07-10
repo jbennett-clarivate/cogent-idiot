@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Password breach check icon">
+  <!-- Shield -->
+  <path
+    d="M140 18
+       C116 38 83 48 51 50
+       L51 119
+       C51 180 88 232 140 260
+       C192 232 229 180 229 119
+       L229 50
+       C197 48 164 38 140 18Z"
+    fill="#000000"/>
+
+  <!-- Password dots -->
+  <circle cx="92" cy="113" r="10" fill="#ffffff"/>
+  <circle cx="122" cy="113" r="10" fill="#ffffff"/>
+  <circle cx="152" cy="113" r="10" fill="#ffffff"/>
+
+  <!-- Magnifying glass lens -->
+  <circle
+    cx="154"
+    cy="159"
+    r="43"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="17"/>
+
+  <!-- Magnifying glass handle -->
+  <line
+    x1="184"
+    y1="190"
+    x2="219"
+    y2="225"
+    stroke="#ffffff"
+    stroke-width="19"
+    stroke-linecap="round"/>
+
+  <!-- Tiny alert notch inside the lens -->
+  <line
+    x1="154"
+    y1="136"
+    x2="154"
+    y2="164"
+    stroke="#ffffff"
+    stroke-width="13"
+    stroke-linecap="round"/>
+  <circle cx="154" cy="181" r="7" fill="#ffffff"/>
+</svg>

@@ -3,10 +3,10 @@ import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 
 interface TimeZoneData {
-	offset: number;
+	iana: string;
 	code: string;
+	city: string;
 	weight: number;
-	description: string;
 	color: string;
 }
 
@@ -37,7 +37,7 @@ export class SafecronComponent implements AfterViewInit {
 	// Computed values
 	timeZones = computed(() => this.timeZoneData.map(tz => ({
 		value: tz.code,
-		label: `UTC${tz.offset >= 0 ? "+" : ""}${tz.offset}`,
+		label: this.describeZone(tz),
 	})));
 
 	canComputeSafeTime = computed(() => this.selectedLocalTimes().length > 0);
@@ -60,53 +60,101 @@ export class SafecronComponent implements AfterViewInit {
 	}
 
 	private initializeTimeZoneData() {
+		// Curated shortlist: one recognizable city per commonly used zone, ordered
+		// west to east. `code` is the unique key the rest of the component relies
+		// on; `city` is what the user sees; `iana` is the real zone name that lets
+		// us compute the live, DST-aware offset via Intl.
 		this.timeZoneData = [
-			{ offset: -12, code: "IDLW", weight: 0, description: "UTC-12:00", color: "" },
-			{ offset: -11, code: "SST", weight: 0, description: "UTC-11:00", color: "" },
-			{ offset: -10, code: "TAHT", weight: 0, description: "UTC-10:00", color: "" },
-			{ offset: -9.5, code: "MART", weight: 0, description: "UTC-09:30", color: "" },
-			{ offset: -9, code: "HDT", weight: 0, description: "UTC-09:00", color: "" },
-			{ offset: -8, code: "PST", weight: 0, description: "UTC-08:00", color: "" },
-			{ offset: -7, code: "MST", weight: 0, description: "UTC-07:00", color: "" },
-			{ offset: -6, code: "CST", weight: 0, description: "UTC-06:00", color: "" },
-			{ offset: -5, code: "ST", weight: 0, description: "UTC-05:00", color: "" },
-			{ offset: -4, code: "VET", weight: 0, description: "UTC-04:00", color: "" },
-			{ offset: -3.5, code: "NST", weight: 0, description: "UTC-03:30", color: "" },
-			{ offset: -3, code: "CLST", weight: 0, description: "UTC-03:00", color: "" },
-			{ offset: -2.5, code: "NDT", weight: 0, description: "UTC-02:30", color: "" },
-			{ offset: -2, code: "GST", weight: 0, description: "UTC-02:00", color: "" },
-			{ offset: -1, code: "AZOT", weight: 0, description: "UTC-01:00", color: "" },
-			{ offset: 0, code: "UTC", weight: 0, description: "UTC+00:00", color: "" },
-			{ offset: 1, code: "CET", weight: 0, description: "UTC+01:00", color: "" },
-			{ offset: 2, code: "CAT", weight: 0, description: "UTC+02:00", color: "" },
-			{ offset: 3, code: "AST", weight: 0, description: "UTC+03:00", color: "" },
-			{ offset: 3.5, code: "IRST", weight: 0, description: "UTC+03:30", color: "" },
-			{ offset: 4, code: "SAMT", weight: 0, description: "UTC+04:00", color: "" },
-			{ offset: 4.5, code: "IRDT", weight: 0, description: "UTC+04:30", color: "" },
-			{ offset: 5, code: "ORAT", weight: 0, description: "UTC+05:00", color: "" },
-			{ offset: 5.5, code: "IST", weight: 0, description: "UTC+05:30", color: "" },
-			{ offset: 5.75, code: "NPT", weight: 0, description: "UTC+05:45", color: "" },
-			{ offset: 6, code: "BTT", weight: 0, description: "UTC+06:00", color: "" },
-			{ offset: 6.5, code: "MMT", weight: 0, description: "UTC+06:30", color: "" },
-			{ offset: 7, code: "THA", weight: 0, description: "UTC+07:00", color: "" },
-			{ offset: 8, code: "HKT", weight: 0, description: "UTC+08:00", color: "" },
-			{ offset: 8.75, code: "ACWST", weight: 0, description: "UTC+08:45", color: "" },
-			{ offset: 9, code: "JST", weight: 0, description: "UTC+09:00", color: "" },
-			{ offset: 9.5, code: "ACST", weight: 0, description: "UTC+09:30", color: "" },
-			{ offset: 10, code: "PGT", weight: 0, description: "UTC+10:00", color: "" },
-			{ offset: 10.5, code: "LHST", weight: 0, description: "UTC+10:30", color: "" },
-			{ offset: 11, code: "SBT", weight: 0, description: "UTC+11:00", color: "" },
-			{ offset: 12, code: "FJT", weight: 0, description: "UTC+12:00", color: "" },
-			{ offset: 12.75, code: "CHAST", weight: 0, description: "UTC+12:45", color: "" },
-			{ offset: 13, code: "TKT", weight: 0, description: "UTC+13:00", color: "" },
-			{ offset: 13.75, code: "CHADT", weight: 0, description: "UTC+13:45", color: "" },
-			{ offset: 14, code: "LINT", weight: 0, description: "UTC+14:00", color: "" },
+			{ iana: "Pacific/Honolulu", code: "HONOLULU", city: "Honolulu", weight: 0, color: "" },
+			{ iana: "America/Los_Angeles", code: "LOS_ANGELES", city: "Los Angeles", weight: 0, color: "" },
+			{ iana: "America/Denver", code: "DENVER", city: "Denver", weight: 0, color: "" },
+			{ iana: "America/Chicago", code: "CHICAGO", city: "Chicago", weight: 0, color: "" },
+			{ iana: "America/New_York", code: "NEW_YORK", city: "New York", weight: 0, color: "" },
+			{ iana: "America/Sao_Paulo", code: "SAO_PAULO", city: "São Paulo", weight: 0, color: "" },
+			{ iana: "Europe/London", code: "LONDON", city: "London", weight: 0, color: "" },
+			{ iana: "Europe/Berlin", code: "BERLIN", city: "Berlin", weight: 0, color: "" },
+			{ iana: "Africa/Johannesburg", code: "JOHANNESBURG", city: "Johannesburg", weight: 0, color: "" },
+			{ iana: "Europe/Moscow", code: "MOSCOW", city: "Moscow", weight: 0, color: "" },
+			{ iana: "Asia/Dubai", code: "DUBAI", city: "Dubai", weight: 0, color: "" },
+			{ iana: "Asia/Karachi", code: "KARACHI", city: "Karachi", weight: 0, color: "" },
+			{ iana: "Asia/Kolkata", code: "MUMBAI", city: "Mumbai", weight: 0, color: "" },
+			{ iana: "Asia/Bangkok", code: "BANGKOK", city: "Bangkok", weight: 0, color: "" },
+			{ iana: "Asia/Singapore", code: "SINGAPORE", city: "Singapore", weight: 0, color: "" },
+			{ iana: "Asia/Tokyo", code: "TOKYO", city: "Tokyo", weight: 0, color: "" },
+			{ iana: "Australia/Sydney", code: "SYDNEY", city: "Sydney", weight: 0, color: "" },
+			{ iana: "Pacific/Auckland", code: "AUCKLAND", city: "Auckland", weight: 0, color: "" },
 		];
+	}
+
+	// Live, DST-aware offset (in hours) for an IANA zone at a given instant.
+	// We format the same moment as UTC and as the target zone, then diff them.
+	private offsetHoursFor(iana: string, at: Date = new Date()): number {
+		const utc = new Date(at.toLocaleString("en-US", { timeZone: "UTC" }));
+		const local = new Date(at.toLocaleString("en-US", { timeZone: iana }));
+		return Math.round(((local.getTime() - utc.getTime()) / 3600000) * 4) / 4;
+	}
+
+	// The short abbreviation (e.g. MDT / MST / JST) for an IANA zone right now,
+	// which is how the user tells Standard from Daylight at a glance.
+	private abbrevFor(iana: string, at: Date = new Date()): string {
+		try {
+			const parts = new Intl.DateTimeFormat("en-US", {
+				timeZone: iana,
+				timeZoneName: "short",
+				hour: "numeric",
+			}).formatToParts(at);
+			return parts.find(p => p.type === "timeZoneName")?.value ?? "";
+		} catch {
+			return "";
+		}
+	}
+
+	// Render an offset like 5.5 as "UTC+5:30" or -8 as "UTC-8:00".
+	private formatOffset(offset: number): string {
+		const sign = offset >= 0 ? "+" : "-";
+		const abs = Math.abs(offset);
+		const hours = Math.floor(abs);
+		const minutes = Math.round((abs - hours) * 60);
+		return `UTC${sign}${hours}:${minutes.toString().padStart(2, "0")}`;
+	}
+
+	// Full human-readable label: "Denver (UTC-6, MDT)".
+	private describeZone(zone: TimeZoneData, at: Date = new Date()): string {
+		const offset = this.offsetHoursFor(zone.iana, at);
+		const abbrev = this.abbrevFor(zone.iana, at);
+		const offsetStr = this.formatOffset(offset);
+		return abbrev ? `${zone.city} (${offsetStr}, ${abbrev})` : `${zone.city} (${offsetStr})`;
 	}
 
 	getTooltipText(code: string): string {
 		const zone = this.timeZoneData.find(tz => tz.code === code);
-		return zone ? `${zone.code} - ${zone.description}` : "";
+		return zone ? this.describeZone(zone) : "";
+	}
+
+	// Sample the user's local UTC offset (in hours) once. Callers should grab
+	// this a single time per pass and thread it through, so a DST or midnight
+	// flip can never make two calculations in the same render disagree.
+	private getLocalOffsetHours(): number {
+		return new Date().getTimezoneOffset() / -60;
+	}
+
+	// Robust modulo that always lands in [0, 95] and rounds to an integer slot,
+	// so floating-point fuzz can never flip the wrap comparison at a boundary.
+	private mod96(value: number): number {
+		return ((Math.round(value) % 96) + 96) % 96;
+	}
+
+	// Single source of truth for a zone's 9-to-5 window in quarter-hour slots.
+	// Used by both the schedule computation and the chart drawing so they can
+	// never diverge.
+	private computeZoneSlots(zone: TimeZoneData, localOffsetHours: number): { start: number; end: number } {
+		const offset = this.offsetHoursFor(zone.iana) - localOffsetHours;
+		const workStart = 9 - offset;
+		const workEnd = workStart + 8;
+		return {
+			start: this.mod96(workStart * 4),
+			end: this.mod96(workEnd * 4),
+		};
 	}
 
 	private getRandomColor(): string {
@@ -152,32 +200,23 @@ export class SafecronComponent implements AfterViewInit {
 		const currentSelectedTimes = this.selectedLocalTimes();
 		if (currentSelectedTimes.length === 0) return;
 
-		// Initialize safe schedule array
+		const localOffsetHours = this.getLocalOffsetHours();
 		const newSafeScheduleArray = new Array(96).fill(0);
+		const workingWindowSlots = 32; // eight hours, in 15-minute slots
 
-		// Calculate safe schedule based on selected time zones
 		currentSelectedTimes.forEach(localTime => {
-			let offset = (new Date().getTimezoneOffset()) / -60;
-			const differentWorkingHoursBegin = localTime.offset;
-			offset = differentWorkingHoursBegin - offset;
-			const workStart = 9 - offset;
-			const workEnd = workStart + 8;
-
-			const startMinutes = workStart * 60;
-			const endMinutes = workEnd * 60;
-
-			for (let m = startMinutes; m < endMinutes; m += 15) {
-				const slot = Math.floor(m / 15 + 96) % 96;
+			const { start } = this.computeZoneSlots(localTime, localOffsetHours);
+			for (let i = 0; i < workingWindowSlots; i++) {
+				const slot = (start + i) % 96;
 				newSafeScheduleArray[slot] += localTime.weight;
 			}
 		});
 
-		// Update signal
 		this.safeScheduleArray.set(newSafeScheduleArray);
-		this.calculateBestTimes();
+		this.calculateBestTimes(localOffsetHours);
 	}
 
-	private calculateBestTimes() {
+	private calculateBestTimes(localOffsetHours: number) {
 		const currentArray = this.safeScheduleArray();
 		if (!currentArray || currentArray.length !== 96) {
 			this.meetingTime.set("");
@@ -196,7 +235,7 @@ export class SafecronComponent implements AfterViewInit {
 		const topZones = zones.filter(z => z.weight === maxWeight && maxWeight > 0);
 		const zoneWindows = new Map<string, { start: number; end: number }>();
 		zones.forEach(zone => {
-			const w = this.computeZoneWorkWindow(zone);
+			const w = this.computeZoneSlots(zone, localOffsetHours);
 			zoneWindows.set(zone.code, w);
 		});
 
@@ -239,26 +278,6 @@ export class SafecronComponent implements AfterViewInit {
 			sums[i] = s;
 		}
 		return sums;
-	}
-
-	private computeZoneWorkWindow(zone: TimeZoneData): { start: number; end: number } {
-		let offset = (new Date().getTimezoneOffset()) / -60;
-		const differentWorkingHoursBegin = zone.offset;
-		offset = differentWorkingHoursBegin - offset;
-		const workStart = 9 - offset;
-		const workEnd = workStart + 8;
-		const startSlot = (Math.floor(workStart * 4 + 96) % 96 + (this.fractionToQuarter(workStart) || 0)) % 96;
-		const endSlot = (Math.floor(workEnd * 4 + 96) % 96 + (this.fractionToQuarter(workEnd) || 0)) % 96;
-		// The above adds quarter offsets defensively; in practice workStart/workEnd should align to quarter-hour
-		return { start: startSlot, end: endSlot };
-	}
-
-	private fractionToQuarter(value: number): number {
-		const frac = value - Math.floor(value);
-		if (Math.abs(frac - 0.75) < 1e-9) return 3;
-		if (Math.abs(frac - 0.5) < 1e-9) return 2;
-		if (Math.abs(frac - 0.25) < 1e-9) return 1;
-		return 0;
 	}
 
 	private isContainedForTopZones(start: number, windowSize: number, topZones: TimeZoneData[], zoneWindows: Map<string, { start: number, end: number }>): boolean {
@@ -536,7 +555,7 @@ export class SafecronComponent implements AfterViewInit {
 			ctx.fillStyle = "#333";
 			ctx.font = "12px Arial";
 			ctx.textAlign = "right";
-			ctx.fillText(`GMT${zone.offset >= 0 ? "+" : ""}${zone.offset}`, margin.left - 10, y + 4);
+			ctx.fillText(zone.city, margin.left - 10, y + 4);
 		});
 
 		// Draw axis labels - use user's local timezone
@@ -585,6 +604,8 @@ export class SafecronComponent implements AfterViewInit {
 		const numZones = selectedTimes.length;
 		const zoneHeight = numZones > 0 ? chartHeight / numZones : chartHeight;
 
+		const localOffsetHours = this.getLocalOffsetHours();
+
 		selectedTimes.forEach((zone, index) => {
 			const r = parseInt(zone.color.slice(1, 3), 16);
 			const g = parseInt(zone.color.slice(3, 5), 16);
@@ -592,14 +613,7 @@ export class SafecronComponent implements AfterViewInit {
 			ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.5)`;
 			const y = margin.top + index * zoneHeight;
 
-			let offset = (new Date().getTimezoneOffset()) / -60;
-			const differentWorkingHoursBegin = zone.offset;
-			offset = differentWorkingHoursBegin - offset;
-			const workStart = 9 - offset;
-			const workEnd = workStart + 8;
-
-			const startSlot = (workStart * 4 + 96) % 96;
-			const endSlot = (workEnd * 4 + 96) % 96;
+			const { start: startSlot, end: endSlot } = this.computeZoneSlots(zone, localOffsetHours);
 
 			if (startSlot < endSlot) {
 				const x = margin.left + (startSlot / 96) * chartWidth;
@@ -652,7 +666,7 @@ export class SafecronComponent implements AfterViewInit {
 				const labelY = margin.top + (i + 0.5) * zoneHeight;
 				if (y >= labelY - zoneHeight / 2 && y <= labelY + zoneHeight / 2) {
 					const zone = this.selectedLocalTimes()[i];
-					this.showCanvasTooltip(event, `${zone.code} - ${zone.description}`);
+					this.showCanvasTooltip(event, this.describeZone(zone));
 					return;
 				}
 			}

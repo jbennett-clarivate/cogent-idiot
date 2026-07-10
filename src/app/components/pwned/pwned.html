@@ -1,0 +1,50 @@
+<div class="white-bg">
+  <div class="pwned-intro">
+    <p>
+      Check whether a password has appeared in a known data breach. Type a password below and press the
+      <strong>Right Arrow</strong> key to check it. Only the first five characters of its hash ever leave your
+      browser, so the password itself is never sent anywhere.
+    </p>
+  </div>
+
+  <form (submit)="$event.preventDefault()">
+    <div class="flex-c h-center v-padding">
+      <label for="pwnedPassword" class="flex-c h-center">
+        <span data-title="Press the Right Arrow key to check">Password:</span>
+        <input
+          id="pwnedPassword"
+          type="password"
+          name="pwnedPassword"
+          autocomplete="off"
+          [(ngModel)]="password"
+          (keydown)="onKeydown($event)"
+          placeholder="Type, then press →"
+        />
+      </label>
+
+      <!-- Flash indicator: mirrors the original good/bad symbol -->
+      <div class="indicator" [ngSwitch]="state">
+        <span *ngSwitchCase="'checking'" class="badge checking">…</span>
+        <span *ngSwitchCase="'safe'" class="badge safe" title="Not found in any known breach">✓</span>
+        <span *ngSwitchCase="'pwned'" class="badge pwned" title="Found in a known breach">✗</span>
+        <span *ngSwitchCase="'error'" class="badge error" title="Check failed">!</span>
+      </div>
+    </div>
+
+    <div class="flex-c h-center message-row" [ngSwitch]="state">
+      <p *ngSwitchCase="'safe'" class="msg-safe">
+        Good news — this password was not found in any known breach.
+      </p>
+      <p *ngSwitchCase="'pwned'" class="msg-pwned">
+        Warning — this password has appeared in known breaches
+        <strong>{{ breachCount.toLocaleString() }}</strong> times. Do not use it.
+      </p>
+      <p *ngSwitchCase="'error'" class="msg-error">{{ errorMessage }}</p>
+    </div>
+
+    <div class="flex-r h-center h-spaced v-padding">
+      <button type="button" class="btn btn-primary" (click)="check()">Check</button>
+      <button type="button" class="btn btn-reset" (click)="reset()">Reset</button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,78 @@
+.pwned-intro {
+  max-width: 640px;
+  margin: 0 auto 1em auto;
+
+  p {
+    color: #374151;
+    line-height: 1.5;
+    text-align: center;
+  }
+}
+
+.indicator {
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.75em;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  font-weight: bold;
+  color: #fff;
+  animation: flash-in 0.25s ease-out;
+}
+
+.badge.checking {
+  background: #6b7280;
+}
+
+.badge.safe {
+  background: #16a34a;
+}
+
+.badge.pwned {
+  background: #dc2626;
+}
+
+.badge.error {
+  background: #d97706;
+}
+
+@keyframes flash-in {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.message-row {
+  min-height: 1.5rem;
+
+  p {
+    text-align: center;
+    margin: 0.25em 0;
+  }
+}
+
+.msg-safe {
+  color: #16a34a;
+}
+
+.msg-pwned {
+  color: #dc2626;
+}
+
+.msg-error {
+  color: #d97706;
+}
