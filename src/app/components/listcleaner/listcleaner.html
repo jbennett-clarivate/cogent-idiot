@@ -9,12 +9,12 @@
 					<textarea tabindex="20" name="theinputlist" [(ngModel)]="theInputList" (paste)="onPaste($event)" placeholder="Enter your list here..."></textarea>
 				</div>
 				<div class="flex-c height-500 width-full">
-					<label class="top-spaced">Clean Output:<span>{{ theCleanListCount || '' }}</span></label>
+					<label class="top-spaced">Clean:<span>{{ theCleanListCount || '' }}</span></label>
 					<hr>
 					<div [innerHTML]="theCleanListDisplay"></div>
 				</div>
 				<div class="flex-c height-500 width-full">
-					<label class="top-spaced">Dirty Output:<span>{{ theDirtyListCount || '' }}</span></label>
+					<label class="top-spaced">Dirty:<span>{{ theDirtyListCount || '' }}</span></label>
 					<hr>
 					<div [innerHTML]="theDirtyListDisplay"></div>
 				</div>

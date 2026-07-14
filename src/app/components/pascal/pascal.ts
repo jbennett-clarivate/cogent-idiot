@@ -29,12 +29,17 @@ export class PascalComponent implements AfterViewInit {
 	}
 
 	ngAfterViewInit() {
-		this.setupMaxInputRange();
+		// Defer initial sizing to the next macrotask so the maxInputValue change
+		// (which depends on the rendered container width) lands in a fresh change
+		// detection cycle, avoiding NG0100 ExpressionChangedAfterItHasBeenChecked.
+		setTimeout(() => {
+			this.setupMaxInputRange();
+			this.displayTriangle();
+		});
 		window.addEventListener("resize", () => {
 			setTimeout(() => this.setupMaxInputRange(), 100);
 			setTimeout(() => this.displayTriangle(), 100);
 		});
-		this.displayTriangle();
 	}
 
 	buildFullTriangle() {

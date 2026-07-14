@@ -14,14 +14,14 @@ export class HomeComponent {
 
 	tools = [
 		{
-			name: "Bayes Calculator",
-			description: "Calculate Bayesian probabilities",
+			name: "Bayes' Theorem",
+			description: "Update a probability after new evidence",
 			icon: "bayes.svg",
 			route: "/tools/bayes",
 		},
 		{
 			name: "List Cleaner",
-			description: "Clean and format lists",
+			description: "Split a list and remove duplicates",
 			icon: "cleaner.svg",
 			route: "/tools/cleaner",
 		},
@@ -32,40 +32,34 @@ export class HomeComponent {
 			route: "/tools/comparator",
 		},
 		{
-			name: "List Iterator",
-			description: "Iterate through lists",
-			icon: "iterator.svg",
-			route: "/tools/iterator",
-		},
-		{
 			name: "List Random",
-			description: "Generate random items from lists",
+			description: "Generate random strings",
 			icon: "random.svg",
 			route: "/tools/random",
 		},
 		{
-			name: "TZ Tool",
-			description: "Log dates to localized datetimes",
-			icon: "localtime.svg",
-			route: "/tools/localtime",
-		},
-		{
-			name: "Pascal Triangle",
-			description: "Generate Pascal's triangle",
+			name: "Pascal's Triangle",
+			description: "Draw the triangle and compute nCk",
 			icon: "pascal.svg",
 			route: "/tools/pascal",
 		},
 		{
 			name: "Safe Cron",
-			description: "Safe time zone scheduling",
+			description: "Find the best meeting time across zones",
 			icon: "cron.svg",
 			route: "/tools/safecron",
 		},
 		{
-			name: "Tax Calculator",
-			description: "Calculate taxes",
+			name: "Tax vs. Poverty Line",
+			description: "Visualize a poverty-anchored tax curve",
 			icon: "taxes.svg",
 			route: "/tools/taxes",
+		},
+		{
+			name: "Password Breach Check",
+			description: "Check if a password has been breached",
+			icon: "pwned.svg",
+			route: "/tools/pwned",
 		},
 	];
 
@@ -74,3 +68,4 @@ export class HomeComponent {
 		this.router.navigate([route]).catch(err => console.error("Navigation failed:", err));
 	}
 }
+

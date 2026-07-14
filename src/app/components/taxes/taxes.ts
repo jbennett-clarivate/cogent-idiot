@@ -41,8 +41,15 @@ export class TaxesComponent implements AfterViewInit {
 	private readonly COLOR_FEDERAL = "#dc2626"; // red
 	private readonly COLOR_TAKEHOME = "#16a34a"; // green
 
+	constructor() {
+		// Compute derived values eagerly so the first change-detection pass sees
+		// the final numbers (avoids NG0100 ExpressionChangedAfterItHasBeenChecked).
+		this.computeDerived();
+	}
+
 	ngAfterViewInit(): void {
-		this.recompute();
+		// Canvas only exists now, so draw here. Derived values are already set.
+		this.draw();
 	}
 
 	@HostListener("window:resize")
@@ -51,6 +58,11 @@ export class TaxesComponent implements AfterViewInit {
 	}
 
 	recompute(): void {
+		this.computeDerived();
+		this.draw();
+	}
+
+	private computeDerived(): void {
 		const L = this.current;
 		const L0 = this.baseline;
 		if (!L || !L0 || L <= 0 || L0 <= 0) {
@@ -93,7 +105,6 @@ export class TaxesComponent implements AfterViewInit {
 		this.peakTakeHome = this.takeHomeAt(bestX);
 
 		this.computeUser();
-		this.draw();
 	}
 
 	onUserIncome(): void {

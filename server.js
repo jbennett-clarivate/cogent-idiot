@@ -424,9 +424,7 @@ app.get("/api/tools", (req, res) => {
 		{id: "bayes", name: "Bayes Calculator", description: "Calculate Bayesian probabilities"},
 		{id: "listclean", name: "List Cleaner", description: "Clean and format lists"},
 		{id: "listcomparator", name: "List Comparator", description: "Compare two lists"},
-		{id: "listiterator", name: "List Iterator", description: "Iterate through list items"},
 		{id: "listrandom", name: "List Randomizer", description: "Randomize list order"},
-		{id: "message", name: "TZ Tool", description: "Send messages"},
 		{id: "pascal", name: "Pascal Calculator", description: "Pascal triangle calculations"},
 		{id: "safecron", name: "Safe Cron", description: "Manage cron jobs safely"},
 		{id: "taxes", name: "Tax Calculator", description: "Calculate taxes"}
