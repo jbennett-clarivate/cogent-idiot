@@ -219,7 +219,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
 	private tools(): any[] {
 		return [
 			{ id: "bayes", name: "Bayes Calculator", description: "Calculate Bayesian probabilities" },
-			{ id: "listclean", name: "List Cleaner", description: "Clean and format lists" },
+			
 			{ id: "listcomparator", name: "List Comparator", description: "Compare two lists" },
 			{ id: "listrandom", name: "List Randomizer", description: "Randomize list order" },
 			{ id: "pascal", name: "Pascal Calculator", description: "Pascal triangle calculations" },

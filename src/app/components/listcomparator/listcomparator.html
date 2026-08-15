@@ -29,12 +29,12 @@
 			</div>
 		</div>
 		<div>
-			<div class="flex-r h-center h-spaced v-padding">
+			<div class="comparison-flags flex-r h-center h-spaced v-padding">
 				<label><input tabindex="14" type="checkbox" [checked]="caseSensitive()" (change)="caseSensitive.set($event.target.checked)" [attr.aria-label]="'Case Sensitive'"/><span data-title="Case sensitive compare"> Case Sensitive</span></label>
-				<label><input tabindex="15" type="checkbox" [checked]="fuzzyMatch()" (change)="fuzzyMatch.set($event.target.checked)" [attr.aria-label]="'Fuzzy Match'"/><span data-title="Fuzzy match (Levenshtein distance)"> Fuzzy Match</span></label>
+				<label><input tabindex="16" type="checkbox" [checked]="dedupe()" (change)="dedupe.set($event.target.checked)" [attr.aria-label]="'Dedupe'"/><span data-title="Remove duplicate entries within each list"> Dedupe</span></label>
 			</div>
 			<hr>
-			<div class="flex-r h-center h-spaced v-padding">
+			<div class="comparison-flags flex-r h-center h-spaced v-padding">
 				@for (delim of ['\t','\n',',',' ','"',';','\'']; track delim) {
 					<label>
 						<input type="checkbox" [checked]="selectedDelimiters().includes(delim)" (change)="toggleDelimiter(delim, $event.target.checked)" [attr.aria-label]="'Delimiter: ' + delim"/>
@@ -43,7 +43,7 @@
 				}
 			</div>
 		</div>
-		<div class="flex-r h-center h-spaced v-padding">
+		<div class="action-buttons flex-r h-center h-spaced v-padding">
 			<button tabindex="19" type="button" (click)="reset()" aria-label="Reset">Reset</button>
 			<button tabindex="20" type="button" (click)="exportResults('csv')" aria-label="Export CSV">Export CSV</button>
 			<button tabindex="21" type="button" (click)="exportResults('txt')" aria-label="Export TXT">Export TXT</button>
@@ -51,7 +51,7 @@
 	</form>
 	<div class="output-grid">
 		<div class="output-column height-500">
-			<label class="output-label" data-title="{ x ∈ A : x ∉ B }">Unique to A:<span>{{ outputListACount() }}</span></label>
+			<label class="output-label" data-title="A ∖ B — In A but not in B">Unique to A:<span>{{ outputListACount() }}</span></label>
 			<ul>
 				@for (item of uniqueToA(); track item) {
 					<li>{{ item }}</li>
@@ -59,7 +59,7 @@
 			</ul>
 		</div>
 		<div class="output-column height-500">
-			<label class="output-label" data-title="{ x ∈ B : x ∉ A }">Unique to B:<span>{{ outputListBCount() }}</span></label>
+						<label class="output-label" data-title="B ∖ A — In B but not in A">Unique to B:<span>{{ outputListBCount() }}</span></label>
 			<ul>
 				@for (item of uniqueToB(); track item) {
 					<li>{{ item }}</li>
@@ -67,7 +67,7 @@
 			</ul>
 		</div>
 		<div class="output-column height-500">
-			<label class="output-label" data-title="{ A ∩ B }">Intersection:<span>{{ outputListIntersectionCount() }}</span></label>
+			<label class="output-label" data-title="A ∩ B — In both A and B">Intersection:<span>{{ outputListIntersectionCount() }}</span></label>
 			<ul>
 				@for (item of intersection(); track item) {
 					<li>{{ item }}</li>
@@ -75,7 +75,7 @@
 			</ul>
 		</div>
 		<div class="output-column height-500">
-			<label class="output-label" data-title="{ B ∪ A }">Combination:<span>{{ outputListUnionCount() }}</span></label>
+			<label class="output-label" data-title="A ∪ B — In A or B (all unique)">Combination:<span>{{ outputListUnionCount() }}</span></label>
 			<ul>
 				@for (item of union(); track item) {
 					<li>{{ item }}</li>

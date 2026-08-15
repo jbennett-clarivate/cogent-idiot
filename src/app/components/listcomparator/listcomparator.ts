@@ -12,7 +12,7 @@ export class ListcomparatorComponent implements OnInit {
 	inputListA = signal("");
 	inputListB = signal("");
 	caseSensitive = signal(false);
-	fuzzyMatch = signal(false);
+	dedupe = signal(true);
 	selectedDelimiters = signal<string[]>([]);
 	loadingA = signal(false);
 	loadingB = signal(false);
@@ -41,18 +41,12 @@ export class ListcomparatorComponent implements OnInit {
 		const regex = delimiters.length ? new RegExp(`[${delimiters.join("")}]`, "g") : /[\n]/g;
 		let items = input.split(regex).map(x => x.trim()).filter(x => x);
 		if (!this.caseSensitive()) items = items.map(x => x.toLowerCase());
-		return Array.from(new Set(items));
+		if (this.dedupe()) items = Array.from(new Set(items));
+		return items;
 	}
 
 	compareLists(listA: string[], listB: string[]): string[] {
-		if (this.fuzzyMatch()) {
-			return listA.filter(a => !listB.some(b => this.fuzzyEqual(a, b)));
-		}
 		return listA.filter(a => !listB.includes(a));
-	}
-
-	fuzzyEqual(a: string, b: string): boolean {
-		return this.levenshtein(a, b) <= 2;
 	}
 
 	levenshtein(a: string, b: string): number {
@@ -125,7 +119,7 @@ export class ListcomparatorComponent implements OnInit {
 		this.inputListB.set("");
 		this.selectedDelimiters.set([]);
 		this.caseSensitive.set(false);
-		this.fuzzyMatch.set(false);
+		this.dedupe.set(true);
 		this.errorA.set("");
 		this.errorB.set("");
 		this.saveToLocalStorage();
@@ -136,7 +130,7 @@ export class ListcomparatorComponent implements OnInit {
 		localStorage.setItem("inputListB", this.inputListB());
 		localStorage.setItem("selectedDelimiters", JSON.stringify(this.selectedDelimiters()));
 		localStorage.setItem("caseSensitive", JSON.stringify(this.caseSensitive()));
-		localStorage.setItem("fuzzyMatch", JSON.stringify(this.fuzzyMatch()));
+		localStorage.setItem("dedupe", JSON.stringify(this.dedupe()));
 	}
 
 	loadFromLocalStorage(): void {
@@ -144,7 +138,7 @@ export class ListcomparatorComponent implements OnInit {
 		this.inputListB.set(localStorage.getItem("inputListB") || "");
 		this.selectedDelimiters.set(JSON.parse(localStorage.getItem("selectedDelimiters") || "[]"));
 		this.caseSensitive.set(JSON.parse(localStorage.getItem("caseSensitive") || "false"));
-		this.fuzzyMatch.set(JSON.parse(localStorage.getItem("fuzzyMatch") || "false"));
+		this.dedupe.set(JSON.parse(localStorage.getItem("dedupe") || "true"));
 	}
 
 	exportResults(type: "csv" | "txt"): void {

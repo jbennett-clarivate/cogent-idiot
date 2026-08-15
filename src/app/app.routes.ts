@@ -12,7 +12,7 @@ export const routes: Routes = [
 		canActivate: [AuthGuard],
 		children: [
 			{ path: "bayes", loadComponent: () => import("./components/bayes/bayes").then(m => m.BayesComponent), data: { title: "Bayes' Theorem" }, canActivate: [AuthGuard] },
-			{ path: "cleaner", loadComponent: () => import("./components/listcleaner/listcleaner").then(m => m.ListcleanerComponent), data: { title: "List Cleaner" }, canActivate: [AuthGuard] },
+			
 			{ path: "comparator", loadComponent: () => import("./components/listcomparator/listcomparator").then(m => m.ListcomparatorComponent), data: { title: "List Comparator" }, canActivate: [AuthGuard] },
 			{ path: "random", loadComponent: () => import("./components/listrandom/listrandom").then(m => m.ListrandomComponent), data: { title: "List Random" }, canActivate: [AuthGuard] },
 			{ path: "pascal", loadComponent: () => import("./components/pascal/pascal").then(m => m.PascalComponent), data: { title: "Pascal's Triangle" }, canActivate: [AuthGuard] },

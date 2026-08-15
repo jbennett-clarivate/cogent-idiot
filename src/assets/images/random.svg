@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-	<g>
-		<g>
-			<g transform="matrix(0.52011, 0.52011, -0.52011, 0.52011, 118.739639, -68.208847)" style="">
-				<g id="g3380">
-					<path id="path3382" style="fill:#000000" d="m251.12 0.21301l180.2 180.2-180.2 180.2h-118.85l137.06-137.07h-269.33v-87.22h268.38l-136.32-136.32 119.06 0.21301z"/>
-				</g>
-			</g>
-			<g transform="matrix(-0.52011, -0.52011, 0.52011, -0.52011, 381.108643, 569.035889)" style="">
-				<g id="g-1">
-					<path id="path-1" style="fill:#000000" d="m251.12 0.21301l180.2 180.2-180.2 180.2h-118.85l137.06-137.07h-269.33v-87.22h268.38l-136.32-136.32 119.06 0.21301z"/>
-				</g>
-			</g>
-			<g transform="matrix(0.52011, -0.52011, -0.52011, -0.52011, 369.849731, 318.80368)" style="">
-				<g id="g-2">
-					<path id="path-2" style="fill:#000000" d="m251.12 0.21301l180.2 180.2-180.2 180.2h-118.85l137.06-137.07h-269.33v-87.22h268.38l-136.32-136.32 119.06 0.21301z"/>
-				</g>
-			</g>
-			<g transform="matrix(-0.52011, 0.52011, 0.52011, 0.52011, 130.265869, 181.462234)" style="">
-				<g id="g-3">
-					<path id="path-3" style="fill:#000000" d="m251.12 0.21301l180.2 180.2-180.2 180.2h-118.85l137.06-137.07h-269.33v-87.22h268.38l-136.32-136.32 119.06 0.21301z"/>
-				</g>
-			</g>
-		</g>
-	</g>
+<svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Randomize shuffle icon">
+  <!-- Crossing shuffle paths -->
+  <path d="M44 90
+           H96
+           C118 90 132 190 154 190
+           H192"
+        fill="none"
+        stroke="#000000"
+        stroke-width="22"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  <path d="M44 190
+           H96
+           C118 190 132 90 154 90
+           H192"
+        fill="none"
+        stroke="#000000"
+        stroke-width="22"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <!-- Top arrowhead -->
+  <path d="M188 64 L222 90 L188 116Z" fill="#000000"/>
+  <!-- Bottom arrowhead -->
+  <path d="M188 164 L222 190 L188 216Z" fill="#000000"/>
 </svg>

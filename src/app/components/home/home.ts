@@ -20,14 +20,8 @@ export class HomeComponent {
 			route: "/tools/bayes",
 		},
 		{
-			name: "List Cleaner",
-			description: "Split a list and remove duplicates",
-			icon: "cleaner.svg",
-			route: "/tools/cleaner",
-		},
-		{
 			name: "List Comparator",
-			description: "Compare two lists",
+			description: "Compare two lists or clean one",
 			icon: "comparator.svg",
 			route: "/tools/comparator",
 		},

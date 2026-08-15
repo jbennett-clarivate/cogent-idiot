@@ -53,16 +53,58 @@ textarea[name^="input_list"] {
   flex-direction: column;
   width: 100%;
   min-width: 0;
-  overflow: auto;
+  overflow: visible;
+}
+
+.output-column ul {
+  flex: 1;
+  margin: 0;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .output-label {
   font-weight: bold;
   text-align: center;
   font-size: 16px;
-  padding: 10px;
+  padding: 10px 10px 4px;
   display: flex;
+  justify-content: center;
+  position: relative;
+  cursor: help;
 }
+
+/* Tooltip pops below the label (like the top nav icons) */
+.output-label[data-title]:hover::after {
+  content: attr(data-title);
+  position: absolute;
+  top: 100%;
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 6px;
+  background-color: #333;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.output-label[data-title]:hover::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: #333;
+  z-index: 1000;
+  pointer-events: none;
+}
+
 
 .output-display {
   height: 15em;
@@ -80,4 +122,39 @@ hr {
 
 button:not(.allow-small) {
   min-width: 130px;
+}
+
+@media (max-width: 600px) {
+  .comparison-flags {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .comparison-flags label {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+  }
+
+  .comparison-flags label input {
+    flex: 0 0 auto;
+    margin: 0 8px 0 0;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .action-buttons button {
+    width: 100%;
+  }
+
+  .output-grid {
+    grid-template-columns: 1fr;
+  }
 }

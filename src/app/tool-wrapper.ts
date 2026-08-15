@@ -14,7 +14,7 @@ import { Observable } from "rxjs";
 export class ToolWrapperComponent {
 	tools = [
 		{ name: "Bayes' Theorem", icon: "bayes.svg", route: "/tools/bayes" },
-		{ name: "List Cleaner", icon: "cleaner.svg", route: "/tools/cleaner" },
+		
 		{ name: "List Comparator", icon: "comparator.svg", route: "/tools/comparator" },
 		{ name: "List Random", icon: "random.svg", route: "/tools/random" },
 		{ name: "Pascal's Triangle", icon: "pascal.svg", route: "/tools/pascal" },
@@ -27,10 +27,8 @@ export class ToolWrapperComponent {
 	private descriptions: { [route: string]: string } = {
 		"/tools/bayes":
 			"Updates a probability after new evidence using Bayes' theorem. Enter how likely something is to be true to begin with and how reliable your test is, and it calculates the revised probability that it's actually true given a positive result. Handy for medical-test and false-positive style questions. Reuse the answer as the next starting point to chain several updates together.",
-		"/tools/cleaner":
-			"Cleans a messy list by splitting it on the delimiters you pick (tabs, commas, spaces, quotes, semicolons, apostrophes, or a custom character) and separating the duplicates from the unique entries. Paste a list or upload a text file, optionally lowercase everything before comparing, and you get a clean de-duplicated column alongside the discarded duplicates.",
 		"/tools/comparator":
-			"Compares two lists and shows you four results at once: entries only in list A, entries only in list B, the overlap they share, and the two lists combined. Paste them or upload text, CSV, or TSV files, choose case-sensitive or fuzzy matching, then export the results as CSV or TXT.",
+			"Compares two lists and shows you four results at once: entries only in list A, entries only in list B, the overlap they share, and the two lists combined. Paste them or upload text, CSV, or TSV files, choose case-sensitive and/or optionally enable Dedupe to remove duplicate entries within each list before comparing (fill only one side to use it as a silent list cleaner). Then export the results as CSV or TXT.",
 		"/tools/random":
 			"Generates random strings to your spec. Choose how many and how long, then tick which character types to allow: lowercase, uppercase, numbers, special characters, and UTF-8. It produces one column where each type may appear and another where every chosen type is guaranteed to appear in each string. Good for passwords, test fixtures, and sample tokens.",
 		"/tools/pascal":

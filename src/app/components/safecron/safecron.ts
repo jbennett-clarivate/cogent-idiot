@@ -26,7 +26,6 @@ export class SafecronComponent implements AfterViewInit {
 
 	private timeZoneData: TimeZoneData[] = [];
 
-	// Signals for reactive state management
 	selectedZone = signal<string>("");
 	selectedWeight = signal<string>("1");
 	meetingTime = signal<string>("");
@@ -34,7 +33,6 @@ export class SafecronComponent implements AfterViewInit {
 	selectedLocalTimes = signal<TimeZoneData[]>([]);
 	safeScheduleArray = signal<number[]>([]);
 
-	// Computed values
 	timeZones = computed(() => this.timeZoneData.map(tz => ({
 		value: tz.code,
 		label: this.describeZone(tz),
@@ -47,7 +45,6 @@ export class SafecronComponent implements AfterViewInit {
 	constructor() {
 		this.initializeTimeZoneData();
 
-		// Effect to update chart when selected times change
 		effect(() => {
 			if (this.selectedLocalTimes().length > 0) {
 				this.updateChart();
@@ -60,10 +57,6 @@ export class SafecronComponent implements AfterViewInit {
 	}
 
 	private initializeTimeZoneData() {
-		// Curated shortlist: one recognizable city per commonly used zone, ordered
-		// west to east. `code` is the unique key the rest of the component relies
-		// on; `city` is what the user sees; `iana` is the real zone name that lets
-		// us compute the live, DST-aware offset via Intl.
 		this.timeZoneData = [
 			{ iana: "Pacific/Honolulu", code: "HONOLULU", city: "Honolulu", weight: 0, color: "" },
 			{ iana: "America/Los_Angeles", code: "LOS_ANGELES", city: "Los Angeles", weight: 0, color: "" },
@@ -86,16 +79,12 @@ export class SafecronComponent implements AfterViewInit {
 		];
 	}
 
-	// Live, DST-aware offset (in hours) for an IANA zone at a given instant.
-	// We format the same moment as UTC and as the target zone, then diff them.
 	private offsetHoursFor(iana: string, at: Date = new Date()): number {
 		const utc = new Date(at.toLocaleString("en-US", { timeZone: "UTC" }));
 		const local = new Date(at.toLocaleString("en-US", { timeZone: iana }));
 		return Math.round(((local.getTime() - utc.getTime()) / 3600000) * 4) / 4;
 	}
 
-	// The short abbreviation (e.g. MDT / MST / JST) for an IANA zone right now,
-	// which is how the user tells Standard from Daylight at a glance.
 	private abbrevFor(iana: string, at: Date = new Date()): string {
 		try {
 			const parts = new Intl.DateTimeFormat("en-US", {
@@ -109,7 +98,6 @@ export class SafecronComponent implements AfterViewInit {
 		}
 	}
 
-	// Render an offset like 5.5 as "UTC+5:30" or -8 as "UTC-8:00".
 	private formatOffset(offset: number): string {
 		const sign = offset >= 0 ? "+" : "-";
 		const abs = Math.abs(offset);
@@ -118,7 +106,6 @@ export class SafecronComponent implements AfterViewInit {
 		return `UTC${sign}${hours}:${minutes.toString().padStart(2, "0")}`;
 	}
 
-	// Full human-readable label: "Denver (UTC-6, MDT)".
 	private describeZone(zone: TimeZoneData, at: Date = new Date()): string {
 		const offset = this.offsetHoursFor(zone.iana, at);
 		const abbrev = this.abbrevFor(zone.iana, at);
@@ -131,22 +118,14 @@ export class SafecronComponent implements AfterViewInit {
 		return zone ? this.describeZone(zone) : "";
 	}
 
-	// Sample the user's local UTC offset (in hours) once. Callers should grab
-	// this a single time per pass and thread it through, so a DST or midnight
-	// flip can never make two calculations in the same render disagree.
 	private getLocalOffsetHours(): number {
 		return new Date().getTimezoneOffset() / -60;
 	}
 
-	// Robust modulo that always lands in [0, 95] and rounds to an integer slot,
-	// so floating-point fuzz can never flip the wrap comparison at a boundary.
 	private mod96(value: number): number {
 		return ((Math.round(value) % 96) + 96) % 96;
 	}
 
-	// Single source of truth for a zone's 9-to-5 window in quarter-hour slots.
-	// Used by both the schedule computation and the chart drawing so they can
-	// never diverge.
 	private computeZoneSlots(zone: TimeZoneData, localOffsetHours: number): { start: number; end: number } {
 		const offset = this.offsetHoursFor(zone.iana) - localOffsetHours;
 		const workStart = 9 - offset;
@@ -176,11 +155,9 @@ export class SafecronComponent implements AfterViewInit {
 				this.selectedLocalTimes.update(times => {
 					const existingZone = times.find(t => t.code === selectedZoneValue);
 					if (existingZone) {
-						// Update weight of existing zone
 						existingZone.weight += parseInt(selectedWeightValue);
 						return [...times];
 					} else {
-						// Add new zone
 						const newZone: TimeZoneData = {
 							...timeZone,
 							weight: parseInt(selectedWeightValue),
@@ -225,11 +202,7 @@ export class SafecronComponent implements AfterViewInit {
 		}
 
 		const windowSize = 4; // one hour (4 x 15 minutes)
-
-		// Precompute sliding window sums across the entire day
 		const windowSums = this.slidingWindowSums(currentArray, windowSize);
-
-		// Determine highest-weight zones and their working windows in local index space
 		const zones = this.selectedLocalTimes();
 		const maxWeight = zones.reduce((acc, z) => Math.max(acc, z.weight), 0);
 		const topZones = zones.filter(z => z.weight === maxWeight && maxWeight > 0);
@@ -239,7 +212,6 @@ export class SafecronComponent implements AfterViewInit {
 			zoneWindows.set(zone.code, w);
 		});
 
-		// Candidate meeting starts: maximize sum, then enforce containment for top zones
 		const maxSum = Math.max(...windowSums);
 		const candidates: number[] = [];
 		for (let i = 0; i < windowSums.length; i++) {
@@ -251,7 +223,6 @@ export class SafecronComponent implements AfterViewInit {
 
 		const meetingStart = this.tieBreakMeeting(finalMeetingCandidates, topZones, zoneWindows);
 
-		// Downtime: minimize sum over sliding window
 		const minSum = Math.min(...windowSums);
 		const downtimeCandidates: number[] = [];
 		for (let i = 0; i < windowSums.length; i++) {
@@ -259,7 +230,6 @@ export class SafecronComponent implements AfterViewInit {
 		}
 		const downtimeStart = this.tieBreakDowntime(downtimeCandidates);
 
-		// Update signals with concise time labels (start only with short TZ abbrev)
 		this.meetingTime.set(this.getTimeLabelWithAbbrev(meetingStart));
 		this.downtime.set(this.getTimeLabelWithAbbrev(downtimeStart));
 	}
@@ -267,7 +237,6 @@ export class SafecronComponent implements AfterViewInit {
 	private slidingWindowSums(arr: number[], windowSize: number): number[] {
 		const n = arr.length;
 		const sums = new Array(n).fill(0);
-		// Compute initial window sum starting at 0
 		let s = 0;
 		for (let k = 0; k < windowSize; k++) {
 			s += arr[k % n];
@@ -290,7 +259,6 @@ export class SafecronComponent implements AfterViewInit {
 	}
 
 	private isWindowInside(start: number, windowSize: number, zoneStart: number, zoneEnd: number): boolean {
-		// Check each slot in the meeting window is within the zone's working span [zoneStart, zoneEnd) with wrap-around
 		for (let k = 0; k < windowSize; k++) {
 			const slot = (start + k) % 96;
 			if (!this.isSlotInSpan(slot, zoneStart, zoneEnd)) return false;
@@ -303,7 +271,6 @@ export class SafecronComponent implements AfterViewInit {
 		if (spanStart < spanEnd) {
 			return slot >= spanStart && slot < spanEnd;
 		}
-		// wrap-around span
 		return slot >= spanStart || slot < spanEnd;
 	}
 
@@ -311,7 +278,6 @@ export class SafecronComponent implements AfterViewInit {
 		if (candidates.length === 0) return 0;
 		if (candidates.length === 1) return candidates[0];
 
-		// Prefer starts closest to the beginning of top zones' work windows (forward distance)
 		const distances = candidates.map(start => {
 			let total = 0;
 			if (topZones.length === 0) return { start, score: 0 };
@@ -324,7 +290,6 @@ export class SafecronComponent implements AfterViewInit {
 		});
 		distances.sort((a, b) => a.score - b.score || a.start - b.start);
 
-		// Earliest upcoming relative to now as a secondary tie-breaker
 		const now = new Date();
 		const nowSlot = now.getHours() * 4 + Math.floor(now.getMinutes() / 15);
 
@@ -333,7 +298,6 @@ export class SafecronComponent implements AfterViewInit {
 
 		if (topByScore.length === 1) return topByScore[0];
 
-		// Choose the one with minimal forward distance from now
 		let best = topByScore[0];
 		let bestDist = (best - nowSlot + 96) % 96;
 		for (let i = 1; i < topByScore.length; i++) {
@@ -350,7 +314,6 @@ export class SafecronComponent implements AfterViewInit {
 	private tieBreakDowntime(candidates: number[]): number {
 		if (candidates.length === 0) return 0;
 		if (candidates.length === 1) return candidates[0];
-		// Pick the earliest index deterministically
 		return Math.min(...candidates);
 	}
 
@@ -363,7 +326,6 @@ export class SafecronComponent implements AfterViewInit {
 	}
 
 	private getTimestamp(index: number): string {
-		// Index is already in the user's local day space (0..95)
 		const hours = Math.floor(index / 4) % 24;
 		const quarterHours = index % 4;
 		const minutes = (quarterHours * 15) % 60;
@@ -392,7 +354,6 @@ export class SafecronComponent implements AfterViewInit {
 	}
 
 	private getTimeLabelWithAbbrev(index: number): string {
-		// Build local time string and append short timezone abbreviation (e.g., MDT)
 		const hours = Math.floor(index / 4) % 24;
 		const quarterHours = index % 4;
 		const minutes = (quarterHours * 15) % 60;
@@ -415,7 +376,6 @@ export class SafecronComponent implements AfterViewInit {
 		}
 
 		const minutesStr = minutes.toString().padStart(2, "0");
-
 		const today = new Date();
 		const localDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes, 0, 0);
 		const tzAbbrev = this.getShortTimezoneAbbrev(localDate);
@@ -431,7 +391,6 @@ export class SafecronComponent implements AfterViewInit {
 		} catch (e) {
 			// fall through to offset-based fallback
 		}
-		// Fallback: UTC offset as abbreviation
 		const offsetMin = -date.getTimezoneOffset();
 		const sign = offsetMin >= 0 ? "+" : "-";
 		const hh = Math.floor(Math.abs(offsetMin) / 60).toString().padStart(2, "0");
@@ -443,7 +402,6 @@ export class SafecronComponent implements AfterViewInit {
 		const endIndex = (startIndex + windowSize) % 96;
 		const startStr = this.getTimestamp(startIndex);
 		const endStr = this.getTimestamp(endIndex);
-		// Remove timezone from the end string to avoid duplication
 		const endParts = endStr.split(" ");
 		const endTime = endParts.slice(0, 2).join(" ");
 		const tz = this.getUserTimezoneName();
@@ -469,18 +427,14 @@ export class SafecronComponent implements AfterViewInit {
 		const ctx = canvas.getContext("2d");
 		if (!ctx) return;
 
-		// Set canvas size
 		canvas.width = 800;
 		canvas.height = 400;
 
-		// Clear canvas
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-		// Draw chart background
 		ctx.fillStyle = "#ffffff";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-		// Draw grid and axes
 		this.drawGrid(ctx, canvas);
 		this.drawTimeZoneSchedules(ctx, canvas);
 	}
@@ -493,15 +447,12 @@ export class SafecronComponent implements AfterViewInit {
 		ctx.strokeStyle = "#e0e0e0";
 		ctx.lineWidth = 1;
 
-		// Draw vertical grid lines (15-minute intervals)
 		for (let i = 0; i <= 96; i += 4) { // Every hour
 			const x = margin.left + (i / 96) * chartWidth;
 			ctx.beginPath();
 			ctx.moveTo(x, margin.top);
 			ctx.lineTo(x, margin.top + chartHeight);
 			ctx.stroke();
-
-			// Draw hour labels (rotated for readability) - fixed positioning
 			ctx.save();
 			ctx.translate(x, canvas.height - 70); // Move up from bottom edge
 			ctx.rotate(-Math.PI / 4); // Rotate 45 degrees
@@ -533,7 +484,6 @@ export class SafecronComponent implements AfterViewInit {
 			ctx.restore();
 		}
 
-		// Draw horizontal grid lines (time zones)
 		const selectedTimes = this.selectedLocalTimes();
 		const numZones = selectedTimes.length;
 		const zoneHeight = numZones > 0 ? chartHeight / numZones : chartHeight;
@@ -546,10 +496,8 @@ export class SafecronComponent implements AfterViewInit {
 			ctx.stroke();
 		}
 
-		// Draw current time indicator line
 		this.drawCurrentTimeLine(ctx, canvas, margin, chartWidth, chartHeight);
 
-		// Draw time zone labels (matches original format)
 		selectedTimes.forEach((zone: TimeZoneData, index: number) => {
 			const y = margin.top + (index + 0.5) * zoneHeight;
 			ctx.fillStyle = "#333";
@@ -558,7 +506,6 @@ export class SafecronComponent implements AfterViewInit {
 			ctx.fillText(zone.city, margin.left - 10, y + 4);
 		});
 
-		// Draw axis labels - use user's local timezone
 		const userTimezoneName = this.getUserTimezoneName();
 		ctx.fillStyle = "#333";
 		ctx.font = "14px Arial";
@@ -574,15 +521,10 @@ export class SafecronComponent implements AfterViewInit {
 
 	private drawCurrentTimeLine(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement,
 		margin: any, chartWidth: number, chartHeight: number) {
-		// Get current time in user's local timezone
 		const now = new Date();
 		const currentHour = now.getHours();
 		const currentMinute = now.getMinutes();
-
-		// Convert to quarter-hour slots (0-95)
 		const currentTimeSlot = currentHour * 4 + Math.floor(currentMinute / 15);
-
-		// Calculate x position on chart
 		const x = margin.left + (currentTimeSlot / 96) * chartWidth;
 
 		// Draw the current timeline
@@ -603,7 +545,6 @@ export class SafecronComponent implements AfterViewInit {
 		const selectedTimes = this.selectedLocalTimes();
 		const numZones = selectedTimes.length;
 		const zoneHeight = numZones > 0 ? chartHeight / numZones : chartHeight;
-
 		const localOffsetHours = this.getLocalOffsetHours();
 
 		selectedTimes.forEach((zone, index) => {
@@ -636,12 +577,10 @@ export class SafecronComponent implements AfterViewInit {
 
 		const canvas = this.cronChart.nativeElement;
 
-		// Add mouse move event listener for tooltips
 		canvas.addEventListener("mousemove", (event) => {
 			this.handleCanvasMouseMove(event);
 		});
 
-		// Add mouse leave event listener to hide tooltips
 		canvas.addEventListener("mouseleave", () => {
 			this.hideCanvasTooltip();
 		});
@@ -659,9 +598,7 @@ export class SafecronComponent implements AfterViewInit {
 		const chartHeight = canvas.height - margin.top - margin.bottom;
 		const zoneHeight = chartHeight / this.selectedLocalTimes().length;
 
-		// Check if mouse is over y-axis label area
 		if (x >= 10 && x <= margin.left - 10) {
-			// Check which timezone label we're hovering over
 			for (let i = 0; i < this.selectedLocalTimes().length; i++) {
 				const labelY = margin.top + (i + 0.5) * zoneHeight;
 				if (y >= labelY - zoneHeight / 2 && y <= labelY + zoneHeight / 2) {
@@ -676,10 +613,8 @@ export class SafecronComponent implements AfterViewInit {
 	}
 
 	private showCanvasTooltip(event: MouseEvent, text: string) {
-		// Remove any existing tooltip
 		this.hideCanvasTooltip();
 
-		// Create tooltip element
 		const tooltip = document.createElement("div");
 		tooltip.id = "canvas-tooltip";
 		tooltip.innerHTML = text;
