@@ -1,28 +1,44 @@
 import { Component, signal, computed } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { DecimalPipe } from "@angular/common";
-import { BreakpointObserver } from "@angular/cdk/layout";
-
+import { QuadrantAnchorDirective } from "../../directives/quadrant-anchor.directive";
+import { TOOL_INFO } from "@app/config/tool-info";
 @Component({
 	selector: "app-bayes",
 	templateUrl: "./bayes.html",
 	styleUrls: ["./bayes.scss"],
-	imports: [FormsModule, DecimalPipe],
+	imports: [FormsModule, DecimalPipe, QuadrantAnchorDirective],
 })
 export class BayesComponent {
+	// Field-level help text, from the shared single-source-of-truth config.
+	readonly info = TOOL_INFO["/tools/bayes"].fields!;
+
 	suspicion = signal<number | null>(null);
 	confirmedSuspicion = signal<number | null>(null);
-	isFlexRow = signal(true);
+	confirmedFalseSuspicion = signal<number | null>(null);
 
-	// Computed signals for derived values
+	// Which info panel is currently open (by key), or null. Supports hover on
+	// desktop and tap-to-toggle on touch devices; only one open at a time.
+	activeInfo = signal<string | null>(null);
+
+	showInfo(key: string): void {
+		this.activeInfo.set(key);
+	}
+
+	hideInfo(key: string): void {
+		if (this.activeInfo() === key) {
+			this.activeInfo.set(null);
+		}
+	}
+
+	toggleInfo(key: string): void {
+		this.activeInfo.set(this.activeInfo() === key ? null : key);
+	}
+
+	// Prior that H is false is genuinely the complement of the prior.
 	falseSuspicion = computed(() => {
 		const suspicionVal = this.suspicion();
 		return suspicionVal !== null ? 100 - suspicionVal : null;
-	});
-
-	confirmedFalseSuspicion = computed(() => {
-		const confirmedSuspicionVal = this.confirmedSuspicion();
-		return confirmedSuspicionVal !== null ? 100 - confirmedSuspicionVal : null;
 	});
 
 	rawAnswer = computed(() => {
@@ -30,7 +46,6 @@ export class BayesComponent {
 		const confirmedSuspicionVal = this.confirmedSuspicion();
 		const falseSuspicionVal = this.falseSuspicion();
 		const confirmedFalseSuspicionVal = this.confirmedFalseSuspicion();
-
 		if (suspicionVal === null || confirmedSuspicionVal === null ||
 			falseSuspicionVal === null || confirmedFalseSuspicionVal === null) {
 			return 0;
@@ -39,40 +54,25 @@ export class BayesComponent {
 		// Convert percentage inputs to decimal values
 		const suspicionDecimal = suspicionVal / 100;
 		const confirmedSuspicionDecimal = confirmedSuspicionVal / 100;
-		const falseSuspicionDecimal = 1 - suspicionDecimal;
-		const confirmedFalseSuspicionDecimal = 1 - confirmedSuspicionDecimal;
+		const falseSuspicionDecimal = falseSuspicionVal / 100;
+		const confirmedFalseSuspicionDecimal = confirmedFalseSuspicionVal / 100;
 
 		const p_E_H = suspicionDecimal * confirmedSuspicionDecimal;
 		const p_E_NotH = falseSuspicionDecimal * confirmedFalseSuspicionDecimal;
-		const displayAnswer = p_E_H / (p_E_H + p_E_NotH);
 
+		if (p_E_H + p_E_NotH === 0) {
+			return 0;
+		}
+
+		const displayAnswer = p_E_H / (p_E_H + p_E_NotH);
 		return Number((displayAnswer).toFixed(3));
 	});
-
-	private resizeTimeout: any;
-
-	constructor(private breakpointObserver: BreakpointObserver) {
-		this.setFlexDirection();
-		window.addEventListener("resize", () => {
-			clearTimeout(this.resizeTimeout);
-			this.resizeTimeout = setTimeout(() => {
-				this.setFlexDirection();
-			}, 150);
-		});
-	}
-
-	setFlexDirection() {
-		const isWide = window.innerWidth > 730;
-		this.isFlexRow.set(isWide);
-		console.log("Flex direction set:", isWide ? "row" : "column");
-	}
 
 	onSuspicionChange(): void {
 		const suspicionVal = this.suspicion();
 		if (suspicionVal === null || suspicionVal < 0 || suspicionVal > 100) {
 			return;
 		}
-		// The falseSuspicion is automatically computed, no manual calculation needed
 	}
 
 	onConfirmedSuspicionChange(): void {
@@ -80,45 +80,32 @@ export class BayesComponent {
 		if (confirmedSuspicionVal === null || confirmedSuspicionVal < 0 || confirmedSuspicionVal > 100) {
 			return;
 		}
-		// The confirmedFalseSuspicion is automatically computed, no manual calculation needed
+	}
+
+	onConfirmedFalseSuspicionChange(): void {
+		const val = this.confirmedFalseSuspicion();
+		if (val === null || val < 0 || val > 100) {
+			return;
+		}
 	}
 
 	reset(): void {
 		this.suspicion.set(null);
 		this.confirmedSuspicion.set(null);
-		// falseSuspicion, confirmedFalseSuspicion, rawAnswer, and answer are computed signals
-		// so they will automatically update when the base signals are reset
+		this.confirmedFalseSuspicion.set(null);
 	}
 
 	regenerateIt(): void {
 		const rawAnswerVal = this.rawAnswer();
-		if (rawAnswerVal === null || rawAnswerVal === 0) {
-			this.suspicion.set(rawAnswerVal);
-			this.onSuspicionChange();
+		if (!rawAnswerVal) {
+			return;
 		}
-
-		const suspicionVal = this.suspicion();
-		const confirmedSuspicionVal = this.confirmedSuspicion();
-		const falseSuspicionVal = this.falseSuspicion();
-		const confirmedFalseSuspicionVal = this.confirmedFalseSuspicion();
-
-		if (suspicionVal !== null && confirmedSuspicionVal !== null &&
-			falseSuspicionVal !== null && confirmedFalseSuspicionVal !== null) {
-
-			const p_E_H = suspicionVal * confirmedSuspicionVal;
-			const p_E_NotH = falseSuspicionVal * confirmedFalseSuspicionVal;
-			const displayAnswer = p_E_H / (p_E_H + p_E_NotH);
-
-			const newRawAnswer = Number((displayAnswer).toFixed(3));
-			const newSuspicion = Math.round(1000 * displayAnswer) / 10;
-			this.suspicion.set(newSuspicion);
-			this.onSuspicionChange();
-		} else {
-			this.reset();
-		}
+		// Reuse the result as the new prior for chained updates.
+		this.suspicion.set(Math.round(1000 * rawAnswerVal) / 10);
+		this.onSuspicionChange();
 	}
-
 	get startButtonLabel(): string {
 		return !this.rawAnswer() ? "✓ Start" : "♺ Reuse";
 	}
 }
+

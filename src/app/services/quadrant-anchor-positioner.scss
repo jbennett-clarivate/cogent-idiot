@@ -1,0 +1,56 @@
+.anchor-content {
+  position: fixed;
+  z-index: 1000;
+  max-width: 320px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  white-space: normal;
+}
+
+.anchor-content.visible {
+  opacity: 1;
+}
+
+// /* The service pins one corner of the panel to a trigger corner via inline
+//    fixed left/top. Each anchor class only offsets the panel by its own size so
+//    it grows into the open diagonal. A small gap nudges it off the trigger. */
+.anchor-tl-to-br {
+  transform: translate(-0, 0);
+}
+
+.anchor-tr-to-bl {
+  transform: translate(calc(-100%), 0);
+}
+
+.anchor-bl-to-tr {
+  transform: translate(0, calc(-100%));
+}
+
+.anchor-br-to-tl {
+  transform: translate(-100%, calc(-100%));
+}
+
+.anchor-content.wide {
+  width: 320px;
+  max-width: 80vw;
+  text-align: left;
+}
+
+@media (max-width: 600px) {
+  .anchor-content {
+    max-width: 240px;
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+
+  .anchor-content.wide {
+    width: 240px;
+  }
+}

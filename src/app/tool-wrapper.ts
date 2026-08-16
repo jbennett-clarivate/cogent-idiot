@@ -4,6 +4,8 @@ import { AuthService } from "@services/auth.service";
 import { CommonModule, NgOptimizedImage } from "@angular/common";
 import { filter, map } from "rxjs/operators";
 import { Observable } from "rxjs";
+import { quadrantAnchorPositioner } from "@services/quadrant-anchor-positioner";
+import { TOOL_INFO } from "@app/config/tool-info";
 
 @Component({
 	selector: "app-tool-wrapper",
@@ -77,35 +79,54 @@ export class ToolWrapperComponent {
 	showTooltip(event: MouseEvent, text: string) {
 		const button = event.currentTarget as HTMLElement;
 		const rect = button.getBoundingClientRect();
-		const viewportHeight = window.innerHeight;
-		const midPoint = viewportHeight / 2;
 
 		// Remove any existing tooltips
 		this.hideTooltip();
 
-		// Add tooltip text as data attribute
-		button.setAttribute("data-tooltip", text);
+		// Use quadrant-anchor positioning for smarter placement
+		const tooltipElement = this.createTooltipElement(button, text);
+		button.appendChild(tooltipElement);
 
-		// Add appropriate positioning class
-		if (rect.top < midPoint) {
-			button.classList.add("tooltip-bottom");
-		} else {
-			button.classList.add("tooltip-top");
+		// Apply quadrant-based positioning
+		quadrantAnchorPositioner.applyPosition(tooltipElement, button);
+
+		// Make visible after positioning
+		requestAnimationFrame(() => {
+			tooltipElement.classList.add('visible');
+		});
+	}
+
+	/**
+	 * Creates a tooltip element with the quadrant-anchor styling
+	 */
+	private createTooltipElement(trigger: HTMLElement, text: string): HTMLElement {
+		const tooltip = document.createElement('div');
+		tooltip.className = 'anchor-content';
+		tooltip.textContent = text;
+
+		// Add wide class for info/help button which has longer text
+		if (trigger.classList.contains('info-help')) {
+			tooltip.classList.add('wide');
 		}
 
-		button.classList.add("tooltip-active");
+		return tooltip;
 	}
 
 	infoText(): string {
 		const url = this.router.url.split("?")[0];
-		return this.descriptions[url] || "This page does not have a description yet.";
+		return TOOL_INFO[url]?.summary || "This page does not have a description yet.";
 	}
 
 	hideTooltip() {
-		const activeTooltips = document.querySelectorAll(".tooltip-active");
+		const activeTooltips = document.querySelectorAll(".anchor-content");
 		activeTooltips.forEach(element => {
-			element.classList.remove("tooltip-active", "tooltip-top", "tooltip-bottom");
-			element.removeAttribute("data-tooltip");
+			element.classList.remove("visible");
+			// Remove after fade-out transition
+			setTimeout(() => {
+				if (element.parentNode) {
+					element.parentNode.removeChild(element);
+				}
+			}, 200);
 		});
 	}
 }

@@ -1,13 +1,188 @@
 /* Bayes Component Specific Styles */
 
-/* Override hr width for bayes component */
-hr {
-  width: 20%;
-  height: 2px;
-  margin: 10px 0;
+.white-bg {
+  padding: clamp(16px, 4vw, 36px);
 }
 
-label > span {
-  text-align: right;
-  width: 100px;
+.bayes-intro {
+  max-width: 780px;
+  margin: 0 auto 28px;
+  line-height: 1.55;
+  color: #333;
 }
+
+.bayes-intro p {
+  margin: 0;
+}
+
+.bayes-example {
+  margin-top: 12px !important;
+  padding: 12px 14px;
+  border-left: 5px solid #333;
+  background: #f1f1f1;
+}
+
+.bayes-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.bayes-field,
+.bayes-result {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #c8c8c8;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.bayes-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.bayes-field label,
+.bayes-result label {
+  align-self: flex-start;
+  text-align: left;
+  font-size: 1rem;
+}
+
+.info-marker {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  cursor: help;
+  user-select: none;
+}
+
+.info-marker img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.bayes-notation {
+  margin: 3px 0 14px;
+  color: #666;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
+.bayes-input {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.bayes-input input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #999;
+  border-radius: 5px 0 0 5px;
+  font-size: 1.1rem;
+  text-align: right;
+}
+
+.bayes-input input[readonly] {
+  background: #ededed;
+  color: #444;
+}
+
+.bayes-unit {
+  display: flex;
+  align-items: center;
+  padding: 0 11px;
+  border: 1px solid #999;
+  border-left: 0;
+  border-radius: 0 5px 5px 0;
+  background: #333;
+  color: #fff;
+  font-weight: bold;
+}
+
+.bayes-hint {
+  margin: 10px 0 0;
+  color: #666;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.bayes-result {
+  max-width: 430px;
+  margin: 24px auto 0;
+  border: 3px solid #333;
+  background: #f7f7f7;
+}
+
+.bayes-result label {
+  font-size: 1.2rem;
+}
+
+.result-input input {
+  font-size: 1.45rem;
+  font-weight: bold;
+}
+
+.bayes-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.bayes-actions button {
+  min-width: 140px;
+}
+
+@media (max-width: 900px) {
+  .bayes-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .white-bg {
+    padding: 14px;
+  }
+
+  .bayes-intro {
+    margin-bottom: 18px;
+  }
+
+  .bayes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bayes-field,
+  .bayes-result {
+    padding: 14px;
+  }
+
+  .bayes-result {
+    max-width: none;
+  }
+
+  .bayes-actions {
+    flex-direction: column;
+  }
+
+  .bayes-actions button {
+    width: 100%;
+  }
+}
+
