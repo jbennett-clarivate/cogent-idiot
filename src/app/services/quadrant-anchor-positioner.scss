@@ -21,20 +21,20 @@
 // /* The service pins one corner of the panel to a trigger corner via inline
 //    fixed left/top. Each anchor class only offsets the panel by its own size so
 //    it grows into the open diagonal. A small gap nudges it off the trigger. */
-.anchor-tl-to-br {
-  transform: translate(-0, 0);
+.anchor-tl-to-bl {
+  transform: translate(0, 0);
 }
 
-.anchor-tr-to-bl {
-  transform: translate(calc(-100%), 0);
+.anchor-tr-to-br {
+  transform: translate(-100%, 0);
 }
 
-.anchor-bl-to-tr {
-  transform: translate(0, calc(-100%));
+.anchor-bl-to-tl {
+  transform: translate(0, -100%);
 }
 
-.anchor-br-to-tl {
-  transform: translate(-100%, calc(-100%));
+.anchor-br-to-tr {
+  transform: translate(-100%, -100%);
 }
 
 .anchor-content.wide {

@@ -33,10 +33,10 @@
 
     <div class="flex-c h-center message-row" [ngSwitch]="state">
       <p *ngSwitchCase="'safe'" class="msg-safe">
-        Good news — this password was not found in any known breach.
+        Good news \u00b7 this password was not found in any known breach.
       </p>
       <p *ngSwitchCase="'pwned'" class="msg-pwned">
-        Warning — this password has appeared in known breaches
+        Warning \u00b7 this password has appeared in known breaches
         <strong>{{ breachCount.toLocaleString() }}</strong> times. Do not use it.
       </p>
       <p *ngSwitchCase="'error'" class="msg-error">{{ errorMessage }}</p>

@@ -25,18 +25,54 @@ export const TOOL_INFO: Record<string, ToolInfo> = {
 			notTrue:
 				"The flip side of the Prior belief, filled in automatically. If 1% of cases are true, then 99% are not. Prior belief and this always add up to 100%.",
 			falsePositive:
-				"When the thing is NOT true, how often does the test WRONGLY say positive? This is separate from the true-positive rate. A test can be 99% right on true cases and still wrongly flag 99% of false cases — its accuracy on one group tells you nothing about the other. Enter 5 to mean: of 100 cases that aren't true, 5 still test positive.",
+				"When the thing is NOT true, how often does the test WRONGLY say positive? This is separate from the true-positive rate. A test can be 99% right on true cases and still wrongly flag 99% of false cases \u00b7 its accuracy on one group tells you nothing about the other. Enter 5 to mean: of 100 cases that aren't true, 5 still test positive.",
 			updated:
 				"After seeing a positive result, this is the corrected chance the thing is really true. It is often far lower than the test's accuracy suggests, because rare things produce many false positives.",
+		},
+	},
+	"/tools/exit": {
+		summary:
+			"An exit-intent demonstration: when your cursor leaves the top of the window \u00b7 the gesture people make when they're about to close a tab or reach for the address bar \u00b7 a popup appears. It fires only once per visit so it never becomes a nuisance.",
+		fields: {
+			whatIsThis:
+				"This popup appeared because your mouse moved past the top edge of the page, which usually signals you're about to leave. Sites often use this moment to show a reminder or offer. It only triggers once per visit, and clicking anywhere outside the box (or the button) dismisses it.",
 		},
 	},
 	"/tools/comparator": {
 		summary:
 			"Compares two lists and shows you four results at once: entries only in list A, entries only in list B, the overlap they share, and the two lists combined. Paste them or upload text, CSV, or TSV files, choose case-sensitive and/or optionally enable Dedupe to remove duplicate entries within each list before comparing (fill only one side to use it as a silent list cleaner). Then export the results as CSV or TXT.",
+		fields: {
+			fileUpload:
+				"Upload a list from a file instead of pasting it. Accepts plain text, CSV, and TSV files only.",
+			caseSensitive:
+				"When on, entries are compared exactly as typed, so \"Apple\" and \"apple\" count as different. When off, differences in capitalization are ignored.",
+			dedupe:
+				"Removes duplicate entries within each list before comparing. Fill only one side to use this as a silent list cleaner.",
+			uniqueToA:
+				"A \u2216 B \u00b7 entries that appear in List A but not in List B.",
+			uniqueToB:
+				"B \u2216 A \u00b7 entries that appear in List B but not in List A.",
+			intersection:
+				"A \u2229 B \u00b7 entries that appear in both List A and List B.",
+			union:
+				"A \u222A B \u00b7 every unique entry that appears in List A or List B.",
+		},
 	},
 	"/tools/random": {
 		summary:
 			"Generates random strings to your spec. Choose how many and how long, then tick which character types to allow: lowercase, uppercase, numbers, special characters, and UTF-8. It produces one column where each type may appear and another where every chosen type is guaranteed to appear in each string. Good for passwords, test fixtures, and sample tokens.",
+		fields: {
+			lowercase:
+				"Allows lowercase letters (a\u2013z) in the generated strings.",
+			uppercase:
+				"Allows uppercase letters (A\u2013Z) in the generated strings.",
+			numbers:
+				"Allows digits (0\u20139) in the generated strings.",
+			special:
+				"Allows special characters such as punctuation and symbols (for example ! @ # $ % &) in the generated strings.",
+			utf8:
+				"Allows a random selection of UTF-8 characters drawn from wider Unicode ranges, useful for stress-testing how systems handle non-ASCII text.",
+		},
 	},
 	"/tools/pascal": {
 		summary:

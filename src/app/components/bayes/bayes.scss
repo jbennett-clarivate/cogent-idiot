@@ -55,22 +55,7 @@
   font-size: 1rem;
 }
 
-.info-marker {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  cursor: help;
-  user-select: none;
-}
-
-.info-marker img {
-  width: 20px;
-  height: 20px;
-  display: block;
-}
+/* .info-marker styling is defined globally in styles.scss. */
 
 .bayes-notation {
   margin: 3px 0 14px;

@@ -164,6 +164,27 @@ hr {
   pointer-events: none;
 }
 
+/* Universal informational marker (the "little i" that anchors a quadrant
+   panel). Defined once globally so every tool renders it identically; the
+   accompanying panel styling lives in the quadrant-anchor-positioner import
+   at the top of this file. */
+.info-marker {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  cursor: help;
+  user-select: none;
+}
+
+.info-marker img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
 /* Label Styles */
 label {
   font-weight: bold;

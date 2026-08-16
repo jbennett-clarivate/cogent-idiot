@@ -33,3 +33,11 @@
 label span {
   margin-left: 5px;
 }
+
+/* Groups a character-type checkbox with its info marker so they stay together.
+   The .info-marker styling itself is defined globally in styles.scss. */
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

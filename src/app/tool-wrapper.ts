@@ -101,7 +101,11 @@ export class ToolWrapperComponent {
 	 */
 	private createTooltipElement(trigger: HTMLElement, text: string): HTMLElement {
 		const tooltip = document.createElement('div');
-		tooltip.className = 'anchor-content';
+		// Tag with a component-specific marker class so hideTooltip only ever
+		// targets tooltips this component created. Querying ".anchor-content"
+		// alone would also match the Bayes informationals rendered by the
+		// quadrantAnchor directive and permanently remove them from the DOM.
+		tooltip.className = 'anchor-content dynamic-tooltip';
 		tooltip.textContent = text;
 
 		// Add wide class for info/help button which has longer text
@@ -118,7 +122,7 @@ export class ToolWrapperComponent {
 	}
 
 	hideTooltip() {
-		const activeTooltips = document.querySelectorAll(".anchor-content");
+		const activeTooltips = document.querySelectorAll(".dynamic-tooltip");
 		activeTooltips.forEach(element => {
 			element.classList.remove("visible");
 			// Remove after fade-out transition

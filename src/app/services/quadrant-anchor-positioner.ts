@@ -8,18 +8,24 @@ export interface PositionResult {
 export type QuadrantLabel = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 export type Corner = 'tl' | 'tr' | 'bl' | 'br';
 
+// Each quadrant selects one horizontal edge of the trigger (left edge for the
+// left-hand quadrants Q2/Q3, right edge for the right-hand quadrants Q1/Q4) and
+// one vertical edge that pushes the panel away from the element: the bottom edge
+// when the element sits in the top half (grow downward) and the top edge when it
+// sits in the bottom half (grow upward). This guarantees the panel never
+// overlaps the trigger while maximizing the horizontal room it grows into.
 const CORNER_PAIRINGS: Record<QuadrantLabel, { contentCorner: Corner; triggerCorner: Corner }> = {
-  'top-left': { contentCorner: 'tl', triggerCorner: 'br' },
-  'top-right': { contentCorner: 'tr', triggerCorner: 'bl' },
-  'bottom-left': { contentCorner: 'bl', triggerCorner: 'tr' },
-  'bottom-right': { contentCorner: 'br', triggerCorner: 'tl' },
+  'top-left': { contentCorner: 'tl', triggerCorner: 'bl' },   // Q2: left edge, push down
+  'top-right': { contentCorner: 'tr', triggerCorner: 'br' },  // Q1: right edge, push down
+  'bottom-left': { contentCorner: 'bl', triggerCorner: 'tl' }, // Q3: left edge, push up
+  'bottom-right': { contentCorner: 'br', triggerCorner: 'tr' }, // Q4: right edge, push up
 };
 
 const ANCHOR_CLASSES: Record<string, string> = {
-  'tl-br': 'anchor-tl-to-br',  // content top-left anchored to trigger bottom-right
-  'tr-bl': 'anchor-tr-to-bl',  // content top-right anchored to trigger bottom-left
-  'bl-tr': 'anchor-bl-to-tr',  // content bottom-left anchored to trigger top-right
-  'br-tl': 'anchor-br-to-tl',  // content bottom-right anchored to trigger top-left
+  'tl-bl': 'anchor-tl-to-bl',  // content top-left pinned to trigger bottom-left (grow right + down)
+  'tr-br': 'anchor-tr-to-br',  // content top-right pinned to trigger bottom-right (grow left + down)
+  'bl-tl': 'anchor-bl-to-tl',  // content bottom-left pinned to trigger top-left (grow right + up)
+  'br-tr': 'anchor-br-to-tr',  // content bottom-right pinned to trigger top-right (grow left + up)
 };
 
 export class QuadrantAnchorPositioner {

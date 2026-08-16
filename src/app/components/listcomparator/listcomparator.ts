@@ -1,14 +1,37 @@
 import { Component, OnInit, signal, computed } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
+import { QuadrantAnchorDirective } from "../../directives/quadrant-anchor.directive";
+import { TOOL_INFO } from "@app/config/tool-info";
 
 @Component({
 	selector: "app-listcomparator",
-	imports: [FormsModule, CommonModule],
+	imports: [FormsModule, CommonModule, QuadrantAnchorDirective],
 	templateUrl: "./listcomparator.html",
 	styleUrl: "./listcomparator.scss",
 })
 export class ListcomparatorComponent implements OnInit {
+	// Field-level help text, from the shared single-source-of-truth config.
+	readonly info = TOOL_INFO["/tools/comparator"].fields!;
+
+	// Which info panel is currently open (by key), or null. Supports hover on
+	// desktop and tap-to-toggle on touch devices; only one open at a time.
+	activeInfo = signal<string | null>(null);
+
+	showInfo(key: string): void {
+		this.activeInfo.set(key);
+	}
+
+	hideInfo(key: string): void {
+		if (this.activeInfo() === key) {
+			this.activeInfo.set(null);
+		}
+	}
+
+	toggleInfo(key: string): void {
+		this.activeInfo.set(this.activeInfo() === key ? null : key);
+	}
+
 	inputListA = signal("");
 	inputListB = signal("");
 	caseSensitive = signal(false);

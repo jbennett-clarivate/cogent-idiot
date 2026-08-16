@@ -1,9 +1,16 @@
 @if (visible()) {
 <div class="overlay" (click)="close()">
   <div class="popup" (click)="$event.stopPropagation()">
-    <p class="creepy">
-      BOO!
-    </p>
+    <div class="popup-header">
+      <p class="creepy">
+        BOO!
+      </p>
+      <span class="info-marker" #whatIsThisTrigger tabindex="0" (mouseenter)="showInfo('whatIsThis')"
+        (mouseleave)="hideInfo('whatIsThis')" (focus)="showInfo('whatIsThis')" (blur)="hideInfo('whatIsThis')"
+        (click)="toggleInfo('whatIsThis')"><img src="assets/images/info.svg" alt="More info" /></span>
+      <div class="anchor-content wide" quadrantAnchor [anchorTarget]="whatIsThisTrigger"
+        [anchorVisible]="activeInfo() === 'whatIsThis'">{{ info['whatIsThis'] }}</div>
+      </div>
     <button (click)="close()">A Button To Click</button>
   </div>
 </div>
