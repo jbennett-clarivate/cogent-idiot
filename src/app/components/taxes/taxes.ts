@@ -1,54 +1,44 @@
 import { Component, AfterViewInit, ElementRef, ViewChild, HostListener } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
+import { InputControllerDirective } from "../../directives/input-controller.directive";
 
 @Component({
 	selector: "app-taxes",
-	imports: [CommonModule, FormsModule],
+	imports: [CommonModule, FormsModule, InputControllerDirective],
 	templateUrl: "./taxes.html",
 	styleUrls: ["./taxes.scss"],
 })
 export class TaxesComponent implements AfterViewInit {
 	@ViewChild("taxCanvas") canvasRef!: ElementRef<HTMLCanvasElement>;
 
-	// 2024 federal poverty guideline for a single adult in the 48 contiguous states.
+	readonly numberValidator = InputControllerDirective.numberValidator;
+	readonly noWhitespaceEnforcer = InputControllerDirective.noWhitespaceEnforcer;
 	private static readonly DEFAULT_POVERTY = 15060;
 
-	// L0 - the permanent anchor, set from the first field.
 	baseline: number = TaxesComponent.DEFAULT_POVERTY;
-	// L - the current poverty line, the adjustment mechanism.
 	current: number = TaxesComponent.DEFAULT_POVERTY;
-
-	// Bonus income explorer
 	userIncome: number = 50000;
 	minIncome = 10000;
 	maxIncome = 1000000;
-
-	// Derived values
 	exponent = 0;
 	peakIncome = 0;
 	peakTaxRate = 0;
 	peakTakeHome = 0;
 	middleAnchor = 0;
-
-	// User explorer results
 	userTaxRate = 0;
 	userTax = 0;
 	userTakeHome = 0;
 
-	// Colors
 	private readonly COLOR_PROPOSED = "#2563eb"; // blue
 	private readonly COLOR_FEDERAL = "#dc2626"; // red
 	private readonly COLOR_TAKEHOME = "#16a34a"; // green
 
 	constructor() {
-		// Compute derived values eagerly so the first change-detection pass sees
-		// the final numbers (avoids NG0100 ExpressionChangedAfterItHasBeenChecked).
 		this.computeDerived();
 	}
 
 	ngAfterViewInit(): void {
-		// Canvas only exists now, so draw here. Derived values are already set.
 		this.draw();
 	}
 
@@ -72,7 +62,6 @@ export class TaxesComponent implements AfterViewInit {
 		this.exponent = 1.5 * L / L0;
 		this.middleAnchor = 10 * L;
 
-		// Find the income where take-home pay peaks (numeric search + refinement).
 		const xMax = 100 * L;
 		let bestX = 0;
 		let bestTH = -Infinity;
@@ -85,7 +74,6 @@ export class TaxesComponent implements AfterViewInit {
 				bestX = x;
 			}
 		}
-		// Refine around the best coarse point.
 		const span = xMax / coarse;
 		let lo = Math.max(1, bestX - span);
 		let hi = bestX + span;
@@ -119,7 +107,6 @@ export class TaxesComponent implements AfterViewInit {
 		this.userTakeHome = x - this.userTax;
 	}
 
-	// Proposed formula tax rate (percent) at a given gross income.
 	taxRateAt(x: number): number {
 		if (x <= 0) {
 			return 0;
@@ -130,22 +117,19 @@ export class TaxesComponent implements AfterViewInit {
 		return 100 / (1 + 9 * Math.pow((10 * L) / x, n));
 	}
 
-	// Net take-home pay under the proposed formula.
 	takeHomeAt(x: number): number {
 		return x * (1 - this.taxRateAt(x) / 100);
 	}
 
-	// Current US federal effective tax rate using the 2024 single-filer schedule.
 	federalEffectiveRate(gross: number): number {
 		if (gross <= 0) {
 			return 0;
 		}
-		const taxable = Math.max(0, gross - 14600); // 2024 standard deduction, single
+		const taxable = Math.max(0, gross - 14600);
 		return (this.federalTax(taxable) / gross) * 100;
 	}
 
 	private federalTax(taxable: number): number {
-		// 2024 single-filer brackets: [lowerBound, rate]
 		const brackets: [number, number][] = [
 			[0, 0.1],
 			[11600, 0.12],
@@ -168,8 +152,6 @@ export class TaxesComponent implements AfterViewInit {
 		}
 		return tax;
 	}
-
-	// ---- Drawing ----
 
 	private draw(): void {
 		const canvas = this.canvasRef?.nativeElement;
@@ -213,11 +195,8 @@ export class TaxesComponent implements AfterViewInit {
 		const rateToPy = (r: number) => marginTop + (1 - r / 100) * plotH;
 		const moneyToPy = (m: number) => marginTop + (1 - m / moneyMax) * plotH;
 
-		// Plot background
 		ctx.fillStyle = "#fff";
 		ctx.fillRect(marginLeft, marginTop, plotW, plotH);
-
-		// ---- Grid + left y-axis (tax rate %) ----
 		ctx.strokeStyle = "#e5e7eb";
 		ctx.fillStyle = "#374151";
 		ctx.lineWidth = 1;
@@ -230,14 +209,10 @@ export class TaxesComponent implements AfterViewInit {
 			ctx.moveTo(marginLeft, py);
 			ctx.lineTo(marginLeft + plotW, py);
 			ctx.stroke();
-			// Skip the 100% label: it sits at the very top where the marker
-			// labels live, and 100% is already implied by the axis bound.
 			if (r < 100) {
 				ctx.fillText(r + "%", marginLeft - 8, py);
 			}
 		}
-
-		// ---- Right y-axis (take-home $) ----
 		ctx.textAlign = "left";
 		ctx.fillStyle = this.COLOR_TAKEHOME;
 		const moneyTicks = 5;
@@ -246,8 +221,6 @@ export class TaxesComponent implements AfterViewInit {
 			const py = moneyToPy(m);
 			ctx.fillText(this.formatMoney(m), marginLeft + plotW + 8, py);
 		}
-
-		// ---- X-axis ticks ----
 		ctx.textAlign = "center";
 		ctx.textBaseline = "top";
 		ctx.fillStyle = "#374151";
@@ -266,30 +239,17 @@ export class TaxesComponent implements AfterViewInit {
 			ctx.stroke();
 			ctx.fillText(this.formatMoney(t), px, marginTop + plotH + 8);
 		}
-
-		// Plot border
 		ctx.strokeStyle = "#9ca3af";
 		ctx.lineWidth = 1;
 		ctx.strokeRect(marginLeft, marginTop, plotW, plotH);
-
-		// ---- Curves ----
 		const samples = 600;
-
-		// Take-home (green, right axis) - draw first so rate lines sit on top.
 		this.drawCurve(ctx, samples, xMax, xToPx, x => moneyToPy(this.takeHomeAt(x)), this.COLOR_TAKEHOME, 2.5);
-
-		// Federal effective rate (red, left axis)
 		this.drawCurve(ctx, samples, xMax, xToPx, x => rateToPy(this.federalEffectiveRate(x)), this.COLOR_FEDERAL, 2);
-
-		// Proposed tax rate (blue, left axis)
 		this.drawCurve(ctx, samples, xMax, xToPx, x => rateToPy(this.taxRateAt(x)), this.COLOR_PROPOSED, 2.5);
-
-		// ---- Annotation markers ----
 		this.drawMarker(ctx, xToPx(L), marginTop, plotH, "Poverty Line");
 		this.drawMarker(ctx, xToPx(10 * L), marginTop, plotH, "10% Tax Anchor");
 		this.drawMarker(ctx, xToPx(this.peakIncome), marginTop, plotH, "Peak Take-Home");
 
-		// ---- User income dot ----
 		if (this.userIncome > 0 && this.userIncome <= xMax) {
 			const dotX = xToPx(this.userIncome);
 			const dotY = rateToPy(this.taxRateAt(this.userIncome));
@@ -302,22 +262,17 @@ export class TaxesComponent implements AfterViewInit {
 			ctx.stroke();
 		}
 
-		// ---- Axis labels ----
 		ctx.fillStyle = "#111827";
 		ctx.font = "14px 'Trebuchet MS', sans-serif";
 		ctx.textAlign = "center";
 		ctx.textBaseline = "alphabetic";
 		ctx.fillText("Annual Gross Income", marginLeft + plotW / 2, H - 6);
-
-		// Left axis label (rotated)
 		ctx.save();
 		ctx.translate(16, marginTop + plotH / 2);
 		ctx.rotate(-Math.PI / 2);
 		ctx.textAlign = "center";
 		ctx.fillText("Tax Rate", 0, 0);
 		ctx.restore();
-
-		// Right axis label (rotated)
 		ctx.save();
 		ctx.translate(W - 14, marginTop + plotH / 2);
 		ctx.rotate(Math.PI / 2);
@@ -326,7 +281,6 @@ export class TaxesComponent implements AfterViewInit {
 		ctx.fillText("Annual Take-Home Pay", 0, 0);
 		ctx.restore();
 
-		// ---- Legend (upper right inside plot) ----
 		this.drawLegend(ctx, marginLeft + plotW, marginTop);
 	}
 
@@ -415,12 +369,10 @@ export class TaxesComponent implements AfterViewInit {
 
 	private buildXTicks(xMax: number, L: number): number[] {
 		const ticks = new Set<number>();
-		// Round "nice" ticks across the range.
 		const step = this.niceStep(xMax / 7);
 		for (let v = step; v < xMax; v += step) {
 			ticks.add(Math.round(v));
 		}
-		// Meaningful multiples of L and the peak income.
 		ticks.add(Math.round(L));
 		ticks.add(Math.round(10 * L));
 		ticks.add(Math.round(this.peakIncome));
@@ -429,7 +381,6 @@ export class TaxesComponent implements AfterViewInit {
 			.filter(v => v > 0 && v <= xMax)
 			.sort((a, b) => a - b);
 
-		// Drop ticks that would overlap (closer than 4% of range).
 		const minGap = xMax * 0.04;
 		const result: number[] = [];
 		for (const v of sorted) {
@@ -470,3 +421,4 @@ export class TaxesComponent implements AfterViewInit {
 		return "$" + Math.round(v);
 	}
 }
+

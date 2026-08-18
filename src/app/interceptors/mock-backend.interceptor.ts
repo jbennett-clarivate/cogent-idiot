@@ -10,30 +10,9 @@ import { Observable, of, from } from "rxjs";
 import { delay, mergeMap, materialize, dematerialize } from "rxjs/operators";
 import { useMockBackend } from "@app/config/app.config";
 
-/**
- * In-browser mock backend.
- *
- * Replicates the Express auth handshake (pepper -> salt -> hashed login) and the
- * supporting endpoints entirely client-side, so the app can run as static files
- * with no Node server. Behaviour is intentionally identical to server.js so the
- * UI cannot tell the difference. When app.config.ts points at a real server,
- * this interceptor disables itself and lets requests pass through.
- *
- * Security note: this is a *simulation* of the handshake for demo purposes. The
- * "database" lives in the browser, so it is not a real authentication boundary.
- * It deliberately mirrors the server's anti-enumeration behaviour (always
- * returning a salt-shaped response) so the demo reflects the production design.
- */
 @Injectable()
 export class MockBackendInterceptor implements HttpInterceptor {
-	/**
-	 * Demo accounts. Mirrors a real USER table row: we store the salt and the
-	 * pre-computed storedDHP = sha256(salt + password) - never the plaintext
-	 * password. This keeps credentials out of the readable bundle, exactly as a
-	 * real database would only ever hold the hash.
-	 *
-	 *   GLaDOS@brightmatter.tools -> password "ABCDGH" (salt "salt123")
-	 */
+
 	private readonly seedUsers: { email: string; salt: string; storedDHP: string }[] = [
 		{
 			email: "glados@brightmatter.tools",
@@ -41,8 +20,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
 			storedDHP: "bcfa442fe2e65153c13ce1f4da73883d72c59b0083393d8caa87dab4e0dbc4d1",
 		},
 	];
-
-	/** Per-"session" handshake state, mirroring express-session fields. */
 	private session: {
 		pepper?: string;
 		username?: string;
@@ -54,14 +31,10 @@ export class MockBackendInterceptor implements HttpInterceptor {
 			return next.handle(req);
 		}
 
-		// Only our own /api/* routes are mocked. Anything else (e.g. external
-		// services like api.pwnedpasswords.com) must pass through untouched even
-		// in self-contained mode.
 		if (!this.pathOf(req.url).includes("/api/")) {
 			return next.handle(req);
 		}
 
-		// Wrap in defer-like async pipeline; add a tiny delay to feel networky.
 		return of(null).pipe(
 			mergeMap(() => this.handleRoute(req)),
 			materialize(),
@@ -113,11 +86,8 @@ export class MockBackendInterceptor implements HttpInterceptor {
 			return this.ok(this.tools());
 		}
 
-		// Unknown API route under mock backend.
 		return this.error(404, { error: "Not found" });
 	}
-
-	// --- Handshake endpoints -------------------------------------------------
 
 	private handlePepper(): Observable<HttpEvent<any>> {
 		const pepper = this.randomString(12);
@@ -133,9 +103,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
 
 		const normalized = username.toLowerCase().trim();
 		const known = this.seedUsers.find(u => u.email === normalized);
-
-		// Anti-enumeration: always return a salt-shaped value. Unknown users get a
-		// deterministic fake salt so responses are indistinguishable from real ones.
 		const salt = known ? known.salt : this.fakeSalt(normalized);
 
 		this.session.username = normalized;
@@ -152,8 +119,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
 		}
 
 		const known = this.seedUsers.find(u => u.email === username);
-		// For unknown users we still compute against a value that will never match,
-		// keeping timing/shape similar and avoiding an existence oracle.
 		const storedDHP = known
 			? known.storedDHP
 			: await this.sha256(salt + "\u0000no-such-user");
@@ -162,7 +127,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
 
 		if (this.constantTimeEquals(expectedHash, String(hashedPepperedPassword)) && known) {
 			this.setLogin(known.email);
-			// Burn the pepper so the captured wire value cannot be replayed.
 			this.session.pepper = undefined;
 			this.session.username = undefined;
 			this.session.salt = undefined;
@@ -194,8 +158,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
 		return this.ok({ authenticated: false });
 	}
 
-	// --- Login persistence (mirrors server session) -------------------------
-
 	private readonly LOGIN_KEY = "mock_session_login";
 
 	private setLogin(email: string): void {
@@ -214,12 +176,9 @@ export class MockBackendInterceptor implements HttpInterceptor {
 		sessionStorage.removeItem(this.LOGIN_KEY);
 	}
 
-	// --- Helpers ------------------------------------------------------------
-
 	private tools(): any[] {
 		return [
 			{ id: "bayes", name: "Bayes Calculator", description: "Calculate Bayesian probabilities" },
-			
 			{ id: "listcomparator", name: "List Comparator", description: "Compare two lists" },
 			{ id: "listrandom", name: "List Randomizer", description: "Randomize list order" },
 			{ id: "pascal", name: "Pascal Calculator", description: "Pascal triangle calculations" },
@@ -247,7 +206,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
 		return out;
 	}
 
-	/** Deterministic, salt-shaped value for unknown users (anti-enumeration). */
 	private fakeSalt(username: string): string {
 		let h = 2166136261;
 		for (let i = 0; i < username.length; i++) {
@@ -275,8 +233,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
 			.map(b => b.toString(16).padStart(2, "0"))
 			.join("");
 	}
-
-	// --- Response builders --------------------------------------------------
 
 	private ok(body: any): Observable<HttpEvent<any>> {
 		return of(new HttpResponse({ status: 200, body }));

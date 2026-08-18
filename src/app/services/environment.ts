@@ -20,9 +20,6 @@ export class Environment {
 	}
 
 	private getApiBaseUrl(): string {
-		// When no real server is configured we still speak to "/api"; the
-		// mock backend interceptor answers those calls in-browser. When a real
-		// server URL is set in app.config.ts, route to that origin's /api.
 		if (useMockBackend()) {
 			return "/api";
 		}

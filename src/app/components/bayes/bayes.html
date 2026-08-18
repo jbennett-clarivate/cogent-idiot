@@ -12,15 +12,11 @@
 			less certain than it feels (see the Updated belief below).
 		</p>
 	</div>
-
 	<form>
 		<div class="bayes-grid">
 			<div class="bayes-field">
 				<div class="bayes-label-row">
 					<label for="suspicion">Prior belief</label>
-		
-		
-		
 					<span class="info-marker" #priorTrigger tabindex="0" (mouseenter)="showInfo('prior')"
 						(mouseleave)="hideInfo('prior')" (focus)="showInfo('prior')" (blur)="hideInfo('prior')"
 						(click)="toggleInfo('prior')"><img src="assets/images/info.svg" alt="More info" /></span>
@@ -29,8 +25,9 @@
 				</div>
 				<span class="bayes-notation">P(H)</span>
 				<div class="bayes-input">
-					<input type="number" id="suspicion" name="suspicion" [ngModel]="suspicion()"
-						(ngModelChange)="suspicion.set($event); onSuspicionChange()" min="0" max="100" step="1"
+					<input type="text" inputmode="decimal" id="suspicion" name="suspicion" appInputController [validator]="numberValidator"
+						[enforcer]="noWhitespaceEnforcer" [ngModel]="suspicion()"
+						(ngModelChange)="suspicion.set($event); onSuspicionChange()"
 						placeholder="e.g. 1" />
 					<span class="bayes-unit">%</span>
 				</div>
@@ -49,9 +46,9 @@
 				</div>
 				<span class="bayes-notation">P(E|H)</span>
 				<div class="bayes-input">
-					<input type="number" id="confirmedSuspicion" name="confirmedSuspicion" [ngModel]="confirmedSuspicion()"
-						(ngModelChange)="confirmedSuspicion.set($event); onConfirmedSuspicionChange()" min="0" max="100"
-						step="1" placeholder="e.g. 90" />
+					<input type="text" inputmode="decimal" id="confirmedSuspicion" name="confirmedSuspicion" appInputController
+						[validator]="numberValidator" [enforcer]="noWhitespaceEnforcer" [ngModel]="confirmedSuspicion()"
+						(ngModelChange)="confirmedSuspicion.set($event); onConfirmedSuspicionChange()" placeholder="e.g. 90" />
 					<span class="bayes-unit">%</span>
 				</div>
 				<p class="bayes-hint">When it's true, how often the test says positive</p>
@@ -59,9 +56,6 @@
 			<div class="bayes-field derived">
 				<div class="bayes-label-row">
 					<label for="falseSuspicion">Chance it's NOT true</label>
-		
-		
-		
 					<span class="info-marker" #notTrueTrigger tabindex="0" (mouseenter)="showInfo('notTrue')"
 						(mouseleave)="hideInfo('notTrue')" (focus)="showInfo('notTrue')" (blur)="hideInfo('notTrue')"
 						(click)="toggleInfo('notTrue')"><img src="assets/images/info.svg" alt="More info" /></span>
@@ -76,7 +70,6 @@
 				</div>
 				<p class="bayes-hint">Filled in for you: 100 &minus; Prior belief</p>
 			</div>
-		
 			<div class="bayes-field">
 				<div class="bayes-label-row">
 					<label for="confirmedFalseSuspicion">Test false-positive rate</label>
@@ -89,10 +82,10 @@
 				</div>
 				<span class="bayes-notation">P(E|&not;H)</span>
 				<div class="bayes-input">
-					<input type="number" id="confirmedFalseSuspicion" name="confirmedFalseSuspicion"
-						[ngModel]="confirmedFalseSuspicion()"
-						(ngModelChange)="confirmedFalseSuspicion.set($event); onConfirmedFalseSuspicionChange()" min="0"
-						max="100" step="1" placeholder="e.g. 5" />
+					<input type="text" inputmode="decimal" id="confirmedFalseSuspicion" name="confirmedFalseSuspicion" appInputController
+						[validator]="numberValidator" [enforcer]="noWhitespaceEnforcer" [ngModel]="confirmedFalseSuspicion()"
+						(ngModelChange)="confirmedFalseSuspicion.set($event); onConfirmedFalseSuspicionChange()"
+						placeholder="e.g. 5" />
 					<span class="bayes-unit">%</span>
 				</div>
 				<p class="bayes-hint">When it's NOT true, how often the test says positive</p>

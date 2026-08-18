@@ -14,10 +14,9 @@ export class AuthGuard implements CanActivate {
 	}
 
 	canActivate(): Observable<boolean> {
-		// Wait for the initial auth check to complete
 		return this.authService.isAuthenticated$.pipe(
-			filter(isAuthenticated => isAuthenticated !== null), // Wait until we have a real auth status
-			take(1), // Take only the first valid result
+			filter(isAuthenticated => isAuthenticated !== null),
+			take(1),
 			map(isAuthenticated => {
 				if (!isAuthenticated) {
 					this.router.navigate(["/login"]);

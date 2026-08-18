@@ -2,20 +2,20 @@ import { Component, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { QuadrantAnchorDirective } from "../../directives/quadrant-anchor.directive";
+import { InputControllerDirective } from "../../directives/input-controller.directive";
 import { TOOL_INFO } from "@app/config/tool-info";
 
 @Component({
 	selector: "app-listrandom",
-	imports: [CommonModule, FormsModule, QuadrantAnchorDirective],
+	imports: [CommonModule, FormsModule, QuadrantAnchorDirective, InputControllerDirective],
 	templateUrl: "./listrandom.html",
 	styleUrls: ["./listrandom.scss"],
 })
 export class ListrandomComponent {
-	// Field-level help text, from the shared single-source-of-truth config.
 	readonly info = TOOL_INFO["/tools/random"].fields!;
+	readonly numberValidator = InputControllerDirective.numberValidator;
+	readonly noWhitespaceEnforcer = InputControllerDirective.noWhitespaceEnforcer;
 
-	// Which info panel is currently open (by key), or null. Supports hover on
-	// desktop and tap-to-toggle on touch devices; only one open at a time.
 	activeInfo = signal<string | null>(null);
 
 	showInfo(key: string): void {

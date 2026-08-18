@@ -11,7 +11,6 @@ import { Router } from "@angular/router";
 export class HomeComponent {
 	constructor(private router: Router) {
 	}
-
 	tools = [
 		{
 			name: "Bayes' Theorem",

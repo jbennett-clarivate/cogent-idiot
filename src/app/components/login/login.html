@@ -7,8 +7,6 @@
 <div class="login-container">
   <div class="login-form">
     <h2 class="free-size">Login</h2>
-
-    <!-- Step #6: Hidden inputs for pepper, salt, and username -->
     <input type="hidden" [(ngModel)]="pepper" name="pepper">
     @if (salt) {
       <input type="hidden" [(ngModel)]="salt" name="salt">
@@ -16,8 +14,6 @@
     @if (showPasswordField) {
       <input type="hidden" [(ngModel)]="username" name="username">
     }
-
-    <!-- Step #7: Username input (always visible) -->
     <div class="form-group">
       <label for="username">Username:</label>
       <input
@@ -29,8 +25,6 @@
         (keyup.enter)="onFirstNext()"
         class="form-control non-standard-input">
     </div>
-
-    <!-- Password field (only shown after first Next) -->
     @if (showPasswordField) {
       <div class="form-group">
         <label for="password">Password:</label>
@@ -44,15 +38,11 @@
           class="form-control non-standard-input">
       </div>
     }
-
-    <!-- Error message -->
     @if (errorMessage) {
       <div class="error-message">
         {{ errorMessage }}
       </div>
     }
-
-    <!-- First Next button (step #7) -->
     @if (!showPasswordField) {
 			<div class="form-group">
 				<button
@@ -63,8 +53,6 @@
 				</button>
 			</div>
     }
-
-    <!-- Second Next button (different functionality) -->
     @if (showPasswordField) {
 			<div class="form-group">
 				<div class="button-row">

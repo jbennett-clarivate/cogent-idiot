@@ -25,7 +25,6 @@ export class ToolWrapperComponent {
 		{ name: "Password Breach Check", icon: "pwned.svg", route: "/tools/pwned" },
 	];
 
-	// Plain-language descriptions shown when hovering the info button.
 	private descriptions: { [route: string]: string } = {
 		"/tools/bayes":
 			"Updates a probability after new evidence using Bayes' theorem. Enter how likely something is to be true to begin with and how reliable your test is, and it calculates the revised probability that it's actually true given a positive result. Handy for medical-test and false-positive style questions. Reuse the answer as the next starting point to chain several updates together.",
@@ -79,36 +78,22 @@ export class ToolWrapperComponent {
 	showTooltip(event: MouseEvent, text: string) {
 		const button = event.currentTarget as HTMLElement;
 		const rect = button.getBoundingClientRect();
-
-		// Remove any existing tooltips
 		this.hideTooltip();
-
-		// Use quadrant-anchor positioning for smarter placement
 		const tooltipElement = this.createTooltipElement(button, text);
 		button.appendChild(tooltipElement);
 
-		// Apply quadrant-based positioning
 		quadrantAnchorPositioner.applyPosition(tooltipElement, button);
 
-		// Make visible after positioning
 		requestAnimationFrame(() => {
 			tooltipElement.classList.add('visible');
 		});
 	}
 
-	/**
-	 * Creates a tooltip element with the quadrant-anchor styling
-	 */
 	private createTooltipElement(trigger: HTMLElement, text: string): HTMLElement {
 		const tooltip = document.createElement('div');
-		// Tag with a component-specific marker class so hideTooltip only ever
-		// targets tooltips this component created. Querying ".anchor-content"
-		// alone would also match the Bayes informationals rendered by the
-		// quadrantAnchor directive and permanently remove them from the DOM.
 		tooltip.className = 'anchor-content dynamic-tooltip';
 		tooltip.textContent = text;
 
-		// Add wide class for info/help button which has longer text
 		if (trigger.classList.contains('info-help')) {
 			tooltip.classList.add('wide');
 		}

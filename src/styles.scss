@@ -1,6 +1,46 @@
 @use "app/services/quadrant-anchor-positioner";
 
-/* Global Styles */
+// Normalize essentials — the handful of reset rules that modern browsers do
+// NOT provide by default, migrated from the retired normalize.css so all
+// global styles live in one SCSS file.
+body {
+  margin: 0;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font: inherit;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+td,
+th {
+  padding: 0;
+}
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sup {
+  top: -0.5em;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
 *:not(.free-size) {
   font-size: 20px !important;
 }
@@ -11,7 +51,6 @@
   vertical-align: top;
 }
 
-/* Input Styles */
 input:not([type="range"]) {
   height: 1.5em;
   border-radius: 3px;
@@ -24,20 +63,17 @@ li:not(.bulleted) {
   list-style-type: none;
 }
 
-/* Hide number input spinners */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* Hide number input spinners for Firefox */
 input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
 
-/* File input styling */
 input[type="file"] {
   position: absolute;
   opacity: 0;
@@ -46,7 +82,6 @@ input[type="file"] {
   overflow: hidden;
 }
 
-/* Layout Classes */
 .flex-c {
   display: flex;
   flex-direction: column;
@@ -74,12 +109,10 @@ input[type="file"] {
   margin-top: 10px;
 }
 
-/* Text Styles */
 .strong {
   font-weight: bold;
 }
 
-/* Background Styles */
 .white-bg {
   background-color: white;
   border-radius: 8px;
@@ -102,14 +135,12 @@ select:not(.non-standard-select) {
   }
 }
 
-/* Standard Input */
 input:not([type="range"]):not(.non-standard-input) {
   box-sizing: border-box;
   padding: 8px;
   border-radius: 4px;
 }
 
-/* Standard Buttons */
 button:not(.non-standard-button-action):not(.non-standard-button-reset) {
   border: none;
   border-radius: 4px;
@@ -123,14 +154,12 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* HR Styles */
 hr {
   height: 1px;
   background-color: #000;
   border: none;
 }
 
-/* Tooltip Styles */
 [data-title] {
   position: relative;
   cursor: help;
@@ -164,10 +193,6 @@ hr {
   pointer-events: none;
 }
 
-/* Universal informational marker (the "little i" that anchors a quadrant
-   panel). Defined once globally so every tool renders it identically; the
-   accompanying panel styling lives in the quadrant-anchor-positioner import
-   at the top of this file. */
 .info-marker {
   flex: 0 0 auto;
   display: inline-flex;
@@ -185,7 +210,6 @@ hr {
   display: block;
 }
 
-/* Label Styles */
 label {
   font-weight: bold;
   text-align: center;

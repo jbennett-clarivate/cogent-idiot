@@ -2,23 +2,22 @@ import { Component, signal, computed } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { DecimalPipe } from "@angular/common";
 import { QuadrantAnchorDirective } from "../../directives/quadrant-anchor.directive";
+import { InputControllerDirective } from "../../directives/input-controller.directive";
 import { TOOL_INFO } from "@app/config/tool-info";
 @Component({
 	selector: "app-bayes",
 	templateUrl: "./bayes.html",
 	styleUrls: ["./bayes.scss"],
-	imports: [FormsModule, DecimalPipe, QuadrantAnchorDirective],
+	imports: [FormsModule, DecimalPipe, QuadrantAnchorDirective, InputControllerDirective],
 })
 export class BayesComponent {
-	// Field-level help text, from the shared single-source-of-truth config.
 	readonly info = TOOL_INFO["/tools/bayes"].fields!;
+	readonly numberValidator = InputControllerDirective.numberValidator;
+	readonly noWhitespaceEnforcer = InputControllerDirective.noWhitespaceEnforcer;
 
 	suspicion = signal<number | null>(null);
 	confirmedSuspicion = signal<number | null>(null);
 	confirmedFalseSuspicion = signal<number | null>(null);
-
-	// Which info panel is currently open (by key), or null. Supports hover on
-	// desktop and tap-to-toggle on touch devices; only one open at a time.
 	activeInfo = signal<string | null>(null);
 
 	showInfo(key: string): void {
@@ -35,7 +34,6 @@ export class BayesComponent {
 		this.activeInfo.set(this.activeInfo() === key ? null : key);
 	}
 
-	// Prior that H is false is genuinely the complement of the prior.
 	falseSuspicion = computed(() => {
 		const suspicionVal = this.suspicion();
 		return suspicionVal !== null ? 100 - suspicionVal : null;
@@ -50,8 +48,6 @@ export class BayesComponent {
 			falseSuspicionVal === null || confirmedFalseSuspicionVal === null) {
 			return 0;
 		}
-
-		// Convert percentage inputs to decimal values
 		const suspicionDecimal = suspicionVal / 100;
 		const confirmedSuspicionDecimal = confirmedSuspicionVal / 100;
 		const falseSuspicionDecimal = falseSuspicionVal / 100;
@@ -100,7 +96,6 @@ export class BayesComponent {
 		if (!rawAnswerVal) {
 			return;
 		}
-		// Reuse the result as the new prior for chained updates.
 		this.suspicion.set(Math.round(1000 * rawAnswerVal) / 10);
 		this.onSuspicionChange();
 	}

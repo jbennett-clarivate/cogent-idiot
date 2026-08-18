@@ -12,8 +12,6 @@ const isGoDaddy = process.env.HOSTING_PROVIDER === "godaddy";
 const isLocalhost = !isGoDaddy;
 const app = express();
 
-// Behind a reverse proxy (e.g. hosting platform) in non-local environments,
-// trust the first proxy hop so secure cookies and req.ip behave correctly.
 if (!isLocalhost) {
 	app.set("trust proxy", 1);
 }
@@ -91,9 +89,6 @@ if (isGoDaddy || !isLocalhost) {
 }
 
 app.use(session(sessionConfig));
-
-// Verbose session logging is opt-in only. It dumps salts/peppers/session
-// contents and must never be on by default. Enable with DEBUG_AUTH=true.
 const DEBUG_AUTH = process.env.DEBUG_AUTH === "true";
 
 if (DEBUG_AUTH) {
@@ -147,13 +142,6 @@ const mockDatabase = {
 	]
 };
 
-/**
- * Compares two strings in a safe manner, handling null or undefined values.
- * @param str1 - The first string to compare.
- * @param str2 - The second string to compare.
- * @param caseSensitive - Whether the comparison should be case-sensitive.
- * @returns True if the strings are equal, false otherwise.
- */
 function safeStringCompare(str1, str2, caseSensitive = false) {
 	if (str1 === null || str2 === null) {
 		return str1 === str2;
@@ -165,10 +153,6 @@ function safeStringCompare(str1, str2, caseSensitive = false) {
 	return caseSensitive ? s1 === s2 : s1.toLowerCase() === s2.toLowerCase();
 }
 
-/**
- * Constant-time comparison for security-sensitive values (e.g. password hashes).
- * Avoids the early-exit timing leak of a normal string comparison.
- */
 function timingSafeEqual(a, b) {
 	const bufA = Buffer.from(String(a));
 	const bufB = Buffer.from(String(b));
@@ -178,11 +162,6 @@ function timingSafeEqual(a, b) {
 	return crypto.timingSafeEqual(bufA, bufB);
 }
 
-/**
- * Produces a deterministic, salt-shaped value for unknown users so the salt
- * endpoint never reveals whether an account exists (anti-enumeration). Derived
- * from the username and SESSION_SECRET so it is stable per-user but unguessable.
- */
 function deterministicFakeSalt(username) {
 	return crypto.createHmac("sha256", process.env.SESSION_SECRET || "default_secret_for_development")
 		.update(username)
@@ -282,10 +261,6 @@ app.post("/api/auth/salt", async (req, res) => {
 				"SELECT SALT FROM USER WHERE EMAIL = ?",
 				[normalizedUsername]
 			);
-
-			// Anti-enumeration: never reveal whether the user exists. Unknown
-			// users receive a deterministic, salt-shaped value derived from the
-			// username and a server secret, so responses are indistinguishable.
 			salt = rows.length > 0 ? rows[0].SALT : deterministicFakeSalt(normalizedUsername);
 		} else {
 			salt = "salt123";
@@ -422,7 +397,6 @@ app.post("/api/auth/refresh", (req, res) => {
 app.get("/api/tools", (req, res) => {
 	const tools = [
 		{id: "bayes", name: "Bayes Calculator", description: "Calculate Bayesian probabilities"},
-
 		{id: "listcomparator", name: "List Comparator", description: "Compare two lists"},
 		{id: "listrandom", name: "List Randomizer", description: "Randomize list order"},
 		{id: "pascal", name: "Pascal Calculator", description: "Pascal triangle calculations"},

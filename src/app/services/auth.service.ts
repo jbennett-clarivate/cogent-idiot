@@ -79,7 +79,6 @@ export class AuthService {
 		);
 	}
 
-	// Method to update auth state after successful login
 	setAuthenticatedUser(email: string): void {
 		this.isAuthenticatedSubject.next(true);
 		this.currentUserSubject.next(email);

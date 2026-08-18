@@ -1,18 +1,19 @@
 import { Component, ElementRef, Renderer2, AfterViewInit, NgZone, ChangeDetectorRef } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
+import { InputControllerDirective } from "../../directives/input-controller.directive";
 
 @Component({
 	selector: "app-pascal",
-	imports: [CommonModule, FormsModule],
+	imports: [CommonModule, FormsModule, InputControllerDirective],
 	templateUrl: "./pascal.html",
 	styleUrls: ["./pascal.scss"],
 })
 export class PascalComponent implements AfterViewInit {
 	rows: number | null = null;
 	pascal: number[][] = [];
+	readonly digitsOnlyEnforcer = InputControllerDirective.digitsOnlyEnforcer;
 
-	// nCk functionality
 	n: number = 5;
 	k: number = 2;
 	maxInputValue: number = 45;
@@ -29,9 +30,6 @@ export class PascalComponent implements AfterViewInit {
 	}
 
 	ngAfterViewInit() {
-		// Defer initial sizing to the next macrotask so the maxInputValue change
-		// (which depends on the rendered container width) lands in a fresh change
-		// detection cycle, avoiding NG0100 ExpressionChangedAfterItHasBeenChecked.
 		setTimeout(() => {
 			this.setupMaxInputRange();
 			this.displayTriangle();
@@ -56,8 +54,7 @@ export class PascalComponent implements AfterViewInit {
 	}
 
 	onNInput(event: any) {
-		const inputStr = event.target.value.replace(/\D/g, "");
-		this.n = Math.min(parseInt(inputStr) || 0, this.maxInputValue);
+		this.n = Math.min(parseInt(event.target.value) || 0, this.maxInputValue);
 		event.target.value = this.n;
 		if (this.k > this.n) {
 			this.k = this.n;
@@ -66,8 +63,7 @@ export class PascalComponent implements AfterViewInit {
 	}
 
 	onKInput(event: any) {
-		const inputStr = event.target.value.replace(/\D/g, "");
-		this.k = Math.min(parseInt(inputStr) || 0, this.n);
+		this.k = Math.min(parseInt(event.target.value) || 0, this.n);
 		event.target.value = this.k;
 		this.displayTriangle();
 	}
@@ -83,7 +79,6 @@ export class PascalComponent implements AfterViewInit {
 		this.generatePascal();
 		this.nChooseK = this.pascal[this.n] ? this.pascal[this.n][this.k] : 0;
 
-		// Run UI updates outside Angular zone to prevent ExpressionChangedAfterItHasBeenCheckedError
 		this.ngZone.runOutsideAngular(() => {
 			setTimeout(() => {
 				// Apply dynamic font sizing like original
@@ -158,3 +153,4 @@ export class PascalComponent implements AfterViewInit {
 		this.setupMaxInputRange();
 	}
 }
+

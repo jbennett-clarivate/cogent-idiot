@@ -18,9 +18,6 @@
   opacity: 1;
 }
 
-// /* The service pins one corner of the panel to a trigger corner via inline
-//    fixed left/top. Each anchor class only offsets the panel by its own size so
-//    it grows into the open diagonal. A small gap nudges it off the trigger. */
 .anchor-tl-to-bl {
   transform: translate(0, 0);
 }

@@ -1,13 +1,8 @@
-// Component-specific styling for safecron
-// Note: Basic flex utilities, .white-bg, .strong, .v-padding, .top-spaced are defined globally
-
-// Form layout extensions
 .lv-spaced {
   align-items: stretch;
 }
 
 label {
-  // Extends global label styles for this component
   flex-direction: column;
   gap: 0.5rem;
   text-align: left;
@@ -19,7 +14,6 @@ label {
   }
 }
 
-// Button container styling
 .width-limit {
   display: flex;
   gap: 1rem;
@@ -28,7 +22,6 @@ label {
   width: 100%;
 }
 
-// Meeting/downtime display - specific to this component
 .flex-r.h-center.h-spaced.v-padding {
   background: #f8f9fa;
   border-radius: 6px;
@@ -45,7 +38,6 @@ label {
   }
 }
 
-// Cron container styling - component specific
 .cron-container {
   margin-top: 2rem;
   margin-bottom: 2rem;
@@ -64,7 +56,6 @@ label {
   padding: 1rem;
 }
 
-// Responsive design
 @media (max-width: 768px) {
   .flex-c.h-center.h-spaced.lv-spaced.strong.v-padding {
     flex-direction: column;

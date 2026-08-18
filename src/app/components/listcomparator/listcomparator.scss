@@ -1,11 +1,8 @@
-/* Listcomparator Component Specific Styles */
 
-/* Component-specific input margin */
 input:not([type="range"]) {
   margin: 0 4px;
 }
 
-/* File input label styling */
 label[for^="file_input_list"] {
   display: inline-block;
   cursor: pointer;
@@ -17,7 +14,6 @@ label[for^="file_input_list"]:hover {
   cursor: pointer;
 }
 
-/* Textarea styling */
 textarea[name^="input_list"] {
   resize: none;
   width: 100%;
@@ -28,7 +24,6 @@ textarea[name^="input_list"] {
   padding: 10px;
 }
 
-/* Component-specific layout classes */
 .height-500 {
   height: 500px;
   border: 1px solid #ccc;
@@ -40,7 +35,6 @@ textarea[name^="input_list"] {
   max-width: 45%;
 }
 
-/* Output grid layout */
 .output-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -72,7 +66,6 @@ textarea[name^="input_list"] {
   justify-content: center;
 }
 
-/* Row that pairs a label with its universal info marker. */
 .label-row {
   display: flex;
   align-items: center;
@@ -83,14 +76,11 @@ textarea[name^="input_list"] {
   justify-content: center;
 }
 
-/* Groups a checkbox option with its info marker so they stay together. */
 .flag-item {
   display: flex;
   align-items: center;
   gap: 6px;
 }
-
-/* .info-marker styling is defined globally in styles.scss. */
 
 .output-display {
   height: 15em;
@@ -101,7 +91,6 @@ textarea[name^="input_list"] {
   flex: 1;
 }
 
-/* Override hr width for listcomparator component */
 hr {
   width: 100%;
 }

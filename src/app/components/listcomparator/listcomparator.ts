@@ -11,11 +11,7 @@ import { TOOL_INFO } from "@app/config/tool-info";
 	styleUrl: "./listcomparator.scss",
 })
 export class ListcomparatorComponent implements OnInit {
-	// Field-level help text, from the shared single-source-of-truth config.
 	readonly info = TOOL_INFO["/tools/comparator"].fields!;
-
-	// Which info panel is currently open (by key), or null. Supports hover on
-	// desktop and tap-to-toggle on touch devices; only one open at a time.
 	activeInfo = signal<string | null>(null);
 
 	showInfo(key: string): void {

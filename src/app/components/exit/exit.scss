@@ -36,7 +36,6 @@
     button:hover {
         background: #ff6b6b;
     }
-/* Header row that holds the "BOO!" text alongside the info marker. */
 .popup-header {
     display: flex;
     align-items: center;
@@ -47,5 +46,3 @@
 .popup-header .creepy {
     margin: 0;
 }
-
-/* .info-marker styling is defined globally in styles.scss. */

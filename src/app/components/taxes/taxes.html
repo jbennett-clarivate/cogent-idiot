@@ -11,9 +11,10 @@
         <span aria-hidden="true">$</span>
         <input
           id="baselineInput"
-          type="number"
-          min="1"
-          step="1"
+          type="text"
+          appInputController
+          [validator]="numberValidator"
+          [enforcer]="noWhitespaceEnforcer"
           [(ngModel)]="baseline"
           (ngModelChange)="recompute()"
           name="baseline"
@@ -22,7 +23,6 @@
         />
       </div>
     </div>
-
     <div class="question-card">
       <label for="currentInput">What is the federal poverty line for a single adult today?</label>
       <p class="hint">
@@ -32,9 +32,10 @@
         <span aria-hidden="true">$</span>
         <input
           id="currentInput"
-          type="number"
-          min="1"
-          step="1"
+          type="text"
+          appInputController
+          [validator]="numberValidator"
+          [enforcer]="noWhitespaceEnforcer"
           [(ngModel)]="current"
           (ngModelChange)="recompute()"
           name="current"
@@ -44,7 +45,6 @@
       </div>
     </div>
   </section>
-
   <section class="derived-grid" aria-label="Calculated values">
     <div class="derived-card">
       <span class="derived-label">Curve steepness</span>
@@ -65,7 +65,6 @@
       <span class="derived-note">tax rate is always exactly 10%</span>
     </div>
   </section>
-
   <section class="income-explorer" aria-label="Optional income explorer">
     <div class="income-copy">
       <label for="incomeSlider">Optional: where would your income sit on the curve?</label>
@@ -89,10 +88,10 @@
         <span aria-hidden="true">$</span>
         <input
           id="userIncomeInput"
-          type="number"
-          [min]="minIncome"
-          [max]="maxIncome"
-          step="1000"
+          type="text"
+          appInputController
+          [validator]="numberValidator"
+          [enforcer]="noWhitespaceEnforcer"
           [(ngModel)]="userIncome"
           (ngModelChange)="onUserIncome()"
           name="userIncome"
@@ -106,7 +105,6 @@
       <span>Take-home: <strong>{{ formatMoney(userTakeHome) }}</strong></span>
     </div>
   </section>
-
   <section class="chart-section" aria-label="Tax graph">
     <h2>Your Tax Rate at Every Income Level</h2>
     <div class="canvas-wrap">

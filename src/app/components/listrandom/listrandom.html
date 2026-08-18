@@ -4,11 +4,13 @@
 			<div class="flex-c h-center h-spaced lv-spaced strong v-padding">
 				<label for="stringquantity" class="flex-c h-center">
 					<span data-title="How many random strings to generate">Quantity:</span>
-					<input type="number" name="stringquantity" [(ngModel)]="stringQuantity" min="1" max="999" step="1"/>
+					<input type="text" inputmode="numeric" name="stringquantity" appInputController [validator]="numberValidator"
+						[enforcer]="noWhitespaceEnforcer" [(ngModel)]="stringQuantity" />
 				</label>
 				<label for="stringlength" class="flex-c h-center">
 					<span data-title="Length of each string">Length:</span>
-					<input type="number" name="stringlength" [(ngModel)]="stringLength" min="5" max="999" step="1"/>
+					<input type="text" inputmode="numeric" name="stringlength" appInputController [validator]="numberValidator"
+						[enforcer]="noWhitespaceEnforcer" [(ngModel)]="stringLength" />
 				</label>
 			</div>
 			<div class="flex-r h-center h-spaced v-padding">

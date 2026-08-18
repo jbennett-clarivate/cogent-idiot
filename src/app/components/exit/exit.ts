@@ -9,14 +9,10 @@ import { TOOL_INFO } from '@app/config/tool-info';
     imports: [QuadrantAnchorDirective],
 })
 export class ExitPopupComponent {
-    // Field-level help text, from the shared single-source-of-truth config.
     readonly info = TOOL_INFO["/tools/exit"].fields!;
 
     visible = signal(false);
     shown = false;
-
-    // Which info panel is currently open (by key), or null. Supports hover on
-    // desktop and tap-to-toggle on touch devices; only one open at a time.
     activeInfo = signal<string | null>(null);
 
     constructor() {

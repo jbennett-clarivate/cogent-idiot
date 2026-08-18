@@ -6,7 +6,6 @@
       browser, so the password itself is never sent anywhere.
     </p>
   </div>
-
   <form (submit)="$event.preventDefault()">
     <div class="flex-c h-center v-padding">
       <label for="pwnedPassword" class="flex-c h-center">
@@ -21,8 +20,6 @@
           placeholder="Type, then press →"
         />
       </label>
-
-      <!-- Flash indicator: mirrors the original good/bad symbol -->
       <div class="indicator" [ngSwitch]="state">
         <span *ngSwitchCase="'checking'" class="badge checking">…</span>
         <span *ngSwitchCase="'safe'" class="badge safe" title="Not found in any known breach">✓</span>
@@ -30,7 +27,6 @@
         <span *ngSwitchCase="'error'" class="badge error" title="Check failed">!</span>
       </div>
     </div>
-
     <div class="flex-c h-center message-row" [ngSwitch]="state">
       <p *ngSwitchCase="'safe'" class="msg-safe">
         Good news \u00b7 this password was not found in any known breach.
@@ -41,7 +37,6 @@
       </p>
       <p *ngSwitchCase="'error'" class="msg-error">{{ errorMessage }}</p>
     </div>
-
     <div class="flex-r h-center h-spaced v-padding">
       <button type="button" class="btn btn-primary" (click)="check()">Check</button>
       <button type="button" class="btn btn-reset" (click)="reset()">Reset</button>

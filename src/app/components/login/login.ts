@@ -33,7 +33,6 @@ export class LoginComponent implements OnInit {
 	}
 
 	ngOnInit() {
-		// Step #2 & #5: Get pepper when page loads
 		this.http.get<{ pepper: string }>(`${this.baseUrl}/auth/pepper`).subscribe({
 			next: (response) => {
 				this.pepper = response.pepper;
@@ -50,14 +49,12 @@ export class LoginComponent implements OnInit {
 			return;
 		}
 
-		// Step #4: Get user salt
 		this.http.post<{ salt: string }>(`${this.baseUrl}/auth/salt`, { username: this.username }).subscribe({
 			next: (response) => {
 				this.salt = response.salt;
 				this.showPasswordField = true;
 				this.errorMessage = "";
 
-				// Focus the password input after the view updates
 				setTimeout(() => {
 					this.passwordInput?.nativeElement.focus();
 				}, 0);
@@ -76,16 +73,11 @@ export class LoginComponent implements OnInit {
 		}
 
 		try {
-			// Client-side hashing process:
-			// 1. Salt + hash the password to create DHP
 			const saltedPassword = this.salt + this.password;
 			const dhp = await this.sha256(saltedPassword);
-
-			// 2. Pepper the DHP and hash again
 			const pepperedDHP = dhp + this.pepper;
 			const hashedPepperedPassword = await this.sha256(pepperedDHP);
 
-			// 3. Send to server
 			this.http.post<{ success: boolean, email?: string, error?: string }>(`${this.baseUrl}/login`, {
 				hashedPepperedPassword,
 			}).subscribe({

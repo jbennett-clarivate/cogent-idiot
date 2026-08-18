@@ -1,13 +1,3 @@
-/**
- * Single source of truth for all explanatory copy, per tool.
- *
- * - `summary`  : tool-level description shown by the top-right info button
- *                (the "big i") in the toolbar.
- * - `fields`   : field-level help shown by the small info markers (the
- *                "little i") next to individual inputs inside a tool.
- *
- * Edit copy here once; every consumer (toolbar + component) stays in sync.
- */
 export interface ToolInfo {
 	summary: string;
 	fields?: Record<string, string>;

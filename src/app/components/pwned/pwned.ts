@@ -15,13 +15,11 @@ type CheckState = "idle" | "checking" | "safe" | "pwned" | "error";
 export class PwnedComponent {
 	password = "";
 	state: CheckState = "idle";
-	// Number of times the password appeared in known breaches (when pwned).
 	breachCount = 0;
 	errorMessage = "";
 
 	constructor(private http: HttpClient) {}
 
-	// Original UX: type the password, press Right Arrow (not Enter) to check.
 	onKeydown(event: KeyboardEvent): void {
 		if (event.key === "ArrowRight") {
 			event.preventDefault();
@@ -43,10 +41,6 @@ export class PwnedComponent {
 			const fullHash = (await this.sha1(pw)).toUpperCase();
 			const prefix = fullHash.substring(0, 5);
 			const suffix = fullHash.substring(5);
-
-			// k-anonymity: only the first five hash characters ever leave the
-			// browser. The API returns every suffix sharing that prefix; we match
-			// locally, so the full password hash is never transmitted.
 			const body = await firstValueFrom(
 				this.http.get(`https://api.pwnedpasswords.com/range/${prefix}`, {
 					responseType: "text",
@@ -74,7 +68,6 @@ export class PwnedComponent {
 		this.errorMessage = "";
 	}
 
-	// Scan the API response lines ("SUFFIX:COUNT") for our hash suffix.
 	private findSuffix(responseText: string, suffix: string): number {
 		const lines = responseText.split("\n");
 		for (const line of lines) {
