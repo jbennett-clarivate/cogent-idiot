@@ -45,3 +45,5 @@ Thumbs.db
 # clones (e.g. @angular/core 20.1.8 vs @angular/compiler 20.3.25).
 /cogent-idiot-deploy.zip
 /.github/
+
+/*.zip
