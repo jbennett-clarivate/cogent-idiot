@@ -1,8 +1,5 @@
 @use "app/services/quadrant-anchor-positioner";
 
-// Normalize essentials — the handful of reset rules that modern browsers do
-// NOT provide by default, migrated from the retired normalize.css so all
-// global styles live in one SCSS file.
 body {
   margin: 0;
 }

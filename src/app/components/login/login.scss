@@ -91,7 +91,6 @@ input:disabled {
   text-decoration: none;
   font-size: 0.8em;
   padding: 0px 10px;
-  margin: 5px 0px;
   border: 1px solid #ccc;
   border-radius: 5px;
   transition: all 0.5s ease;
@@ -100,4 +99,230 @@ input:disabled {
 .sister-link:hover {
   background-color: #f0f0f0;
   color: #333;
+}
+.spread-bottom-buttons {
+  display: flex;
+  justify-content: center;
+  gap: calc(100% - 333px);
+}
+
+.llm-questions-link {
+  // reset the button so it reads as a link matching .sister-link
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* --- LLM Questions overlay (covers the login page, no routing) --- */
+.llm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #0f1419;
+  overflow-y: auto;
+  // dark-theme tokens scoped to the overlay
+  --bg: #0f1419;
+  --card: #1a2028;
+  --border: #2a333f;
+  --text: #e6edf3;
+  --muted: #9aa7b4;
+  --accent: #4f9cf9;
+  --accent-soft: #17324f;
+  --done: #3fb950;
+  color: var(--text);
+  line-height: 1.6;
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+.llm-panel {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 4rem;
+  position: relative;
+}
+
+.llm-close {
+  position: sticky;
+  top: 1rem;
+  float: right;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.llm-close:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.llm-header {
+  padding: 2.5rem 0 1rem;
+  text-align: center;
+
+  h1 {
+    margin: 0 0 .5rem;
+    font-size: 1.9rem;
+  }
+
+  p {
+    color: var(--muted);
+    margin: .25rem 0;
+  }
+}
+
+.llm-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+
+  button {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .5rem 1rem;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+
+  button:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+}
+
+.llm-progress-wrap {
+  margin: 1rem auto;
+}
+
+.llm-progress-bar {
+  background: var(--border);
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.llm-progress-fill {
+  background: var(--done);
+  height: 100%;
+  width: 0%;
+  transition: width .25s ease;
+}
+
+.llm-progress-text {
+  text-align: center;
+  color: var(--muted);
+  font-size: .85rem;
+  margin-top: .5rem;
+}
+
+.llm-content {
+  padding: 1rem 0 0;
+}
+
+.llm-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin: 1.25rem 0;
+  overflow: hidden;
+
+  >h2 {
+    margin: 0;
+    padding: 1rem 1.25rem;
+    font-size: 1.15rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+
+    .llm-count {
+      font-size: .8rem;
+      color: var(--muted);
+      font-weight: normal;
+    }
+  }
+
+  >h2:hover {
+    background: var(--accent-soft);
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0 1.25rem 1rem;
+  }
+
+  li {
+    display: flex;
+    gap: .75rem;
+    align-items: flex-start;
+    padding: .5rem 0;
+    border-top: 1px solid var(--border);
+  }
+
+  li:first-child {
+    border-top: none;
+  }
+
+  li input[type="checkbox"] {
+    margin-top: .35rem;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: var(--done);
+    cursor: pointer;
+  }
+
+  li label {
+    cursor: pointer;
+    flex: 1 1 auto;
+    min-width: 0;
+    color: var(--text);
+    // override global `label` rules from styles.scss
+    display: block;
+    text-align: left;
+    font-weight: normal;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  li.checked label {
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+
+  code {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: .1rem .35rem;
+    border-radius: 5px;
+    font-size: .85em;
+  }
+
+  &.collapsed ul {
+    display: none;
+  }
+}
+
+.llm-footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: .8rem;
+  padding: 2rem 0 0;
 }

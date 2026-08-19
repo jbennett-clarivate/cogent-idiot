@@ -73,4 +73,64 @@
     }
   </div>
 </div>
-<a href="https://wellnessandwildflowers.com" target="_blank" class="free-size sister-link" aria-label="External link is endorsed by me for hand crafted herbal remedies" rel="noopener">Wellness and Wildflowers</a>
+<div class="spread-bottom-buttons">
+  <a href="https://wellnessandwildflowers.com" target="_blank" class="free-size sister-link" aria-label="External link is endorsed by me for hand crafted herbal remedies" rel="noopener">Wellness and Wildflowers</a>
+  <button type="button" class="free-size sister-link llm-questions-link non-standard-button-action" (click)="openChecklist()">LLM Questions</button>
+</div>
+@if (showChecklist) {
+<div class="llm-overlay" role="dialog" aria-modal="true" aria-label="Home LLM Server planning questions">
+  <div class="llm-panel">
+    <button type="button" class="llm-close" (click)="closeChecklist()" aria-label="Close and return to login">&times;</button>
+
+    <header class="llm-header">
+      <h1>Home LLM Server :: Planning Questions</h1>
+      <p>Private, family-only inference server (4 users, one API key each).</p>
+      <p>Check off items as you resolve them. Progress is saved in your browser.</p>
+    </header>
+
+    <div class="llm-controls">
+      <button type="button" (click)="expandAll()">Expand all</button>
+      <button type="button" (click)="collapseAll()">Collapse all</button>
+      <button type="button" (click)="resetChecklist()">Reset checkboxes</button>
+      <button type="button" (click)="closeChecklist()">Back to login</button>
+    </div>
+
+    <div class="llm-progress-wrap">
+      <div class="llm-progress-bar">
+        <div class="llm-progress-fill" [style.width.%]="progressPct"></div>
+      </div>
+      <div class="llm-progress-text">
+        {{ answeredQuestions }} of {{ totalQuestions }} answered ({{ progressPct }}%)
+      </div>
+    </div>
+
+    <main class="llm-content">
+      @for (section of sections; track section.title; let si = $index) {
+      <section class="llm-section" [class.collapsed]="collapsedState[si]">
+        <h2 (click)="toggleSection(si)">
+          <span>{{ section.title }}</span>
+          <span class="llm-count">{{ sectionAnswered(section) }}/{{ section.questions.length }}</span>
+        </h2>
+        <ul>
+          @for (q of section.questions; track q.id) {
+          <li [class.checked]="checkedState[q.id]">
+            <input
+              type="checkbox"
+              [id]="q.id"
+              [checked]="checkedState[q.id]"
+              (change)="onQuestionToggle(q.id, $any($event.target).checked)">
+            <label [attr.for]="q.id" [innerHTML]="q.html"></label>
+          </li>
+          }
+        </ul>
+      </section>
+      }
+    </main>
+
+    <footer class="llm-footer">
+      Planning checklist &bull; progress saved locally in your browser.
+    </footer>
+  </div>
+</div>
+}
+
