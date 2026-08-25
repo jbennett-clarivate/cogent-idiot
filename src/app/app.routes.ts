@@ -12,13 +12,12 @@ export const routes: Routes = [
 		canActivate: [AuthGuard],
 		children: [
 			{ path: "bayes", loadComponent: () => import("./components/bayes/bayes").then(m => m.BayesComponent), data: { title: "Bayes' Theorem" }, canActivate: [AuthGuard] },
-			
 			{ path: "comparator", loadComponent: () => import("./components/listcomparator/listcomparator").then(m => m.ListcomparatorComponent), data: { title: "List Comparator" }, canActivate: [AuthGuard] },
-			{ path: "random", loadComponent: () => import("./components/listrandom/listrandom").then(m => m.ListrandomComponent), data: { title: "List Random" }, canActivate: [AuthGuard] },
-			{ path: "pascal", loadComponent: () => import("./components/pascal/pascal").then(m => m.PascalComponent), data: { title: "Pascal's Triangle" }, canActivate: [AuthGuard] },
+			{ path: "random", loadComponent: () => import("./components/listrandom/listrandom").then(m => m.ListrandomComponent), data: { title: "List Random" }, canActivate: [AuthGuard] },			
 			{ path: "safecron", loadComponent: () => import("./components/safecron/safecron").then(m => m.SafecronComponent), data: { title: "Safe Cron" }, canActivate: [AuthGuard] },
 			{ path: "taxes", loadComponent: () => import("./components/taxes/taxes").then(m => m.TaxesComponent), data: { title: "Tax vs. Poverty Line" }, canActivate: [AuthGuard] },
 			{ path: "pwned", loadComponent: () => import("./components/pwned/pwned").then(m => m.PwnedComponent), data: { title: "Password Breach Check" }, canActivate: [AuthGuard] },
+			{ path: "ice", loadComponent: () => import("./components/ice/ice").then(m => m.IceComponent), data: { title: "Ice Sculpture" }, canActivate: [AuthGuard] },
 		],
 	},
 	{ path: "**", redirectTo: "/home" },

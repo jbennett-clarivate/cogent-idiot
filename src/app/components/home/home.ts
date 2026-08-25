@@ -14,7 +14,7 @@ export class HomeComponent {
 	tools = [
 		{
 			name: "Bayes' Theorem",
-			description: "Update a probability after new evidence",
+			description: "Adjust probability given evidence",
 			icon: "bayes.svg",
 			route: "/tools/bayes",
 		},
@@ -29,12 +29,6 @@ export class HomeComponent {
 			description: "Generate random strings",
 			icon: "random.svg",
 			route: "/tools/random",
-		},
-		{
-			name: "Pascal's Triangle",
-			description: "Draw the triangle and compute nCk",
-			icon: "pascal.svg",
-			route: "/tools/pascal",
 		},
 		{
 			name: "Safe Cron",
@@ -53,6 +47,12 @@ export class HomeComponent {
 			description: "Check if a password has been breached",
 			icon: "pwned.svg",
 			route: "/tools/pwned",
+		},
+		{
+			name: "Ice Sculpture",
+			description: "View a design as a 3D ice sculpture",
+			icon: "aperature-only.png",
+			route: "/tools/ice",
 		},
 	];
 

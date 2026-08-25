@@ -398,10 +398,10 @@ app.get("/api/tools", (req, res) => {
 	const tools = [
 		{id: "bayes", name: "Bayes Calculator", description: "Calculate Bayesian probabilities"},
 		{id: "listcomparator", name: "List Comparator", description: "Compare two lists"},
-		{id: "listrandom", name: "List Randomizer", description: "Randomize list order"},
-		{id: "pascal", name: "Pascal Calculator", description: "Pascal triangle calculations"},
+		{ id: "listrandom", name: "List Randomizer", description: "Randomize list order" },
 		{id: "safecron", name: "Safe Cron", description: "Manage cron jobs safely"},
-		{id: "taxes", name: "Tax Calculator", description: "Calculate taxes"}
+		{ id: "taxes", name: "Tax Calculator", description: "Calculate taxes" },
+		{ id: "ice", name: "Ice Sculpture", description: "3D ice sculpture viewer" }
 	];
 	res.json(tools);
 });

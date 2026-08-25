@@ -181,9 +181,9 @@ export class MockBackendInterceptor implements HttpInterceptor {
 			{ id: "bayes", name: "Bayes Calculator", description: "Calculate Bayesian probabilities" },
 			{ id: "listcomparator", name: "List Comparator", description: "Compare two lists" },
 			{ id: "listrandom", name: "List Randomizer", description: "Randomize list order" },
-			{ id: "pascal", name: "Pascal Calculator", description: "Pascal triangle calculations" },
 			{ id: "safecron", name: "Safe Cron", description: "Manage cron jobs safely" },
 			{ id: "taxes", name: "Tax Calculator", description: "Calculate taxes" },
+			{ id: "ice", name: "Ice Sculpture", description: "3D ice sculpture viewer" },
 		];
 	}
 

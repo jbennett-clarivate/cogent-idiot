@@ -64,10 +64,6 @@ export const TOOL_INFO: Record<string, ToolInfo> = {
 				"Allows a random selection of UTF-8 characters drawn from wider Unicode ranges, useful for stress-testing how systems handle non-ASCII text.",
 		},
 	},
-	"/tools/pascal": {
-		summary:
-			"Draws Pascal's triangle and computes 'n choose k' (the binomial coefficient). Enter N and K to see how many ways you can pick K items from N, with the matching cell highlighted in the triangle below. A quick visual reference for combinatorics and binomial expansions.",
-	},
 	"/tools/safecron": {
 		summary:
 			"Finds the best meeting and downtime windows across multiple time zones. Add each zone your team works in and give it an importance weight, then it overlaps everyone's 9-to-5 working hours on a chart (relative to your local time) and suggests the hour that suits the most people for a meeting and the quietest hour for maintenance or downtime.",
@@ -79,5 +75,9 @@ export const TOOL_INFO: Record<string, ToolInfo> = {
 	"/tools/pwned": {
 		summary:
 			"Checks whether a password has appeared in a known data breach. Type a password and press the Right Arrow key (or the Check button) to see a green check if it's safe or a red mark if it's been exposed. It uses k-anonymity: only the first five characters of the password's SHA-1 hash are sent to the breach database, so the password itself never leaves your browser.",
+	},
+	"/tools/ice": {
+		summary:
+			"Renders a design as a translucent 3D ice sculpture in your browser using WebGL. Drag to rotate, scroll to zoom, and tune the ice: thickness, frost, and tint. A physically based transmission material with refraction and clearcoat gives it that carved-from-glacier look.",
 	},
 };

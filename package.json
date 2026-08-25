@@ -31,6 +31,7 @@
     "mysql2": "3.14.3",
     "rxjs": "7.8.0",
     "session-file-store": "1.5.0",
+    "three": "^0.180.0",
     "tslib": "2.3.0",
     "zone.js": "0.15.0"
   },
@@ -41,6 +42,8 @@
     "@types/express-session": "1.18.2",
     "@types/jasmine": "5.1.0",
     "@types/node": "18.19.122",
+    "@types/three": "^0.180.0",
+    "@webgpu/types": "^0.1.72",
     "concurrently": "7.6.0",
     "jasmine-core": "5.1.0",
     "karma": "6.4.0",
@@ -52,4 +55,3 @@
   },
   "private": true
 }
-
