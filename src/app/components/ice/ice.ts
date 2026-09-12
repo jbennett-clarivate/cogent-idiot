@@ -16,7 +16,6 @@ import { buildIceEmblem } from "./shapes";
 export class IceComponent implements AfterViewInit, OnDestroy {
 	@ViewChild("iceCanvas", { static: false }) iceCanvas!: ElementRef<HTMLCanvasElement>;
 
-	// UI-bound rendering and material controls.
 	autoRotate = signal<boolean>(true);
 	opacity = signal<number>(0.10);
 	transmission = signal<number>(0.90);
@@ -92,11 +91,6 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 			color: new THREE.Color(this.tint()),
 			metalness: this.metalness(),
 			roughness: this.roughness(),
-			/*
-			 * Keep fragment alpha at one. Actual alpha blending would erase
-			 * reflected light at zero opacity; physical transmission provides
-			 * transparent glass while retaining Fresnel/specular highlights.
-			 */
 			opacity: 1,
 			transparent: false,
 			transmission: this.effectiveTransmission(),
@@ -135,13 +129,6 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 		this.resizeObserver.observe(parent);
 	}
 
-	/**
-	 * Converts the user-facing opacity control into physical transmission.
-	 *
-	 * At opacity 1, the configured transmission is used. Moving toward opacity
-	 * 0 continuously raises transmission to 1, preserving reflections and
-	 * highlights instead of fading the entire shaded fragment away.
-	 */
 	private effectiveTransmission(): number {
 		const base = THREE.MathUtils.clamp(this.transmission(), 0, 1);
 		const bodyOpacity = THREE.MathUtils.clamp(this.opacity(), 0, 1);
@@ -153,9 +140,6 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 		const next = this.effectiveTransmission();
 		const was = this.material.transmission;
 		this.material.transmission = next;
-		// Three.js compiles the transmission feature conditionally on a nonzero
-		// value; crossing the zero boundary at runtime requires a recompile or
-		// the change appears to have no effect.
 		if ((was <= 0) !== (next <= 0)) this.material.needsUpdate = true;
 	}
 

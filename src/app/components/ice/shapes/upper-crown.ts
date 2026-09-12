@@ -1,14 +1,6 @@
 import * as THREE from "three";
 import { buildEnvelopeSweep } from "./shape-utils";
 
-/**
- * Object 2 — upper crown.
- *
- * A curved capped tube following the crown arc. The medial centreline sweeps
- * from the left tooth, down through the central low point, and up to the right
- * tooth; both open ends terminate in seamless hemispherical domes fitted to the
- * envelope. Radius is the local half-width of the filled crown polygon.
- */
 export function buildUpperCrown(): THREE.BufferGeometry {
 	const polygon = [
 		[10777, 15849],

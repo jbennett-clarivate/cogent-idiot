@@ -1,18 +1,6 @@
 import * as THREE from "three";
 import { buildEnvelopeSweep, mirrorPoints } from "./shape-utils";
 
-/**
- * Objects 3 & 4 — side blades.
- *
- * A single definition authored on the RIGHT side. The left blade is the same
- * object reflected across the symmetry axis, so `mirror` re-mirrors the source
- * polygon and centreline before generation. Mirroring the source coordinates
- * (rather than negative-scaling the finished mesh) keeps triangle winding and
- * vertex normals correct.
- *
- * Circular cone swept from the domed inner base out to the pointed tip; radius
- * is the local half-width of the filled polygon.
- */
 export function buildSideBlade(mirror = false): THREE.BufferGeometry {
 	const polygon = [
 		[13031, 14444],

@@ -14,10 +14,9 @@ export function buildLowerBlade(mirror = false): THREE.BufferGeometry {
 	];
 
 	const centerline = [
-		[11640, 16960],
-		[12300, 18100],
-		[13100, 19400],
-		[14050, 20550],
+		[11723, 17171],
+		[12794, 18628],
+		[13864, 20085],
 		[14967, 21586],
 	];
 

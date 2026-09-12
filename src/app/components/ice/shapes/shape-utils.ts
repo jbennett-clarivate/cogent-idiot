@@ -1,94 +1,37 @@
 import * as THREE from "three";
 
-/**
- * Shared parametric geometry helpers for the ice emblem (Milestone 2).
- *
- * The filled shapes in src/assets/images/3d-image.svg are treated as strict
- * front-projection ENVELOPES. Each object authors:
- *   - its exact filled polygon (raw SVG units), and
- *   - a medial centreline through that polygon (raw SVG units).
- *
- * Every circular cross-section's radius is then derived automatically as the
- * local half-width of the polygon, measured perpendicular to the centreline.
- *
- * Why this enforces the two hard requirements:
- *   1. Path constraint - the sweep follows the authored medial centreline
- *      ("centre of gravity" line) of the shape.
- *   2. Thickness constraint - a planar tube swept with an in-plane normal N and
- *      an out-of-plane binormal B = +Z projects, when viewed along Z, to a
- *      ribbon of width 2r about the centreline. Setting r to the polygon
- *      half-width therefore makes the projected geometry exactly fill - and
- *      never exceed - the filled SVG area, hemispherical caps included.
- */
-
-/** SVG viewBox centre X (bilateral symmetry axis). */
 export const CX = 10777;
-/** SVG viewBox reference Y (vertical centring). */
 export const CY = 15287;
-/** ViewBox-units to world-units scale factor. */
 export const SCALE = 0.00024;
-
-/** Converts raw SVG coordinates to a world-space point on the z = 0 plane. */
 export const toWorld3 = (x: number, y: number): THREE.Vector3 =>
 	new THREE.Vector3((x - CX) * SCALE, -(y - CY) * SCALE, 0);
-
-/** Converts a raw SVG radius/length to world units. */
 export const rawRadius = (radius: number): number => radius * SCALE;
-
-/** Mirrors a raw x-coordinate across the bilateral symmetry axis. */
 export const mirrorX = (x: number): number => 2 * CX - x;
-
-/** Mirrors an [x, y] point list across the symmetry axis (order preserved). */
 export const mirrorPoints = (points: number[][]): number[][] =>
 	points.map(([x, y]) => [mirrorX(x), y]);
-
 export type CapKind = "apex" | "dome";
-
 export interface EnvelopeSweptOptions {
-	/** Exact filled polygon in raw SVG units (the containment envelope). */
 	polygon: number[][];
-	/** Medial centreline through the polygon in raw SVG units (>= 2 points). */
 	centerline: number[][];
-	/** Terminal treatment at the first centreline point. */
 	startCap?: CapKind;
-	/** Terminal treatment at the last centreline point. */
 	endCap?: CapKind;
-	/** Rings sampled along the centreline. */
 	tubularSegments?: number;
-	/** Vertices around each ring. */
 	radialSegments?: number;
-	/** Latitude rings per hemispherical dome cap. */
 	capSegments?: number;
-	/**
-	 * Fraction of the measured half-width actually used as the radius. A value
-	 * slightly below 1 keeps the skin just inside the boundary, avoiding
-	 * z-fighting between neighbouring objects that share an SVG edge.
-	 */
 	fill?: number;
-	/** Optional hard ceiling on radius (raw SVG units). */
 	maxRadius?: number;
-	/** Emit a containment report to the console (development aid). */
 	validate?: boolean;
-	/** Object name for validation messages. */
 	name?: string;
 }
 
-/**
- * Finds the largest hemisphere radius whose projected half-disc footprint stays
- * inside the polygon. The dome extends `direction * tangent` forward and spans
- * +/- radius along the in-plane normal, so we sample that half-disc and shrink
- * until every sample is contained (or the initial radius already fits).
- */
 function fitDomeRadius(
 	s: { x: number; y: number; nx: number; ny: number },
-	direction: -1 | 1,
+	tx: number,
+	ty: number,
 	polygon: number[][],
 	maxR: number,
 ): number {
 	if (maxR <= 0) return 0;
-	// Tangent (SVG) recovered from the in-plane normal (N rotated -90).
-	const tx = s.ny * direction;
-	const ty = -s.nx * direction;
 
 	const fits = (r: number): boolean => {
 		const lat = 4;
@@ -100,7 +43,6 @@ function fitDomeRadius(
 			const cx = s.x + tx * axial;
 			const cy = s.y + ty * axial;
 			for (let b = 0; b < lon; b++) {
-				// Only the in-plane (front-projected) extent matters for width.
 				const sign = b < lon / 2 ? 1 : -1;
 				const px = cx + s.nx * ringR * sign;
 				const py = cy + s.ny * ringR * sign;
@@ -121,7 +63,6 @@ function fitDomeRadius(
 	return lo;
 }
 
-/** Even-odd point-in-polygon test (raw SVG units). */
 function pointInPolygon(px: number, py: number, polygon: number[][]): boolean {
 	let inside = false;
 	for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
@@ -134,10 +75,6 @@ function pointInPolygon(px: number, py: number, polygon: number[][]): boolean {
 	return inside;
 }
 
-/**
- * Distance from ray origin O (heading in unit direction D) to the nearest
- * polygon edge intersection, or Infinity when the ray escapes the polygon.
- */
 function rayToBoundary(
 	ox: number,
 	oy: number,
@@ -154,25 +91,14 @@ function rayToBoundary(
 		const ex = bx - ax;
 		const ey = by - ay;
 		const denom = dx * ey - dy * ex;
-		if (Math.abs(denom) < 1e-9) continue; // parallel
-		const s = ((ax - ox) * ey - (ay - oy) * ex) / denom; // along ray
-		const u = ((ax - ox) * dy - (ay - oy) * dx) / denom; // along edge
+		if (Math.abs(denom) < 1e-9) continue;
+		const s = ((ax - ox) * ey - (ay - oy) * ex) / denom;
+		const u = ((ax - ox) * dy - (ay - oy) * dx) / denom;
 		if (s > 1e-6 && u >= -1e-6 && u <= 1 + 1e-6 && s < best) best = s;
 	}
 	return best;
 }
 
-/**
- * Builds a single watertight shell by sweeping a circular cross-section along a
- * planar medial centreline, with the radius clamped to the polygon envelope.
- *
- * The frame is fixed and planar: tangent T lies in the SVG plane, the in-plane
- * normal N is T rotated 90 degrees, and the binormal B is +Z (out of plane).
- * This guarantees the projection property described in the file header and
- * avoids Frenet-frame flips. Apex ends collapse to a point; dome ends continue
- * seamlessly from the boundary ring as a true hemisphere. No interior caps or
- * partition faces are produced.
- */
 export function buildEnvelopeSweep(options: EnvelopeSweptOptions): THREE.BufferGeometry {
 	const {
 		polygon,
@@ -190,7 +116,6 @@ export function buildEnvelopeSweep(options: EnvelopeSweptOptions): THREE.BufferG
 
 	if (centerline.length < 2) throw new Error(`[ice] ${name}: centreline needs >= 2 points.`);
 
-	// Sample centreline positions and tangents in SVG space.
 	const spine = new THREE.CatmullRomCurve3(
 		centerline.map(([x, y]) => new THREE.Vector3(x, y, 0)),
 		false,
@@ -201,8 +126,8 @@ export function buildEnvelopeSweep(options: EnvelopeSweptOptions): THREE.BufferG
 		x: number;
 		y: number;
 		nx: number;
-		ny: number; // in-plane unit normal
-		r: number; // radius (SVG units)
+		ny: number;
+		r: number;
 	}
 
 	const stations: Station[] = [];
@@ -210,18 +135,11 @@ export function buildEnvelopeSweep(options: EnvelopeSweptOptions): THREE.BufferG
 		const t = i / tubularSegments;
 		const p = spine.getPointAt(t);
 		const tan = spine.getTangentAt(t);
-		// In-plane normal = tangent rotated 90 degrees (SVG plane).
 		let nx = -tan.y;
 		let ny = tan.x;
 		const nlen = Math.hypot(nx, ny) || 1;
 		nx /= nlen;
 		ny /= nlen;
-
-		// Cast the perpendicular BOTH ways to find the two silhouette walls.
-		// Re-centre the ring on the midpoint of those walls and span the full
-		// boundary-to-boundary width. This makes the head-on projection fill the
-		// SVG silhouette exactly even when the authored centreline is slightly
-		// off the true medial axis, and keeps the tube inside the envelope.
 		const dPlus = rayToBoundary(p.x, p.y, nx, ny, polygon);
 		const dMinus = rayToBoundary(p.x, p.y, -nx, -ny, polygon);
 
@@ -229,7 +147,6 @@ export function buildEnvelopeSweep(options: EnvelopeSweptOptions): THREE.BufferG
 		let cy = p.y;
 		let r = 0;
 		if (isFinite(dPlus) && isFinite(dMinus)) {
-			// Midpoint between the two walls; radius = half the full span.
 			cx = p.x + nx * (dPlus - dMinus) * 0.5;
 			cy = p.y + ny * (dPlus - dMinus) * 0.5;
 			r = (dPlus + dMinus) * 0.5;
@@ -240,38 +157,79 @@ export function buildEnvelopeSweep(options: EnvelopeSweptOptions): THREE.BufferG
 		}
 		r *= fill;
 		if (r > maxRadius) r = maxRadius;
-
 		stations.push({ x: cx, y: cy, nx, ny, r });
 	}
 
-	// Force pointed apices exactly to zero radius at capped ends.
 	if (startCap === "apex") stations[0].r = 0;
 	if (endCap === "apex") stations[stations.length - 1].r = 0;
 
-	// Fit dome-capped ends so the whole projected half-disc stays contained.
-	// A hemisphere's SVG-plane footprint spans r forward along the tangent and
-	// +/- r sideways along the normal; sampling that region and binary-searching
-	// keeps angular terminals from bulging past the envelope. The connected body
-	// ring is clamped to the same radius so the join remains seamless.
+	const alignDomeStation = (index: number): { tx: number; ty: number } => {
+		const s = stations[index];
+		const adjacentIndex = index === 0 ? 1 : index - 1;
+		const adj = stations[adjacentIndex];
+		let tx = s.x - adj.x;
+		let ty = s.y - adj.y;
+		let length = Math.hypot(tx, ty);
+		if (length < 1e-6) {
+			const direction = index === 0 ? -1 : 1;
+			tx = s.ny * direction;
+			ty = -s.nx * direction;
+			length = Math.hypot(tx, ty) || 1;
+		}
+		tx /= length;
+		ty /= length;
+
+		let nx = -ty;
+		let ny = tx;
+		if (nx * s.nx + ny * s.ny < 0) {
+			nx = -nx;
+			ny = -ny;
+		}
+		s.nx = nx;
+		s.ny = ny;
+
+		const dPlus = rayToBoundary(s.x, s.y, nx, ny, polygon);
+		const dMinus = rayToBoundary(s.x, s.y, -nx, -ny, polygon);
+		if (isFinite(dPlus) && isFinite(dMinus)) {
+			s.x += nx * (dPlus - dMinus) * 0.5;
+			s.y += ny * (dPlus - dMinus) * 0.5;
+			s.r = Math.min((dPlus + dMinus) * 0.5 * fill, maxRadius);
+		} else {
+			const measured = isFinite(dPlus) ? dPlus : isFinite(dMinus) ? dMinus : 0;
+			s.r = Math.min(measured * fill, maxRadius);
+		}
+
+		return { tx, ty };
+	};
+
+	const domeVectors = new Map<number, { tx: number; ty: number }>();
+
 	if (startCap === "dome") {
-		stations[0].r = fitDomeRadius(stations[0], -1, polygon, stations[0].r);
+		const v = alignDomeStation(0);
+		domeVectors.set(0, v);
+		stations[0].r = fitDomeRadius(stations[0], v.tx, v.ty, polygon, stations[0].r);
 	}
 	if (endCap === "dome") {
 		const last = stations.length - 1;
-		stations[last].r = fitDomeRadius(stations[last], 1, polygon, stations[last].r);
+		const v = alignDomeStation(last);
+		domeVectors.set(last, v);
+		stations[last].r = fitDomeRadius(
+			stations[last],
+			v.tx,
+			v.ty,
+			polygon,
+			stations[last].r,
+		);
 	}
 
 	const positions: number[] = [];
 	const indices: number[] = [];
 	const EPS = 1e-6;
-
-	// SVG-space vertex -> world space (z is the out-of-plane component).
 	const pushVertex = (sx: number, sy: number, sz: number): number => {
 		positions.push((sx - CX) * SCALE, -(sy - CY) * SCALE, sz * SCALE);
 		return positions.length / 3 - 1;
 	};
 
-	// A ring in the (N, +Z) plane about a station centre.
 	const makeRing = (s: Station, radius: number, cx: number, cy: number): number[] => {
 		const ring: number[] = [];
 		for (let j = 0; j < radialSegments; j++) {
@@ -316,14 +274,12 @@ export function buildEnvelopeSweep(options: EnvelopeSweptOptions): THREE.BufferG
 		else if (a && apexes[i + 1] !== undefined) connectApex(apexes[i + 1]!, a, false);
 	}
 
-	// Seamless hemisphere grown from an end ring along +/- the tangent.
 	const addDome = (index: number, direction: -1 | 1): void => {
 		const boundary = rings[index];
-		if (!boundary) return;
+		const terminal = domeVectors.get(index);
+		if (!boundary || !terminal) return;
 		const s = stations[index];
-		// Tangent (SVG) recovered from the in-plane normal (N rotated -90).
-		const tx = s.ny * direction;
-		const ty = -s.nx * direction;
+		const { tx, ty } = terminal;
 		let previous = boundary;
 
 		for (let lat = 1; lat <= capSegments; lat++) {
@@ -338,7 +294,7 @@ export function buildEnvelopeSweep(options: EnvelopeSweptOptions): THREE.BufferG
 				continue;
 			}
 
-			const ringRadius = s.r * Math.cos(phi);
+			const ringRadius = Math.min(s.r, s.r * Math.cos(phi));
 			const ring = makeRing(s, ringRadius, cx, cy);
 			if (direction > 0) connectRings(previous, ring);
 			else connectRings(ring, previous);
@@ -358,11 +314,6 @@ export function buildEnvelopeSweep(options: EnvelopeSweptOptions): THREE.BufferG
 	return geometry;
 }
 
-/**
- * Development aid: verifies every generated vertex, projected back to the SVG
- * plane, lies inside the source polygon (with a small tolerance). Reports the
- * worst breach so path/thickness regressions are caught early.
- */
 function validateContainment(name: string, positions: number[], polygon: number[][]): void {
 	let breaches = 0;
 	let worst = 0;
@@ -403,10 +354,6 @@ function pointSegmentDistance(px: number, py: number, a: number[], b: number[]):
 	return Math.hypot(px - cx, py - cy);
 }
 
-/**
- * Builds one complete decorative sphere from an SVG circle. These remain full,
- * single-shell spheres; hemispheres are only used for terminal caps elsewhere.
- */
 export function buildSphere(x: number, y: number, radius: number): THREE.BufferGeometry {
 	const sphere = new THREE.SphereGeometry(rawRadius(radius), 32, 24);
 	const centre = toWorld3(x, y);
