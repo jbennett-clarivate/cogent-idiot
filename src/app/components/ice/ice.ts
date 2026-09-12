@@ -16,11 +16,17 @@ import { buildIceEmblem } from "./shapes";
 export class IceComponent implements AfterViewInit, OnDestroy {
 	@ViewChild("iceCanvas", { static: false }) iceCanvas!: ElementRef<HTMLCanvasElement>;
 
-	// UI-bound controls
+	// UI-bound rendering and material controls.
 	autoRotate = signal<boolean>(true);
-	thickness = signal<number>(1.5);
-	roughness = signal<number>(0.12);
+	opacity = signal<number>(0.10);
+	transmission = signal<number>(0.90);
+	thickness = signal<number>(2.0);
+	roughness = signal<number>(0.30);
+	metalness = signal<number>(0.10);
+	ior = signal<number>(1.30);
+	specularIntensity = signal<number>(0.90);
 	tint = signal<string>("#bfe9ff");
+	specularColor = signal<string>("#ffffff");
 
 	private renderer?: THREE.WebGLRenderer;
 	private scene?: THREE.Scene;
@@ -29,6 +35,7 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 	private mesh?: THREE.Mesh;
 	private material?: THREE.MeshPhysicalMaterial;
 	private pmrem?: THREE.PMREMGenerator;
+	private environment?: THREE.WebGLRenderTarget;
 	private animationId?: number;
 	private resizeObserver?: ResizeObserver;
 
@@ -45,6 +52,8 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 		this.controls?.dispose();
 		this.mesh?.geometry.dispose();
 		this.material?.dispose();
+		this.scene?.environment?.dispose();
+		this.environment?.dispose();
 		this.pmrem?.dispose();
 		this.renderer?.dispose();
 	}
@@ -68,7 +77,8 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 		this.camera.position.set(0, 0, 9);
 
 		this.pmrem = new THREE.PMREMGenerator(this.renderer);
-		this.scene.environment = this.pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+		this.environment = this.pmrem.fromScene(new RoomEnvironment(), 0.04);
+		this.scene.environment = this.environment.texture;
 
 		const key = new THREE.DirectionalLight(0xffffff, 2.0);
 		key.position.set(5, 8, 6);
@@ -80,26 +90,36 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 
 		this.material = new THREE.MeshPhysicalMaterial({
 			color: new THREE.Color(this.tint()),
-			metalness: 0,
+			metalness: this.metalness(),
 			roughness: this.roughness(),
-			transmission: 0,
+			/*
+			 * Keep fragment alpha at one. Actual alpha blending would erase
+			 * reflected light at zero opacity; physical transmission provides
+			 * transparent glass while retaining Fresnel/specular highlights.
+			 */
+			opacity: 1,
+			transparent: false,
+			transmission: this.effectiveTransmission(),
 			thickness: this.thickness(),
-			ior: 1.31,
+			ior: this.ior(),
+			specularIntensity: this.specularIntensity(),
+			specularColor: new THREE.Color(this.specularColor()),
 			clearcoat: 1,
 			clearcoatRoughness: 0.06,
 			attenuationColor: new THREE.Color(this.tint()),
 			attenuationDistance: 1.4,
 			envMapIntensity: 1.25,
 			side: THREE.DoubleSide,
+			forceSinglePass: false,
 		});
 
 		let geometry: THREE.BufferGeometry;
 		try {
 			geometry = buildIceEmblem();
-			const pos = geometry.getAttribute("position");
-			console.info("[ice] geometry built:", pos ? pos.count : 0, "vertices");
-		} catch (err) {
-			console.error("[ice] buildIceEmblem failed, using fallback cube:", err);
+			const position = geometry.getAttribute("position");
+			console.info("[ice] geometry built:", position ? position.count : 0, "vertices");
+		} catch (error) {
+			console.error("[ice] buildIceEmblem failed, using fallback cube:", error);
 			geometry = new THREE.BoxGeometry(2, 2, 2);
 		}
 		this.mesh = new THREE.Mesh(geometry, this.material);
@@ -113,6 +133,30 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 
 		this.resizeObserver = new ResizeObserver(() => this.onResize());
 		this.resizeObserver.observe(parent);
+	}
+
+	/**
+	 * Converts the user-facing opacity control into physical transmission.
+	 *
+	 * At opacity 1, the configured transmission is used. Moving toward opacity
+	 * 0 continuously raises transmission to 1, preserving reflections and
+	 * highlights instead of fading the entire shaded fragment away.
+	 */
+	private effectiveTransmission(): number {
+		const base = THREE.MathUtils.clamp(this.transmission(), 0, 1);
+		const bodyOpacity = THREE.MathUtils.clamp(this.opacity(), 0, 1);
+		return THREE.MathUtils.lerp(1, base, bodyOpacity);
+	}
+
+	private updateTransmission(): void {
+		if (!this.material) return;
+		const next = this.effectiveTransmission();
+		const was = this.material.transmission;
+		this.material.transmission = next;
+		// Three.js compiles the transmission feature conditionally on a nonzero
+		// value; crossing the zero boundary at runtime requires a recompile or
+		// the change appears to have no effect.
+		if ((was <= 0) !== (next <= 0)) this.material.needsUpdate = true;
 	}
 
 	private onResize(): void {
@@ -136,16 +180,49 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 	};
 
 	toggleAutoRotate(): void {
-		this.autoRotate.update(v => !v);
+		this.autoRotate.update(value => !value);
 	}
-	onThicknessChange(value: number): void {
-		this.thickness.set(value);
-		if (this.material) this.material.thickness = value;
+
+	onOpacityChange(value: number | string): void {
+		this.opacity.set(Number(value));
+		this.updateTransmission();
 	}
-	onRoughnessChange(value: number): void {
-		this.roughness.set(value);
-		if (this.material) this.material.roughness = value;
+
+	onTransmissionChange(value: number | string): void {
+		this.transmission.set(Number(value));
+		this.updateTransmission();
 	}
+
+	onThicknessChange(value: number | string): void {
+		const v = Number(value);
+		this.thickness.set(v);
+		if (this.material) this.material.thickness = v;
+	}
+
+	onRoughnessChange(value: number | string): void {
+		const v = Number(value);
+		this.roughness.set(v);
+		if (this.material) this.material.roughness = v;
+	}
+
+	onMetalnessChange(value: number | string): void {
+		const v = Number(value);
+		this.metalness.set(v);
+		if (this.material) this.material.metalness = v;
+	}
+
+	onIorChange(value: number | string): void {
+		const v = Number(value);
+		this.ior.set(v);
+		if (this.material) this.material.ior = v;
+	}
+
+	onSpecularIntensityChange(value: number | string): void {
+		const v = Number(value);
+		this.specularIntensity.set(v);
+		if (this.material) this.material.specularIntensity = v;
+	}
+
 	onTintChange(value: string): void {
 		this.tint.set(value);
 		if (this.material) {
@@ -153,6 +230,12 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 			this.material.attenuationColor.set(value);
 		}
 	}
+
+	onSpecularColorChange(value: string): void {
+		this.specularColor.set(value);
+		if (this.material) this.material.specularColor.set(value);
+	}
+
 	resetView(): void {
 		if (this.camera && this.controls) {
 			this.camera.position.set(0, 0, 9);
@@ -161,3 +244,4 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 }
+

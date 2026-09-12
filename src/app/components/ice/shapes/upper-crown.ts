@@ -1,13 +1,16 @@
 import * as THREE from "three";
-import { extrudeContour } from "./shape-utils";
+import { buildEnvelopeSweep } from "./shape-utils";
 
 /**
- * Object 2 - Upper crown.
- * The cluster of inner teeth around the centre-top, spanning the symmetry
- * axis. Contour traced from the filled "Upper crown" path in 3d-image.svg.
+ * Object 2 — upper crown.
+ *
+ * A curved capped tube following the crown arc. The medial centreline sweeps
+ * from the left tooth, down through the central low point, and up to the right
+ * tooth; both open ends terminate in seamless hemispherical domes fitted to the
+ * envelope. Radius is the local half-width of the filled crown polygon.
  */
 export function buildUpperCrown(): THREE.BufferGeometry {
-	return extrudeContour([
+	const polygon = [
 		[10777, 15849],
 		[11906, 15006],
 		[11626, 14162],
@@ -24,5 +27,23 @@ export function buildUpperCrown(): THREE.BufferGeometry {
 		[9928, 13677],
 		[9928, 14162],
 		[9648, 15006],
-	]);
+	];
+
+	return buildEnvelopeSweep({
+		name: "upper-crown",
+		polygon,
+		centerline: [
+			[9777, 13950],
+			[9430, 14700],
+			[9720, 15400],
+			[10777, 16000],
+			[11834, 15400],
+			[12124, 14700],
+			[11777, 13950],
+		],
+		startCap: "dome",
+		endCap: "dome",
+		tubularSegments: 64,
+		radialSegments: 24,
+	});
 }
