@@ -19,14 +19,14 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 
 	autoRotate = signal<boolean>(true);
 	solidity = signal<number>(0.10);
-	transmission = signal<number>(0.90);
-	thickness = signal<number>(2.0);
-	roughness = signal<number>(0.30);
+	transmission = signal<number>(0.10);
+	thickness = signal<number>(0.20);
+	roughness = signal<number>(0.20);
 	metalness = signal<number>(0.10);
-	ior = signal<number>(1.30);
-	specularIntensity = signal<number>(0.90);
-	tint = signal<string>("#bfe9ff");
-	specularColor = signal<string>("#ffffff");
+	ior = signal<number>(1.20);
+	specularIntensity = signal<number>(1.00);
+	tint = signal<string>("#7132ca");
+	specularColor = signal<string>("#000000");
 
 	private renderer?: THREE.WebGLRenderer;
 	private scene?: THREE.Scene;

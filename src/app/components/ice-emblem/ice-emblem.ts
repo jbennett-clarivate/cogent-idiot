@@ -59,7 +59,7 @@ export class IceEmblemComponent implements AfterViewInit, OnDestroy {
 
 		this.scene = new THREE.Scene();
 
-		this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+		this.camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 100);
 		this.camera.position.set(0, 0, this.distance);
 
 		this.pmrem = new THREE.PMREMGenerator(this.renderer);
@@ -77,17 +77,17 @@ export class IceEmblemComponent implements AfterViewInit, OnDestroy {
 		// Mirrors the ice tool's defaults, with its solidity of 0.10 already
 		// folded into transmission (lerp(1, 0.90, 0.10) = 0.99).
 		this.material = new THREE.MeshPhysicalMaterial({
-			color: new THREE.Color("#bfe9ff"),
+			color: new THREE.Color("#314e7b"),
 			metalness: 0.10,
-			roughness: 0.30,
-			transmission: 0.99,
-			thickness: 2.0,
-			ior: 1.30,
-			specularIntensity: 0.90,
-			specularColor: new THREE.Color("#ffffff"),
+			roughness: 0.20,
+			transmission: 0.10,
+			thickness: 0.20,
+			ior: 1.20,
+			specularIntensity: 1.00,
+			specularColor: new THREE.Color("#000000"),
 			clearcoat: 1,
 			clearcoatRoughness: 0.06,
-			attenuationColor: new THREE.Color("#bfe9ff"),
+			attenuationColor: new THREE.Color("#ffffff"),
 			attenuationDistance: 1.4,
 			envMapIntensity: 1.25,
 			side: THREE.DoubleSide,
