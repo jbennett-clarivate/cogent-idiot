@@ -20,3 +20,8 @@
 .ice-canvas:active {
   cursor: grabbing;
 }
+
+// Signals that a control label carries an explanation on hover.
+.control-help {
+  cursor: help;
+}

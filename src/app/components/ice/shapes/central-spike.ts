@@ -1,25 +1,16 @@
 import * as THREE from "three";
 import { buildEnvelopeSweep } from "./shape-utils";
+import { CENTRAL_SPIKE } from "./emblem-source";
 
 export function buildCentralSpike(): THREE.BufferGeometry {
-	const polygon = [
-		[10777, 5445],
-		[11343, 15006],
-		[10777, 15568],
-		[10211, 15006],
-	];
-
 	return buildEnvelopeSweep({
-		name: "central-spike",
-		polygon,
-		centerline: [
-			[10777, 5445],
-			[10777, 12000],
-			[10777, 15006],
-			[10777, 15568],
-		],
+		name: CENTRAL_SPIKE.name,
+		polygon: CENTRAL_SPIKE.polygon,
+		centerline: CENTRAL_SPIKE.centerline,
+		// Point at the tip, blunt where it meets the crown.
+		radiusProfile: CENTRAL_SPIKE.radiusProfile,
 		startCap: "apex",
-		endCap: "apex",
+		endCap: "dome",
 		tubularSegments: 56,
 		radialSegments: 28,
 	});

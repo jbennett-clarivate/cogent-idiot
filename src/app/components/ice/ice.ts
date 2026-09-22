@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { buildIceEmblem } from "./shapes";
+import { quadrantAnchorPositioner } from "@services/quadrant-anchor-positioner";
 
 @Component({
 	selector: "app-ice",
@@ -17,7 +18,7 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 	@ViewChild("iceCanvas", { static: false }) iceCanvas!: ElementRef<HTMLCanvasElement>;
 
 	autoRotate = signal<boolean>(true);
-	opacity = signal<number>(0.10);
+	solidity = signal<number>(0.10);
 	transmission = signal<number>(0.90);
 	thickness = signal<number>(2.0);
 	roughness = signal<number>(0.30);
@@ -46,6 +47,9 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 	}
 
 	ngOnDestroy(): void {
+		// Tooltips live on the body, so they would outlast this component if it
+		// were destroyed while one was open.
+		document.querySelectorAll(".dynamic-tooltip").forEach(el => el.remove());
 		if (this.animationId !== undefined) cancelAnimationFrame(this.animationId);
 		this.resizeObserver?.disconnect();
 		this.controls?.dispose();
@@ -131,8 +135,10 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 
 	private effectiveTransmission(): number {
 		const base = THREE.MathUtils.clamp(this.transmission(), 0, 1);
-		const bodyOpacity = THREE.MathUtils.clamp(this.opacity(), 0, 1);
-		return THREE.MathUtils.lerp(1, base, bodyOpacity);
+		const solid = THREE.MathUtils.clamp(this.solidity(), 0, 1);
+		// At 0 the emblem is fully transmissive regardless of `base`; raising
+		// solidity fades it in toward the requested transmission.
+		return THREE.MathUtils.lerp(1, base, solid);
 	}
 
 	private updateTransmission(): void {
@@ -163,12 +169,41 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 		}
 	};
 
+	// Reuses the app's quadrant-aware tooltip (see tool-wrapper and
+	// quadrant-anchor-positioner): it positions `fixed` and flips its corner
+	// pairing by viewport quadrant, so a description never renders off the top
+	// of the page or gets clipped by an ancestor's overflow. The CSS-only
+	// [data-title] tooltip cannot do either, and these controls sit close
+	// enough to the top edge that it matters.
+	//
+	// Appended to the body rather than the trigger: the labels are nowrap
+	// flex rows, so an extra child would perturb the control's own layout.
+	showTooltip(event: MouseEvent, text: string): void {
+		const trigger = event.currentTarget as HTMLElement;
+		this.hideTooltip();
+
+		const tooltip = document.createElement("div");
+		tooltip.className = "anchor-content dynamic-tooltip";
+		tooltip.textContent = text;
+		document.body.appendChild(tooltip);
+
+		quadrantAnchorPositioner.applyPosition(tooltip, trigger);
+		requestAnimationFrame(() => tooltip.classList.add("visible"));
+	}
+
+	hideTooltip(): void {
+		document.querySelectorAll(".dynamic-tooltip").forEach(element => {
+			element.classList.remove("visible");
+			setTimeout(() => element.parentNode?.removeChild(element), 200);
+		});
+	}
+
 	toggleAutoRotate(): void {
 		this.autoRotate.update(value => !value);
 	}
 
-	onOpacityChange(value: number | string): void {
-		this.opacity.set(Number(value));
+	onSolidityChange(value: number | string): void {
+		this.solidity.set(Number(value));
 		this.updateTransmission();
 	}
 
