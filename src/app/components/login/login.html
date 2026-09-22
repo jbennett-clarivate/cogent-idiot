@@ -6,6 +6,9 @@
 </div>
 <div class="login-container">
   <div class="login-form">
+    <div class="login-emblem">
+      <app-ice-emblem [distance]="10"></app-ice-emblem>
+    </div>
     <h2 class="free-size">Login</h2>
     <input type="hidden" [(ngModel)]="pepper" name="pepper">
     @if (salt) {

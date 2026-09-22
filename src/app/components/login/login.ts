@@ -6,10 +6,11 @@ import { HttpClient } from "@angular/common/http";
 import { AuthService } from "@services/auth.service";
 import { Environment } from "@services/environment";
 import { LLM_CHECKLIST, ChecklistSection } from "./llm-questions.data";
+import { IceEmblemComponent } from "@components/ice-emblem/ice-emblem";
 
 @Component({
 	selector: "app-login",
-	imports: [CommonModule, FormsModule],
+	imports: [CommonModule, FormsModule, IceEmblemComponent],
 	templateUrl: "./login.html",
 	styleUrls: ["./login.scss"],
 })

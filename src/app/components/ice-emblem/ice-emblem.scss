@@ -1,0 +1,11 @@
+:host {
+  display: block;
+  // Decorative only: never intercept clicks meant for the form behind it.
+  pointer-events: none;
+}
+
+.emblem-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
