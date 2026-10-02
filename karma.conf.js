@@ -29,11 +29,18 @@ module.exports = function (config) {
 			]
 		},
 		reporters: ["progress", "kjhtml"],
-		browsers: ["Firefox"],
+		browsers: ["FirefoxHeadless"],
 		customLaunchers: {
-			Firefox: {
+			// NOTE: a custom launcher must NOT be named after its own `base`
+			// (a `Firefox: { base: "Firefox" }` entry makes karma's injector
+			// resolve itself forever and die with a stack overflow).
+			FirefoxSafe: {
 				base: "Firefox",
 				flags: ["--safe-mode"]
+			},
+			FirefoxHeadless: {
+				base: "Firefox",
+				flags: ["-headless"]
 			}
 		},
 		singleRun: false,

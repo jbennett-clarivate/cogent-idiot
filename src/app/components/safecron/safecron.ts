@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, signal, computed, effect } from "@angular/core";
+import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, signal, computed, effect } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 
@@ -10,21 +10,25 @@ interface TimeZoneData {
 	color: string;
 }
 
-interface TimeZoneOption {
-	value: string;
-	label: string;
-}
-
 @Component({
 	selector: "app-safecron",
 	imports: [CommonModule, FormsModule],
 	templateUrl: "./safecron.html",
 	styleUrl: "./safecron.scss",
 })
-export class SafecronComponent implements AfterViewInit {
+export class SafecronComponent implements AfterViewInit, OnDestroy {
 	@ViewChild("cronChart", { static: false }) cronChart!: ElementRef<HTMLCanvasElement>;
 
-	private timeZoneData: TimeZoneData[] = [];
+	// A signal, not a plain array: `timeZones` is a computed() over it, and a
+	// computed only re-evaluates when a SIGNAL it read has changed. Holding
+	// this as a plain field gave that computed zero dependencies, so it
+	// evaluated once and cached its labels for the lifetime of the tab.
+	private timeZoneData = signal<TimeZoneData[]>([]);
+
+	// Bumped on a timer so zone labels, which embed each zone's current UTC
+	// offset and abbreviation, re-derive instead of freezing at first render.
+	private labelEpoch = signal<number>(0);
+	private labelTimer?: ReturnType<typeof setInterval>;
 
 	selectedZone = signal<string>("");
 	selectedWeight = signal<string>("1");
@@ -33,10 +37,35 @@ export class SafecronComponent implements AfterViewInit {
 	selectedLocalTimes = signal<TimeZoneData[]>([]);
 	safeScheduleArray = signal<number[]>([]);
 
-	timeZones = computed(() => this.timeZoneData.map(tz => ({
-		value: tz.code,
-		label: this.describeZone(tz),
-	})));
+	// The zone set that the current meeting/downtime answer was computed from.
+	// meetingTime and downtime are only written by computeSafeTime(), but the
+	// chart redraws on every zone change, so a recommendation could sit beside
+	// a chart built from a DIFFERENT set of zones (off by 12 hours with two
+	// zones half a day apart, with nothing on screen to say it was stale).
+	// Comparing this against the live set makes that staleness derivable.
+	private computedFor = signal<string>("");
+
+	private static fingerprint(zones: TimeZoneData[]): string {
+		return zones.map(z => `${z.code}:${z.weight}`).join("|");
+	}
+
+	// True when the displayed answer no longer describes the current zones.
+	isScheduleStale = computed(() =>
+		this.computedFor() !== "" &&
+		this.computedFor() !== SafecronComponent.fingerprint(this.selectedLocalTimes()));
+
+	// Blank rather than stale: the template binds these, so a changed zone set
+	// retracts the old answer instead of misrepresenting it.
+	displayedMeetingTime = computed(() => this.isScheduleStale() ? "" : this.meetingTime());
+	displayedDowntime = computed(() => this.isScheduleStale() ? "" : this.downtime());
+
+	timeZones = computed(() => {
+		this.labelEpoch(); // re-derive labels after a DST transition
+		return this.timeZoneData().map(tz => ({
+			value: tz.code,
+			label: this.describeZone(tz),
+		}));
+	});
 
 	canComputeSafeTime = computed(() => this.selectedLocalTimes().length > 0);
 
@@ -50,6 +79,13 @@ export class SafecronComponent implements AfterViewInit {
 				this.updateChart();
 			}
 		});
+
+		// Refresh zone labels hourly; a DST change only ever lands on the hour.
+		this.labelTimer = setInterval(() => this.labelEpoch.update(n => n + 1), 3600000);
+	}
+
+	ngOnDestroy() {
+		if (this.labelTimer) clearInterval(this.labelTimer);
 	}
 
 	ngAfterViewInit() {
@@ -57,7 +93,7 @@ export class SafecronComponent implements AfterViewInit {
 	}
 
 	private initializeTimeZoneData() {
-		this.timeZoneData = [
+		this.timeZoneData.set([
 			{ iana: "Pacific/Honolulu", code: "HONOLULU", city: "Honolulu", weight: 0, color: "" },
 			{ iana: "America/Los_Angeles", code: "LOS_ANGELES", city: "Los Angeles", weight: 0, color: "" },
 			{ iana: "America/Denver", code: "DENVER", city: "Denver", weight: 0, color: "" },
@@ -76,7 +112,7 @@ export class SafecronComponent implements AfterViewInit {
 			{ iana: "Asia/Tokyo", code: "TOKYO", city: "Tokyo", weight: 0, color: "" },
 			{ iana: "Australia/Sydney", code: "SYDNEY", city: "Sydney", weight: 0, color: "" },
 			{ iana: "Pacific/Auckland", code: "AUCKLAND", city: "Auckland", weight: 0, color: "" },
-		];
+		]);
 	}
 
 	private offsetHoursFor(iana: string, at: Date = new Date()): number {
@@ -114,7 +150,7 @@ export class SafecronComponent implements AfterViewInit {
 	}
 
 	getTooltipText(code: string): string {
-		const zone = this.timeZoneData.find(tz => tz.code === code);
+		const zone = this.timeZoneData().find(tz => tz.code === code);
 		return zone ? this.describeZone(zone) : "";
 	}
 
@@ -136,13 +172,34 @@ export class SafecronComponent implements AfterViewInit {
 		};
 	}
 
+	// Bands are filled at 50% alpha over a white canvas, so a uniformly random
+	// 24-bit color left roughly 5% of zones effectively invisible. Walking the
+	// hue circle instead keeps saturation and lightness in a legible range and
+	// spaces adjacent zones apart in hue.
+	private nextHue = 0;
+
 	private getRandomColor(): string {
-		const letters = "0123456789ABCDEF";
-		let color = "#";
-		for (let i = 0; i < 6; i++) {
-			color += letters[Math.floor(Math.random() * 16)];
-		}
-		return color;
+		const hue = this.nextHue;
+		this.nextHue = (this.nextHue + 137.5) % 360; // golden angle: spreads hues
+		return this.hslToHex(hue, 65, 45);
+	}
+
+	private hslToHex(h: number, s: number, l: number): string {
+		const sf = s / 100;
+		const lf = l / 100;
+		const c = (1 - Math.abs(2 * lf - 1)) * sf;
+		const hp = h / 60;
+		const x = c * (1 - Math.abs((hp % 2) - 1));
+		const [r1, g1, b1] =
+			hp < 1 ? [c, x, 0] :
+			hp < 2 ? [x, c, 0] :
+			hp < 3 ? [0, c, x] :
+			hp < 4 ? [0, x, c] :
+			hp < 5 ? [x, 0, c] :
+			[c, 0, x];
+		const m = lf - c / 2;
+		const hex = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, "0");
+		return `#${hex(r1)}${hex(g1)}${hex(b1)}`;
 	}
 
 	addZone() {
@@ -150,7 +207,7 @@ export class SafecronComponent implements AfterViewInit {
 		const selectedWeightValue = this.selectedWeight();
 
 		if (selectedZoneValue && selectedWeightValue) {
-			const timeZone = this.timeZoneData.find(tz => tz.code === selectedZoneValue);
+			const timeZone = this.timeZoneData().find(tz => tz.code === selectedZoneValue);
 			if (timeZone) {
 				this.selectedLocalTimes.update(times => {
 					const existingZone = times.find(t => t.code === selectedZoneValue);
@@ -190,6 +247,7 @@ export class SafecronComponent implements AfterViewInit {
 		});
 
 		this.safeScheduleArray.set(newSafeScheduleArray);
+		this.computedFor.set(SafecronComponent.fingerprint(currentSelectedTimes));
 		this.calculateBestTimes(localOffsetHours);
 	}
 
@@ -317,42 +375,6 @@ export class SafecronComponent implements AfterViewInit {
 		return Math.min(...candidates);
 	}
 
-	private indexOfMin(arr: number[]): number {
-		return arr.indexOf(Math.min(...arr));
-	}
-
-	private indexOfMax(arr: number[]): number {
-		return arr.indexOf(Math.max(...arr));
-	}
-
-	private getTimestamp(index: number): string {
-		const hours = Math.floor(index / 4) % 24;
-		const quarterHours = index % 4;
-		const minutes = (quarterHours * 15) % 60;
-
-		let displayHours = hours;
-		let period = "AM";
-
-		if (hours === 0) {
-			displayHours = 12;
-			period = "AM";
-		} else if (hours < 12) {
-			displayHours = hours;
-			period = "AM";
-		} else if (hours === 12) {
-			displayHours = 12;
-			period = "PM";
-		} else {
-			displayHours = hours - 12;
-			period = "PM";
-		}
-
-		const minutesStr = minutes.toString().padStart(2, "0");
-		const userTimezoneName = this.getUserTimezoneName();
-
-		return `${displayHours}:${minutesStr} ${period} ${userTimezoneName}`;
-	}
-
 	private getTimeLabelWithAbbrev(index: number): string {
 		const hours = Math.floor(index / 4) % 24;
 		const quarterHours = index % 4;
@@ -396,16 +418,6 @@ export class SafecronComponent implements AfterViewInit {
 		const hh = Math.floor(Math.abs(offsetMin) / 60).toString().padStart(2, "0");
 		const mm = (Math.abs(offsetMin) % 60).toString().padStart(2, "0");
 		return `UTC${sign}${hh}:${mm}`;
-	}
-
-	private getTimeRange(startIndex: number, windowSize: number): string {
-		const endIndex = (startIndex + windowSize) % 96;
-		const startStr = this.getTimestamp(startIndex);
-		const endStr = this.getTimestamp(endIndex);
-		const endParts = endStr.split(" ");
-		const endTime = endParts.slice(0, 2).join(" ");
-		const tz = this.getUserTimezoneName();
-		return `${startStr} - ${endTime} ${tz}`;
 	}
 
 	private getUserTimezoneName(): string {

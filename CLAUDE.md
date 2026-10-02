@@ -13,9 +13,43 @@ Angular v20 (standalone components, no NgModules) front end with an Express/Node
 - `npm run build:dev` — Angular dev build, output to `public_html/`.
 - `npm run build:prod` — Angular production build, output to `public_html/`.
 - `npm start` — run `node server.js` directly (serves whatever is currently in `public_html/`).
-- `npm test` — run Karma/Jasmine unit tests (`ng test`).
+- `npm test` — run Karma/Jasmine unit tests (`ng test`, headless Firefox via `karma.conf.js`).
+- `npm run test:ci` — same, single run, no watch.
+- `npm run test:flatpak` — run tests from inside the VSCodium Flatpak sandbox, where
+  no browser is on `PATH`. Uses `scripts/firefox-flatpak.sh`, which execs the host's
+  Firefox at `/run/host/usr/lib64/firefox/firefox` and bridges `/run/host/usr/lib64`
+  onto `LD_LIBRARY_PATH` (the Flatpak runtime has no `libevent-2.1.so.7`). Note that
+  `npx playwright install` cannot work in that sandbox — it has no writable
+  `~/.cache` and the runtime lacks gtk-4/enchant/libevent.
 - `./build.sh` — CI-style build: `npm ci`, wipe and recreate `public_html/`, then `npm run build:prod`.
 - Restart `npm run dev` after adding or removing `.ts` files — the Angular watcher caches deletions and will throw "missing from TypeScript compilation" otherwise.
+
+A custom Karma launcher must never be named after its own `base` (a
+`Firefox: { base: "Firefox" }` entry makes Karma's injector recurse until it dies
+with `RangeError: Maximum call stack size exceeded`). `tsconfig.spec.json` must keep
+`@webgpu/types` in `types`, or `three`'s `ExternalTexture.d.ts` fails to resolve
+`GPUTexture` and the test build aborts.
+
+Review intent and conventions for tests live in `.github/code-review.instructions.md`
+(note: `/.github/` is gitignored in this repo, so that file is local-only).
+
+### Debugging from the IDE (`.vscode/launch.json`)
+
+Prefer the Run and Debug panel over the terminal. Configurations:
+
+- **Server: Express (:3000)** — backend alone, breakpoints in `server.js`.
+- **Tests: Unit (headless, single run)** — `ng test --watch=false`; breakpoints in `*.spec.ts`.
+- **Tests: Unit (watch)** — same, re-runs on change.
+- **Browser: Firefox on :4200** — attaches to the dev server; breakpoints in `src/**/*.ts`.
+- **Dev: server + ng serve** — the `npm run dev` equivalent.
+- **Dev: full stack** (compound) — the previous two plus Firefox, in one click.
+
+Every config sets `envFile` to `.env`, so `HOSTING_PROVIDER` etc. apply under the
+debugger exactly as they do from the shell. Browser configs set
+`firefoxExecutable` to `scripts/firefox-flatpak.sh`, because VSCodium runs inside
+a Flatpak sandbox with no browser on `PATH`; a `chrome`-type config would look
+for a Chrome that is not installed. The `firefox` debug type requires the
+`firefox-devtools.vscode-firefox-debug` extension.
 
 There is no separate lint script in `package.json`; ESLint config exists at `.eslintrc.json` (run via `npx eslint` if needed). Tabs for indentation, double quotes, semicolons required — enforced by ESLint.
 

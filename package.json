@@ -11,7 +11,9 @@
     "test": "ng test",
     "server": "node --no-deprecation server.js",
     "dev": "concurrently \"node --no-deprecation server.js\" \"ng serve\"",
-    "build:prod": "ng build --configuration production --output-path=public_html"
+    "build:prod": "ng build --configuration production --output-path=public_html",
+    "test:ci": "ng test --watch=false",
+    "test:flatpak": "FIREFOX_BIN=./scripts/firefox-flatpak.sh ng test --watch=false"
   },
   "dependencies": {
     "@angular/animations": "20.3.25",
@@ -43,7 +45,7 @@
     "@types/jasmine": "5.1.0",
     "@types/node": "18.19.122",
     "@types/three": "^0.180.0",
-    "@webgpu/types": "^0.1.72",
+    "@webgpu/types": "0.1.72",
     "concurrently": "7.6.0",
     "jasmine-core": "5.1.0",
     "karma": "6.4.0",
