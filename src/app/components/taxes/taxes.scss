@@ -168,8 +168,12 @@
 }
 
 .income-slider {
-	flex: 1;
-	min-width: 200px;
+	flex: 1 1 200px;
+	// Same reasoning as the revenue table: a fixed min-width in a flex row
+	// can push the page wider than the viewport, which moves the viewport
+	// centre and makes quadrantAnchor place its popups incorrectly. The basis
+	// gives it the same comfortable size without making it unshrinkable.
+	min-width: 0;
 }
 
 .income-results {
@@ -263,12 +267,23 @@ canvas {
 		padding-bottom: 6px;
 	}
 
+	// Deliberately NOT nowrap. A table that cannot shrink forces the page
+	// wider than a phone viewport, and once the document is wider than the
+	// screen the viewport's centre moves. quadrantAnchor positions its popups
+	// relative to that centre, so an unshrinkable table makes info icons
+	// elsewhere on the page anchor the wrong way and clip. Letting cells wrap
+	// keeps the page within the viewport, which keeps the anchoring correct.
 	th,
 	td {
 		padding: 5px 8px;
 		text-align: right;
 		border-bottom: 1px solid #f3f4f6;
-		white-space: nowrap;
+		overflow-wrap: break-word;
+	}
+
+	// The group name is the only cell long enough to want a wrap point.
+	tbody th[scope="row"] {
+		hyphens: auto;
 	}
 
 	thead th {
@@ -308,10 +323,24 @@ canvas {
 
 	.revenue-table {
 		font-size: 0.78rem;
+		table-layout: fixed;
 
 		th,
 		td {
-			padding: 4px 5px;
+			padding: 4px 4px;
+		}
+
+		// Give the group name the room it needs and let the three numeric
+		// columns share the rest evenly, so none of them forces a minimum.
+		th:first-child,
+		td:first-child {
+			width: 34%;
+			text-align: left;
+		}
+
+		th:not(:first-child),
+		td:not(:first-child) {
+			width: 22%;
 		}
 	}
 }
@@ -347,5 +376,106 @@ canvas {
 
 	strong {
 		color: #92400e;
+	}
+}
+
+.chart-caption {
+	margin: 8px 0 0;
+	font-size: 0.8rem;
+	line-height: 1.45;
+	color: #6b7280;
+}
+
+.chart-caption {
+	.swatch-better,
+	.swatch-worse {
+		font-weight: bold;
+	}
+
+	.swatch-better {
+		color: #15803d;
+	}
+
+	.swatch-worse {
+		color: #b91c1c;
+	}
+}
+
+// Legend as HTML over the canvas, so each series can carry the same info icon
+// the rest of the page uses. Top-left, which is the one corner no curve
+// passes through on a log axis.
+.canvas-wrap {
+	position: relative;
+}
+
+.chart-legend {
+	position: absolute;
+	top: 46px;
+	left: 82px;
+	z-index: 2;
+	margin: 0;
+	padding: 6px 8px;
+	list-style: none;
+	background: rgba(255, 255, 255, 0.92);
+	border: 1px solid #d1d5db;
+	border-radius: 4px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	max-width: calc(100% - 100px);
+
+	li {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		min-width: 0;
+	}
+
+	.legend-label {
+		color: #111827;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.legend-info {
+		width: 15px;
+		height: 15px;
+		flex: 0 0 auto;
+
+		img {
+			width: 13px;
+			height: 13px;
+		}
+	}
+}
+
+.legend-swatch {
+	flex: 0 0 auto;
+	width: 20px;
+	height: 10px;
+	display: inline-block;
+
+	&.swatch-line {
+		height: 0;
+		border-top: 3px solid var(--swatch);
+	}
+
+	&.swatch-dash {
+		height: 0;
+		border-top: 2px dashed var(--swatch);
+	}
+
+	&.swatch-field {
+		background: var(--swatch);
+		border-radius: 2px;
+	}
+}
+
+@media (max-width: 600px) {
+	.chart-legend {
+		position: static;
+		max-width: none;
+		margin-bottom: 8px;
+		background: #fff;
 	}
 }

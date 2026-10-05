@@ -439,17 +439,18 @@
 
       <table class="revenue-table">
         <caption>
-          Effective rate by filer group &middot; filer counts and incomes from IRS data for tax year
+          Mean income and effective tax rate by filer group, now and under this system. Filer counts and incomes from
+          IRS data for tax year
           {{
             revenue.taxYear
-          }}
+          }}.
         </caption>
         <thead>
           <tr>
             <th scope="col">Group</th>
-            <th scope="col">Mean income</th>
-            <th scope="col">Pays now</th>
-            <th scope="col">Would pay</th>
+            <th scope="col">Income</th>
+            <th scope="col">Now</th>
+            <th scope="col">Proposed</th>
           </tr>
         </thead>
         <tbody>
@@ -497,10 +498,54 @@
   <section class="chart-section" aria-label="Tax graph">
     <h2>Tax Rate at Every Income</h2>
     <div class="canvas-wrap">
+      <ul class="chart-legend" aria-label="Chart series">
+        @for (series of legendSeries; track series.key) {
+          <li>
+            <span class="legend-swatch" [class]="'swatch-' + series.kind" [style.--swatch]="series.swatch"></span>
+            <span class="legend-label">{{ series.label }}</span>
+            <span
+              class="info-marker legend-info"
+              #legendTrigger
+              tabindex="0"
+              role="button"
+              [attr.aria-label]="'About ' + series.label"
+              (mouseenter)="showInfo(series.key)"
+              (mouseleave)="hideInfo(series.key)"
+              (focus)="showInfo(series.key)"
+              (blur)="hideInfo(series.key)"
+              (touchstart)="onTouchStart(series.key)"
+              (click)="onMarkerClick(series.key)"
+              (keydown.enter)="toggleInfo(series.key)"
+              (keydown.space)="toggleInfo(series.key)"
+              ><img src="assets/images/info.svg" alt="More info"
+            /></span>
+            <div
+              class="anchor-content wide"
+              quadrantAnchor
+              [anchorTarget]="legendTrigger"
+              [anchorVisible]="activeInfo === series.key"
+            >
+              {{ info[series.key] }}
+            </div>
+          </li>
+        }
+      </ul>
       <canvas
         #taxCanvas
-        aria-label="Graph of proposed tax rate, current federal effective rate, and proposed take-home pay"
+        aria-label="Graph of proposed tax rate, current federal effective rate, and proposed take-home pay, with background shading showing how many filers earn each income"
       ></canvas>
     </div>
+    <p class="chart-caption">
+      @if (takeHomeCrossover !== null) {
+        The two take-home lines cross at <strong>{{ formatMoney(takeHomeCrossover) }}</strong
+        >: below that this system leaves you with more than today, above it with less.
+      }
+      @if (hasCeiling) {
+        {{ shareBelowCeiling * 100 | number: "1.1-1" }}% of filers earn less than the
+        {{ formatMoney(ceilingIncome) }} ceiling, so the limit sits in nearly empty space while almost everyone is in
+        the flat left-hand stretch of the curve.
+      }
+      Each series in the key has an info icon explaining it.
+    </p>
   </section>
 </div>

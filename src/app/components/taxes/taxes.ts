@@ -5,6 +5,7 @@ import { InputControllerDirective } from "../../directives/input-controller.dire
 import { clamp, isPositiveNumber, toFiniteNumber } from "../../services/number-utils";
 import { QuadrantAnchorDirective } from "../../directives/quadrant-anchor.directive";
 import { TOOL_INFO } from "@app/config/tool-info";
+import { buildDensityBands, densestBand, shareAtOrBelow, DENSITY_TAX_YEAR, type DensityBand } from "./filer-density";
 import {
 	projectRevenue,
 	makeRateFn,
@@ -195,6 +196,30 @@ export class TaxesComponent implements AfterViewInit {
 	cappedBandNames: readonly string[] = [];
 	readonly forcedRealisationPct = FORCED_REALISATION_FRACTION * 100;
 
+	/**
+	 * Legend rows, rendered as HTML over the canvas rather than painted into
+	 * it. Canvas cannot host the info icons the rest of the page uses, and the
+	 * explanation of each series is exactly the kind of prose that belongs
+	 * behind an icon instead of in a paragraph under the chart.
+	 */
+	readonly legendSeries: readonly { key: string; label: string; swatch: string; kind: "line" | "dash" | "field" }[] =
+		[
+			{ key: "seriesProposedRate", label: "Proposed tax rate", swatch: "#2563eb", kind: "line" },
+			{ key: "seriesCurrentRate", label: "Current federal rate", swatch: "#dc2626", kind: "line" },
+			{ key: "seriesProposedTakeHome", label: "Proposed take-home", swatch: "#16a34a", kind: "line" },
+			{ key: "seriesCurrentTakeHome", label: "Current take-home", swatch: "#64748b", kind: "dash" },
+			{ key: "seriesDensity", label: "Filers at each income", swatch: "rgba(71, 85, 105, 0.5)", kind: "field" },
+			{ key: "seriesMarkers", label: "Curve landmarks", swatch: "rgba(147, 112, 219, 0.75)", kind: "dash" },
+		];
+
+	// Where the population actually is, for the chart's background shading and
+	// the note beneath it.
+	densestBandLabel = "";
+	/** Income where proposed take-home drops below current law, if it does. */
+	takeHomeCrossover: number | null = null;
+	shareBelowCeiling = 0;
+	readonly densityTaxYear = DENSITY_TAX_YEAR;
+
 	topBandRatePct = 0;
 	topBandName = "";
 	topRateIsExtreme = false;
@@ -214,6 +239,24 @@ export class TaxesComponent implements AfterViewInit {
 	private readonly COLOR_PROPOSED = "#2563eb"; // blue
 	private readonly COLOR_FEDERAL = "#dc2626"; // red
 	private readonly COLOR_TAKEHOME = "#16a34a"; // green
+	// Slate, deliberately not green: green is already the take-home series, and
+	// a green wash behind a green line reads as part of that series.
+	private readonly COLOR_DENSITY = "71, 85, 105";
+	// Grey and dashed, so current-law take-home reads as a reference line
+	// rather than a fourth thing being proposed.
+	private readonly COLOR_CURRENT_TAKEHOME = "#64748b";
+	// Marker rules are purple and lighter than the grey current-take-home
+	// line. Both are dashed verticals-and-curves in the same plot, and at
+	// similar greys they read as the same kind of thing; the hue shift keeps
+	// them apart without adding weight.
+	private readonly COLOR_MARKER = "rgba(147, 112, 219, 0.55)";
+	private readonly COLOR_MARKER_LABEL = "#7c6aa8";
+	// Signed gap fill between the two take-home curves: you keep more / less.
+	private readonly FILL_BETTER = "rgba(22, 163, 74, 0.16)";
+	private readonly FILL_WORSE = "rgba(220, 38, 38, 0.16)";
+	// Peak opacity for the densest band. Low on purpose -- this is background
+	// context and must not compete with three curves and the gridlines.
+	private static readonly DENSITY_MAX_ALPHA = 0.34;
 
 	constructor() {
 		this.computeDerived();
@@ -355,6 +398,15 @@ export class TaxesComponent implements AfterViewInit {
 			this.behaviouralShortfallMillions = 0;
 		}
 
+		if (this.hasCeiling) {
+			this.shareBelowCeiling = shareAtOrBelow(this.ceilingIncome);
+		} else {
+			this.shareBelowCeiling = shareAtOrBelow(this.chartXMax(L));
+		}
+		this.takeHomeCrossover = this.findTakeHomeCrossover(this.chartXMin(L), this.chartXMax(L));
+		const peak = densestBand(buildDensityBands(this.chartXMin(L), this.chartXMax(L)));
+		this.densestBandLabel = peak ? `${this.formatMoney(peak.minIncome)}-${this.formatMoney(peak.maxIncome)}` : "";
+
 		const top = this.revenue.groups[0];
 		this.topBandRatePct = top?.proposedRatePct ?? 0;
 		this.topBandName = top?.name ?? "";
@@ -426,6 +478,58 @@ export class TaxesComponent implements AfterViewInit {
 			return 0;
 		}
 		return x * (1 - this.taxRateAt(x) / 100);
+	}
+
+	/**
+	 * Take-home under current law: gross minus the federal income tax implied
+	 * by `federalEffectiveRate`.
+	 *
+	 * Reference only. It models 2024 single-filer brackets with the standard
+	 * deduction and nothing else -- no credits, no itemising, no payroll tax,
+	 * no other filing status -- so a real household's figure sits above this.
+	 */
+	currentTakeHomeAt(gross: number): number {
+		if (!isPositiveNumber(gross)) {
+			return 0;
+		}
+		return gross - (gross * this.federalEffectiveRate(gross)) / 100;
+	}
+
+	/**
+	 * The income where the two take-home curves cross: below it the proposed
+	 * system leaves you with more than current law, above it with less.
+	 *
+	 * Found by bisection on the difference, which is positive at the low end
+	 * and negative near the ceiling. Returns null when the two never cross in
+	 * the drawn range, so the caption can stay silent rather than invent one.
+	 */
+	private findTakeHomeCrossover(xMin: number, xMax: number): number | null {
+		const delta = (x: number) => this.takeHomeAt(x) - this.currentTakeHomeAt(x);
+		// Walk the log domain for a sign change, then bisect inside it.
+		const steps = 400;
+		const ratio = xMax / xMin;
+		let previousX = xMin;
+		let previousDelta = delta(previousX);
+		for (let i = 1; i <= steps; i++) {
+			const x = xMin * Math.pow(ratio, i / steps);
+			const current = delta(x);
+			if (previousDelta > 0 && current <= 0) {
+				let lo = previousX;
+				let hi = x;
+				for (let pass = 0; pass < 200; pass++) {
+					const mid = Math.sqrt(lo * hi);
+					if (delta(mid) > 0) {
+						lo = mid;
+					} else {
+						hi = mid;
+					}
+				}
+				return Math.sqrt(lo * hi);
+			}
+			previousX = x;
+			previousDelta = current;
+		}
+		return null;
 	}
 
 	federalEffectiveRate(gross: number): number {
@@ -529,7 +633,12 @@ export class TaxesComponent implements AfterViewInit {
 		const plotH = H - marginTop - marginBottom;
 
 		const xMax = this.chartXMax(L);
-		const moneyMax = this.niceCeil(this.peakTakeHome * 1.12);
+		// The money axis has to cover BOTH take-home curves. Current-law
+		// take-home keeps rising past the proposed ceiling and ends far above
+		// the proposed peak, so scaling to the proposal alone would run the
+		// grey reference line off the top and clip the gap fill with it.
+		const currentTakeHomeAtMax = this.currentTakeHomeAt(xMax);
+		const moneyMax = this.niceCeil(Math.max(this.peakTakeHome, currentTakeHomeAtMax) * 1.08);
 
 		// Logarithmic: equal pixel width per decade of income.
 		const xMin = this.chartXMin(L);
@@ -540,6 +649,11 @@ export class TaxesComponent implements AfterViewInit {
 
 		ctx.fillStyle = "#fff";
 		ctx.fillRect(marginLeft, marginTop, plotW, plotH);
+
+		// Population density, painted on the white background and under
+		// everything else: the gridlines, curves and markers all read on top.
+		this.drawDensity(ctx, xMin, xMax, xToPx, marginTop, plotH);
+
 		ctx.strokeStyle = "#e5e7eb";
 		ctx.fillStyle = "#374151";
 		ctx.lineWidth = 1;
@@ -600,6 +714,26 @@ export class TaxesComponent implements AfterViewInit {
 		ctx.lineWidth = 1;
 		ctx.strokeRect(marginLeft, marginTop, plotW, plotH);
 		const samples = 600;
+		// Signed gap between the two take-home curves, under the lines. Below
+		// about $200k the two are a pixel or two apart, so the fill is
+		// invisibly thin -- which is the correct reading: almost nothing
+		// changes there. It widens sharply past the crossover.
+		this.drawTakeHomeGap(ctx, samples, xMin, xMax, xToPx, moneyToPy);
+
+		// Current-law take-home: dashed and grey, a reference rather than a
+		// fourth proposal. Drawn before the proposed curve so the proposal
+		// stays on top.
+		this.drawCurve(
+			ctx,
+			samples,
+			xMin,
+			xMax,
+			xToPx,
+			x => moneyToPy(this.currentTakeHomeAt(x)),
+			this.COLOR_CURRENT_TAKEHOME,
+			1.5,
+			[5, 4],
+		);
 		this.drawCurve(ctx, samples, xMin, xMax, xToPx, x => moneyToPy(this.takeHomeAt(x)), this.COLOR_TAKEHOME, 2.5);
 		this.drawCurve(
 			ctx,
@@ -672,8 +806,41 @@ export class TaxesComponent implements AfterViewInit {
 		ctx.fillStyle = this.COLOR_TAKEHOME;
 		ctx.fillText("Annual Take-Home Pay", 0, 0);
 		ctx.restore();
+	}
 
-		this.drawLegend(ctx, marginLeft + plotW, marginTop);
+	/**
+	 * Shade the plot background by how many filers earn each income.
+	 *
+	 * One filled column per IRS AGI bracket, with opacity proportional to
+	 * filers per unit of log income -- see filer-density.ts for why that is
+	 * the right quantity on a log axis. Columns are drawn with a half-pixel
+	 * overlap so no hairline gaps show between them.
+	 */
+	private drawDensity(
+		ctx: CanvasRenderingContext2D,
+		xMin: number,
+		xMax: number,
+		xToPx: (x: number) => number,
+		top: number,
+		plotH: number,
+	): void {
+		const bands: readonly DensityBand[] = buildDensityBands(xMin, xMax);
+		if (bands.length === 0) {
+			return;
+		}
+		ctx.save();
+		for (const band of bands) {
+			const left = xToPx(band.minIncome);
+			const right = xToPx(band.maxIncome);
+			const width = right - left;
+			if (!(width > 0)) {
+				continue;
+			}
+			const alpha = band.intensity * TaxesComponent.DENSITY_MAX_ALPHA;
+			ctx.fillStyle = `rgba(${this.COLOR_DENSITY}, ${alpha.toFixed(4)})`;
+			ctx.fillRect(left, top, width + 0.5, plotH);
+		}
+		ctx.restore();
 	}
 
 	private drawCurve(
@@ -685,7 +852,10 @@ export class TaxesComponent implements AfterViewInit {
 		yToPy: (x: number) => number,
 		color: string,
 		width: number,
+		dash?: readonly number[],
 	): void {
+		ctx.save();
+		ctx.setLineDash(dash ? [...dash] : []);
 		ctx.beginPath();
 		ctx.lineWidth = width;
 		ctx.strokeStyle = color;
@@ -704,6 +874,60 @@ export class TaxesComponent implements AfterViewInit {
 			}
 		}
 		ctx.stroke();
+		ctx.restore();
+	}
+
+	/**
+	 * Fill the band between proposed and current take-home, tinted by sign:
+	 * green where the proposal leaves you with more, red where it leaves you
+	 * with less. The crossover shows up as the pinch where the fill vanishes.
+	 *
+	 * Drawn as two separate runs rather than one polygon, so the colour can
+	 * change at the crossover without a seam.
+	 */
+	private drawTakeHomeGap(
+		ctx: CanvasRenderingContext2D,
+		samples: number,
+		xMin: number,
+		xMax: number,
+		xToPx: (x: number) => number,
+		moneyToPy: (m: number) => number,
+	): void {
+		const ratio = xMax / xMin;
+		type Point = { px: number; proposed: number; current: number; better: boolean };
+		const points: Point[] = [];
+		for (let i = 0; i <= samples; i++) {
+			const x = xMin * Math.pow(ratio, i / samples);
+			const proposed = this.takeHomeAt(x);
+			const current = this.currentTakeHomeAt(x);
+			points.push({ px: xToPx(x), proposed, current, better: proposed >= current });
+		}
+
+		ctx.save();
+		let runStart = 0;
+		for (let i = 1; i <= points.length; i++) {
+			const atEnd = i === points.length;
+			if (!atEnd && points[i].better === points[runStart].better) {
+				continue;
+			}
+			// Close out the run [runStart, i-1].
+			const run = points.slice(runStart, i);
+			if (run.length > 1) {
+				ctx.beginPath();
+				ctx.moveTo(run[0].px, moneyToPy(run[0].proposed));
+				for (const point of run) {
+					ctx.lineTo(point.px, moneyToPy(point.proposed));
+				}
+				for (let k = run.length - 1; k >= 0; k--) {
+					ctx.lineTo(run[k].px, moneyToPy(run[k].current));
+				}
+				ctx.closePath();
+				ctx.fillStyle = run[0].better ? this.FILL_BETTER : this.FILL_WORSE;
+				ctx.fill();
+			}
+			runStart = i;
+		}
+		ctx.restore();
 	}
 
 	private drawMarker(
@@ -715,9 +939,11 @@ export class TaxesComponent implements AfterViewInit {
 		rotated: boolean,
 	): void {
 		ctx.save();
-		ctx.setLineDash([6, 4]);
-		ctx.strokeStyle = "#6b7280";
-		ctx.lineWidth = 1.5;
+		// Finer dash and a thinner line than the take-home reference curve, so
+		// the two dashed elements do not read as one family.
+		ctx.setLineDash([3, 5]);
+		ctx.strokeStyle = this.COLOR_MARKER;
+		ctx.lineWidth = 1;
 		ctx.beginPath();
 		ctx.moveTo(px, top + 4);
 		ctx.lineTo(px, top + plotH);
@@ -726,7 +952,7 @@ export class TaxesComponent implements AfterViewInit {
 
 		ctx.save();
 		ctx.font = TaxesComponent.MARKER_FONT;
-		ctx.fillStyle = "#374151";
+		ctx.fillStyle = this.COLOR_MARKER_LABEL;
 		if (rotated) {
 			// +45 degrees, the mirror of the bottom axis's -45. Anchored at
 			// the text's right end so it reads up-LEFT into the tick, keeping
@@ -742,44 +968,6 @@ export class TaxesComponent implements AfterViewInit {
 			ctx.fillText(label, px, top + 2);
 		}
 		ctx.restore();
-	}
-
-	private drawLegend(ctx: CanvasRenderingContext2D, rightEdge: number, top: number): void {
-		const items = [
-			{ label: "Proposed Tax Rate", color: this.COLOR_PROPOSED },
-			{ label: "Current Federal Effective Rate", color: this.COLOR_FEDERAL },
-			{ label: "Proposed Take-Home Pay", color: this.COLOR_TAKEHOME },
-		];
-		ctx.font = "12px 'Trebuchet MS', sans-serif";
-		let maxW = 0;
-		for (const it of items) {
-			maxW = Math.max(maxW, ctx.measureText(it.label).width);
-		}
-		const boxW = maxW + 44;
-		const rowH = 20;
-		const boxH = items.length * rowH + 12;
-		const x = rightEdge - boxW - 10;
-		const y = top + 10;
-
-		ctx.fillStyle = "rgba(255,255,255,0.9)";
-		ctx.strokeStyle = "#d1d5db";
-		ctx.lineWidth = 1;
-		ctx.fillRect(x, y, boxW, boxH);
-		ctx.strokeRect(x, y, boxW, boxH);
-
-		ctx.textAlign = "left";
-		ctx.textBaseline = "middle";
-		items.forEach((it, i) => {
-			const ly = y + 6 + rowH / 2 + i * rowH;
-			ctx.strokeStyle = it.color;
-			ctx.lineWidth = 3;
-			ctx.beginPath();
-			ctx.moveTo(x + 10, ly);
-			ctx.lineTo(x + 32, ly);
-			ctx.stroke();
-			ctx.fillStyle = "#111827";
-			ctx.fillText(it.label, x + 38, ly);
-		});
 	}
 
 	// Width of the longest marker label, used to size the top margin when the

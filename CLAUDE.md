@@ -99,18 +99,18 @@ for a Chrome that is not installed. The `firefox` debug type requires the
 
 Linting and formatting are split, deliberately:
 
-- `npm run lint` / `npm run lint:fix` — ESLint v9 **flat config** at
+- `npm run lint` / `npm run lint:fix` runs ESLint v9 **flat config** at
   `eslint.config.js` (the old `.eslintrc.json` is gone; v9 cannot read it).
   Correctness and Angular rules only: `@angular-eslint` selector prefixes,
   `prefer-inject`, unused vars, `no-explicit-any` as a warning.
-- `npm run format` / `npm run format:check` — Prettier, configured in
+- `npm run format` / `npm run format:check` runs Prettier, configured in
   `.prettierrc`: **tabs, double quotes, semicolons**, `printWidth: 120`,
   `trailingComma: all`, `arrowParens: avoid`. HTML/JSON/Markdown override to
   2 spaces.
 
 `eslint-config-prettier` is applied last in every flat-config block, so ESLint
 holds no stylistic opinion that could fight the formatter. Do not add `quotes`,
-`semi` or `indent` rules back to `eslint.config.js` — that is what the two
+`semi` or `indent` rules back to `eslint.config.js`; that is what the two
 tools fighting looks like.
 
 `dist/` and `coverage/` are in ESLint's `ignores`. Without them a lint run
@@ -124,7 +124,7 @@ The editor is wired for this in `.vscode/settings.json`: format-on-save via
 Known pre-existing findings, not yet addressed: 20 `prefer-inject` errors
 (constructor injection in `auth.service.ts`, `environment.ts`, `tool-wrapper.ts`),
 and `quadrant-anchor.directive.ts` uses the selector `[quadrantAnchor]` without
-the `app` prefix its own rule requires — renaming it touches eight templates.
+the `app` prefix its own rule requires, and renaming it touches eight templates.
 
 ## Architecture
 

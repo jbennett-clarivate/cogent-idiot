@@ -632,6 +632,415 @@ describe("TaxesComponent", () => {
 		});
 	});
 
+	describe("current-law take-home comparison", () => {
+		// The chart pairs proposed take-home with what you keep today, so the
+		// question "am I better or worse off" is answerable by looking. The
+		// current-law line is a reference, not a tax calculator: 2024 single
+		// brackets with the standard deduction and nothing else.
+		it("derives current take-home from the federal effective rate", () => {
+			withLines(15060, 15060);
+			for (const gross of [30_000, 100_000, 500_000, 5_000_000]) {
+				const expected = gross - (gross * component.federalEffectiveRate(gross)) / 100;
+				expect(component.currentTakeHomeAt(gross)).toBeCloseTo(expected, 6);
+			}
+		});
+
+		it("keeps everything below the standard deduction", () => {
+			withLines(15060, 15060);
+			expect(component.currentTakeHomeAt(14_600)).toBeCloseTo(14_600, 6);
+			expect(component.currentTakeHomeAt(10_000)).toBeCloseTo(10_000, 6);
+		});
+
+		it("returns zero for non-positive income", () => {
+			withLines(15060, 15060);
+			expect(component.currentTakeHomeAt(0)).toBe(0);
+			expect(component.currentTakeHomeAt(-5)).toBe(0);
+		});
+
+		it("rises monotonically with income", () => {
+			withLines(15060, 15060);
+			let previous = -1;
+			for (let gross = 20_000; gross <= 10_000_000; gross += 20_000) {
+				const takeHome = component.currentTakeHomeAt(gross);
+				expect(takeHome).toBeGreaterThan(previous);
+				previous = takeHome;
+			}
+		});
+
+		it("finds the income where the proposal stops being better", () => {
+			// The single most useful fact on the chart.
+			withLines(15060, 15060);
+			expect(component.takeHomeCrossover).not.toBeNull();
+			const crossover = component.takeHomeCrossover!;
+			// Proposed is ahead just below it, behind just above it.
+			const below = crossover * 0.9;
+			const above = crossover * 1.1;
+			expect(component.takeHomeAt(below)).toBeGreaterThan(component.currentTakeHomeAt(below));
+			expect(component.takeHomeAt(above)).toBeLessThan(component.currentTakeHomeAt(above));
+		});
+
+		it("puts the crossover above the middle-income region", () => {
+			// If the crossover fell among ordinary incomes the proposal would
+			// be a middle-class tax rise, which it is not.
+			withLines(15060, 15060);
+			expect(component.takeHomeCrossover!).toBeGreaterThan(500_000);
+		});
+
+		it("leaves ordinary incomes barely changed", () => {
+			// The honest finding behind the invisibly thin fill below ~$200k.
+			withLines(15060, 15060);
+			for (const gross of [30_000, 50_000, 75_000]) {
+				const proposed = component.takeHomeAt(gross);
+				const current = component.currentTakeHomeAt(gross);
+				expect(proposed).toBeGreaterThanOrEqual(current);
+				expect((proposed - current) / gross).toBeLessThan(0.11);
+			}
+		});
+
+		it("scales the money axis to cover both curves", () => {
+			// Scaling to the proposal alone would run the grey line off the top
+			// of the plot and clip the gap fill with it. Asserted by checking
+			// that the current-law curve is drawn inside the plot area at the
+			// right-hand edge, where it is highest.
+			withLines(15060, 15060);
+			const canvas = document.createElement("canvas");
+			const wrap = document.createElement("div");
+			Object.defineProperty(wrap, "clientWidth", { value: 1000, configurable: true });
+			wrap.appendChild(canvas);
+			document.body.appendChild(wrap);
+			const ctx = canvas.getContext("2d")!;
+			// Record the y of every point stroked in the current-law colour.
+			const ys: number[] = [];
+			const realLineTo = ctx.lineTo.bind(ctx);
+			ctx.lineTo = function (x: number, y: number) {
+				if (String(ctx.strokeStyle).toLowerCase() === "#64748b") {
+					ys.push(y);
+				}
+				return realLineTo(x, y);
+			} as typeof ctx.lineTo;
+			(component as any).canvasRef = { nativeElement: canvas };
+			(component as any).draw();
+			wrap.remove();
+
+			expect(ys.length).toBeGreaterThan(100);
+			// marginTop is 36 when labels are horizontal at this width; the
+			// curve must stay below the top edge rather than running off it.
+			expect(Math.min(...ys)).toBeGreaterThanOrEqual(0);
+		});
+	});
+
+	describe("phone-width layout", () => {
+		// A real bug chain found on a phone: the revenue table used
+		// white-space: nowrap, so it could not shrink below its content width.
+		// That pushed the document wider than the viewport, and once the
+		// document is wider than the screen the viewport's centre moves.
+		// quadrantAnchor places its popups relative to that centre, so an
+		// unshrinkable element anywhere on the page makes info icons
+		// ELSEWHERE anchor the wrong way and clip. The invariant worth pinning
+		// is therefore about layout, not about the anchor code.
+		function renderAt(width: number) {
+			const fixture = TestBed.createComponent(TaxesComponent);
+			const host: HTMLElement = fixture.nativeElement;
+			// Constrain the host the way a phone viewport would.
+			host.style.width = `${width}px`;
+			host.style.overflow = "visible";
+			fixture.detectChanges();
+			return { fixture, host };
+		}
+
+		it("keeps the revenue table within a phone-width container", () => {
+			const { fixture, host } = renderAt(320);
+			const table = host.querySelector(".revenue-table") as HTMLElement | null;
+			if (table) {
+				// scrollWidth exceeding clientWidth is exactly the overflow
+				// that moves the viewport centre.
+				expect(table.scrollWidth)
+					.withContext("revenue table forces the page wider than the viewport")
+					.toBeLessThanOrEqual(table.clientWidth + 1);
+			}
+			fixture.destroy();
+		});
+
+		it("declares no unshrinkable minimum width in the table cells", () => {
+			// Guards the specific cause rather than only the symptom: nowrap
+			// on a table cell makes the column incapable of shrinking.
+			const { fixture, host } = renderAt(320);
+			const cells = host.querySelectorAll(".revenue-table th, .revenue-table td");
+			expect(cells.length).toBeGreaterThan(0);
+			for (const cell of Array.from(cells)) {
+				const whiteSpace = getComputedStyle(cell).whiteSpace;
+				expect(whiteSpace).withContext("a table cell is nowrap, so the table cannot shrink").not.toBe("nowrap");
+			}
+			fixture.destroy();
+		});
+
+		it("keeps the income slider shrinkable", () => {
+			// Same failure mode: a fixed min-width in a flex row.
+			const { fixture, host } = renderAt(320);
+			const slider = host.querySelector(".income-slider") as HTMLElement | null;
+			if (slider) {
+				const minWidth = getComputedStyle(slider).minWidth;
+				expect(minWidth === "0px" || minWidth === "auto")
+					.withContext(`income slider min-width is ${minWidth}`)
+					.toBe(true);
+			}
+			fixture.destroy();
+		});
+
+		it("uses short column headers so the data decides the width", () => {
+			// The headers used to be wider than every value beneath them:
+			// "Mean income" is 11 characters labelling a column whose widest
+			// value is "$10.9M".
+			const { fixture, host } = renderAt(320);
+			const headers = Array.from(host.querySelectorAll(".revenue-table thead th")).map(h =>
+				(h.textContent ?? "").trim(),
+			);
+			if (headers.length > 0) {
+				for (const header of headers) {
+					expect(header.length).withContext(`header "${header}" is long`).toBeLessThanOrEqual(8);
+				}
+			}
+			fixture.destroy();
+		});
+	});
+
+	describe("legend", () => {
+		// The legend is HTML over the canvas rather than painted into it, so
+		// each series can carry the same info icon the rest of the page uses.
+		// Canvas cannot host those icons at all.
+		it("lists every drawn series", () => {
+			expect(component.legendSeries.length).toBe(6);
+			const labels = component.legendSeries.map(s => s.label);
+			expect(labels).toContain("Proposed tax rate");
+			expect(labels).toContain("Current take-home");
+			expect(labels).toContain("Filers at each income");
+			expect(labels).toContain("Curve landmarks");
+		});
+
+		it("has info text for every series", () => {
+			// An unexplained line on a chart invites the reader to guess.
+			for (const series of component.legendSeries) {
+				expect(component.info[series.key]).withContext(`no info text for ${series.key}`).toBeTruthy();
+			}
+		});
+
+		it("gives each series a distinct info key", () => {
+			const keys = component.legendSeries.map(s => s.key);
+			expect(new Set(keys).size).toBe(keys.length);
+		});
+
+		it("matches each swatch to the colour actually drawn", () => {
+			// A legend whose colours drift from the chart is worse than none.
+			const byLabel = new Map(component.legendSeries.map(s => [s.label, s.swatch]));
+			expect(byLabel.get("Proposed tax rate")).toBe("#2563eb");
+			expect(byLabel.get("Current federal rate")).toBe("#dc2626");
+			expect(byLabel.get("Proposed take-home")).toBe("#16a34a");
+			expect(byLabel.get("Current take-home")).toBe("#64748b");
+		});
+
+		it("drives its popups through the shared info state", () => {
+			// Same toggle the page's other icons use, including the touch path.
+			const key = component.legendSeries[0].key;
+			component.onTouchStart(key);
+			component.showInfo(key);
+			component.onMarkerClick(key);
+			expect(component.activeInfo).toBe(key);
+			component.onEscape();
+			expect(component.activeInfo).toBeNull();
+		});
+
+		it("renders in the DOM with an info icon per series", () => {
+			// The whole reason for moving it out of the canvas.
+			const fixture = TestBed.createComponent(TaxesComponent);
+			fixture.detectChanges();
+			const host: HTMLElement = fixture.nativeElement;
+			const rows = host.querySelectorAll(".chart-legend li");
+			expect(rows.length).toBe(component.legendSeries.length);
+			const icons = host.querySelectorAll(".chart-legend .info-marker");
+			expect(icons.length).toBe(component.legendSeries.length);
+			// Each row has a swatch and a popup target.
+			expect(host.querySelectorAll(".chart-legend .legend-swatch").length).toBe(rows.length);
+			expect(host.querySelectorAll(".chart-legend .anchor-content").length).toBe(rows.length);
+			fixture.destroy();
+		});
+
+		it("no longer paints a legend box into the canvas", () => {
+			// The canvas legend is gone; only the plot border is stroked as a
+			// rectangle now.
+			withLines(15060, 15060);
+			const canvas = document.createElement("canvas");
+			const wrap = document.createElement("div");
+			Object.defineProperty(wrap, "clientWidth", { value: 1000, configurable: true });
+			wrap.appendChild(canvas);
+			document.body.appendChild(wrap);
+			const ctx = canvas.getContext("2d")!;
+			const rects: { w: number; h: number }[] = [];
+			const realStrokeRect = ctx.strokeRect.bind(ctx);
+			ctx.strokeRect = function (x: number, y: number, w: number, h: number) {
+				rects.push({ w, h });
+				return realStrokeRect(x, y, w, h);
+			} as typeof ctx.strokeRect;
+			(component as any).canvasRef = { nativeElement: canvas };
+			(component as any).draw();
+			wrap.remove();
+			expect(rects.length).toBe(1);
+			// That one rect is the plot area, not a small legend box.
+			expect(rects[0].w).toBeGreaterThan(500);
+		});
+	});
+
+	describe("marker rules", () => {
+		// Marker rules were the same grey and dash as the current-take-home
+		// reference curve, so the two read as one family. They are now purple,
+		// thinner, and dashed differently.
+		it("draws marker rules in a different colour from the take-home line", () => {
+			withLines(15060, 15060);
+			const canvas = document.createElement("canvas");
+			const wrap = document.createElement("div");
+			Object.defineProperty(wrap, "clientWidth", { value: 1000, configurable: true });
+			wrap.appendChild(canvas);
+			document.body.appendChild(wrap);
+			const ctx = canvas.getContext("2d")!;
+			const strokeStyles: string[] = [];
+			const realStroke = ctx.stroke.bind(ctx);
+			ctx.stroke = function () {
+				strokeStyles.push(String(ctx.strokeStyle).toLowerCase());
+				return realStroke();
+			} as typeof ctx.stroke;
+			(component as any).canvasRef = { nativeElement: canvas };
+			(component as any).draw();
+			wrap.remove();
+
+			const purple = strokeStyles.filter(s => s.includes("147, 112, 219"));
+			expect(purple.length).toBeGreaterThan(2);
+			// And none of them is the grey used by the reference curve.
+			expect(purple.every(s => !s.includes("64748b"))).toBe(true);
+		});
+
+		it("draws marker rules thinner than the take-home reference line", () => {
+			withLines(15060, 15060);
+			const canvas = document.createElement("canvas");
+			const wrap = document.createElement("div");
+			Object.defineProperty(wrap, "clientWidth", { value: 1000, configurable: true });
+			wrap.appendChild(canvas);
+			document.body.appendChild(wrap);
+			const ctx = canvas.getContext("2d")!;
+			const widths: { style: string; width: number }[] = [];
+			const realStroke = ctx.stroke.bind(ctx);
+			ctx.stroke = function () {
+				widths.push({ style: String(ctx.strokeStyle).toLowerCase(), width: ctx.lineWidth });
+				return realStroke();
+			} as typeof ctx.stroke;
+			(component as any).canvasRef = { nativeElement: canvas };
+			(component as any).draw();
+			wrap.remove();
+
+			const marker = widths.find(w => w.style.includes("147, 112, 219"))!;
+			const reference = widths.find(w => w.style.includes("64748b"))!;
+			expect(marker.width).toBeLessThan(reference.width);
+		});
+	});
+
+	describe("population density shading", () => {
+		// The chart shades its background by how many filers earn each income,
+		// so the reader can see that the crowd sits in the flat left-hand part
+		// of the rate curve while the ceiling sits in empty space.
+		function fillRectCalls(width: number): { x: number; w: number; alpha: string }[] {
+			const canvas = document.createElement("canvas");
+			const wrap = document.createElement("div");
+			Object.defineProperty(wrap, "clientWidth", { value: width, configurable: true });
+			wrap.appendChild(canvas);
+			document.body.appendChild(wrap);
+			const ctx = canvas.getContext("2d")!;
+			const calls: { x: number; w: number; alpha: string }[] = [];
+			const realFillRect = ctx.fillRect.bind(ctx);
+			ctx.fillRect = function (x: number, y: number, w: number, h: number) {
+				const style = String(ctx.fillStyle);
+				// Only the density columns. The legend also paints rgba fills
+				// (its own background, and its swatch for this very series),
+				// so match the slate colour AND exclude the legend's swatch by
+				// its fixed 10px height.
+				if (style.includes("71, 85, 105") && h > 20) {
+					calls.push({ x, w, alpha: style });
+				}
+				return realFillRect(x, y, w, h);
+			} as typeof ctx.fillRect;
+			(component as any).canvasRef = { nativeElement: canvas };
+			(component as any).draw();
+			return calls;
+		}
+
+		afterEach(() => {
+			document.querySelectorAll("body > div").forEach(d => d.remove());
+		});
+
+		it("paints one translucent column per visible bracket", () => {
+			withLines(15060, 15060);
+			const calls = fillRectCalls(1000);
+			expect(calls.length).toBeGreaterThan(10);
+		});
+
+		it("keeps every column inside the plot area", () => {
+			withLines(15060, 15060);
+			const left = 72;
+			const right = 1000 - 88;
+			for (const call of fillRectCalls(1000)) {
+				expect(call.x).toBeGreaterThanOrEqual(left - 0.01);
+				// Columns are drawn half a pixel wide to avoid hairline gaps.
+				expect(call.x + call.w).toBeLessThanOrEqual(right + 1);
+			}
+		});
+
+		it("never reaches full opacity, so it stays background", () => {
+			withLines(15060, 15060);
+			for (const call of fillRectCalls(1000)) {
+				const alpha = Number(/,\s*([\d.]+)\)/.exec(call.alpha)?.[1] ?? "1");
+				expect(alpha).toBeLessThanOrEqual(0.35);
+			}
+		});
+
+		it("does not shade in the take-home series colour", () => {
+			// Green is already a curve; the shading must not read as part of it.
+			withLines(15060, 15060);
+			for (const call of fillRectCalls(1000)) {
+				expect(call.alpha).not.toContain("22, 163, 74");
+			}
+		});
+
+		it("shades the middle-income region more heavily than the top", () => {
+			// The visual argument, asserted on what was actually painted.
+			withLines(15060, 15060);
+			const calls = fillRectCalls(1000);
+			const alphaOf = (c: { alpha: string }) => Number(/,\s*([\d.]+)\)/.exec(c.alpha)?.[1] ?? "0");
+			const sorted = [...calls].sort((a, b) => a.x - b.x);
+			// Compare the heaviest column in the left half against the
+			// heaviest in the right quarter.
+			const plotLeft = 72;
+			const plotWidth = 1000 - 72 - 88;
+			const leftHalf = sorted.filter(c => c.x < plotLeft + plotWidth * 0.5);
+			const rightQuarter = sorted.filter(c => c.x > plotLeft + plotWidth * 0.75);
+			expect(leftHalf.length).toBeGreaterThan(0);
+			expect(rightQuarter.length).toBeGreaterThan(0);
+			const heaviestLeft = Math.max(...leftHalf.map(alphaOf));
+			const heaviestRight = Math.max(...rightQuarter.map(alphaOf));
+			expect(heaviestLeft).toBeGreaterThan(heaviestRight * 2);
+		});
+
+		it("reports the densest band and the share below the ceiling", () => {
+			withLines(15060, 15060);
+			expect(component.densestBandLabel).toBeTruthy();
+			expect(component.shareBelowCeiling).toBeGreaterThan(0.999);
+			expect(component.shareBelowCeiling).toBeLessThanOrEqual(1);
+		});
+
+		it("draws without throwing across a range of poverty lines", () => {
+			for (const [L0, L] of PAIRS) {
+				withLines(L0, L);
+				expect(() => fillRectCalls(1000)).not.toThrow();
+			}
+		});
+	});
+
 	describe("revenue check", () => {
 		// The curve is blind to how many people earn each income, so a rate
 		// schedule that looks reasonable can still fail to fund anything. The
