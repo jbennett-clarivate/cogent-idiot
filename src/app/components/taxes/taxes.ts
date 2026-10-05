@@ -5,6 +5,18 @@ import { InputControllerDirective } from "../../directives/input-controller.dire
 import { clamp, isPositiveNumber, toFiniteNumber } from "../../services/number-utils";
 import { QuadrantAnchorDirective } from "../../directives/quadrant-anchor.directive";
 import { TOOL_INFO } from "@app/config/tool-info";
+import {
+	projectRevenue,
+	makeRateFn,
+	solveSteepnessForRevenue,
+	reachableRevenue,
+	findIncomeCeiling,
+	projectRevenueWithCeilingBehaviour,
+	FORCED_REALISATION_FRACTION,
+	ANCHOR_MULTIPLE,
+	ANCHOR_RATE_PCT,
+	type RevenueProjection,
+} from "./revenue-model";
 
 @Component({
 	selector: "app-taxes",
@@ -89,6 +101,45 @@ export class TaxesComponent implements AfterViewInit {
 	}
 	private static readonly DEFAULT_POVERTY = 15060;
 
+	// US individual income tax collected in 2022, in billions. The starting
+	// point for the calibration target; the input is free from here.
+	private static readonly DEFAULT_REVENUE_TARGET_BILLIONS = 2140;
+
+	// The curve's original hardcoded steepness. Only used when the target is
+	// unreachable, so the curve still draws something rather than nothing.
+	private static readonly FALLBACK_STEEPNESS = 1.22;
+
+	/** Exposed for tests and for the template's fallback notice. */
+	readonly fallbackSteepness = TaxesComponent.FALLBACK_STEEPNESS;
+
+	// Mirror of ANCHOR_MULTIPLE, so the template and the curve agree.
+	private static readonly ANCHOR_MULTIPLE_LOCAL = ANCHOR_MULTIPLE;
+
+	// Fallback chart width, as a multiple of the poverty line, when the curve
+	// has no ceiling to frame.
+	private static readonly DEFAULT_X_MULTIPLE = 100;
+
+	// The x axis is logarithmic. A linear axis spanning the poverty line to a
+	// $70M ceiling squeezes every income below $300k into about two pixels,
+	// which hides the part of the curve most people live on. Log spacing gives
+	// each decade equal width, so the middle class and the ceiling are both
+	// legible. The domain starts at half a poverty line because log(0) is
+	// undefined and incomes below that are not interesting.
+	private static readonly X_MIN_POVERTY_FRACTION = 0.5;
+
+	// Plot width below which x-axis labels snap to 45 degrees. Chosen to match
+	// the 480px phone breakpoint in taxes.scss.
+	private static readonly ROTATE_LABELS_BELOW_PX = 480;
+	private static readonly TICK_FONT = "12px 'Trebuchet MS', sans-serif";
+	// Bottom x-axis labels trail down-left from their tick; top marker labels
+	// mirror that and trail up-left. Opposite signs, same reading order: the
+	// text still runs left-to-right INTO the tick it belongs to, and
+	// successive labels stack away from the plot instead of overlapping.
+	private static readonly LABEL_ANGLE_RAD = -Math.PI / 4;
+	private static readonly MARKER_ANGLE_RAD = Math.PI / 4;
+	private static readonly MARKER_FONT = "11px 'Trebuchet MS', sans-serif";
+	private static readonly SIN_45 = Math.SQRT1_2;
+
 	baseline: number = TaxesComponent.DEFAULT_POVERTY;
 	current: number = TaxesComponent.DEFAULT_POVERTY;
 	userIncome: number = 50000;
@@ -108,6 +159,57 @@ export class TaxesComponent implements AfterViewInit {
 	userTaxRate = 0;
 	userTax = 0;
 	userTakeHome = 0;
+
+	// What the curve would actually raise, measured against real IRS filer
+	// data. The curve itself is blind to population density, so this is the
+	// only place the tool can show that a pretty rate schedule and a workable
+	// one are different things.
+	revenue?: RevenueProjection;
+	neutralSteepness: number | null = null;
+
+	// The revenue target the curve is calibrated against, in BILLIONS of
+	// dollars, which is the unit the published headline figures use. It starts
+	// at the 2022 total and is editable, so a later year's figure keeps the
+	// tool useful without a code change. Whatever is in the box is what
+	// Calibrate solves for.
+	revenueTargetBillions = TaxesComponent.DEFAULT_REVENUE_TARGET_BILLIONS;
+
+	/** Reachable revenue span for the current poverty lines, in billions. */
+	reachableMinBillions = 0;
+	reachableMaxBillions = 0;
+	targetOutOfReach = false;
+
+	// The maximum income the curve implies: the point where take-home turns
+	// over, so earning more leaves you with less. It exists only when the
+	// exponent is above 1, which is why the anchor sits at 20x the poverty
+	// line rather than 10x -- see revenue-model.ts.
+	ceilingIncome = 0;
+	ceilingTakeHome = 0;
+	ceilingMultiple = 0;
+	ceilingRate = 0;
+	hasCeiling = false;
+	// Pessimistic companion to the headline figure: what arrives if the bands
+	// whose mean income sits above the ceiling report only the ceiling.
+	behaviouralTotalMillions = 0;
+	behaviouralShortfallMillions = 0;
+	cappedBandNames: readonly string[] = [];
+	readonly forcedRealisationPct = FORCED_REALISATION_FRACTION * 100;
+
+	topBandRatePct = 0;
+	topBandName = "";
+	topRateIsExtreme = false;
+	readonly anchorMultiple = ANCHOR_MULTIPLE;
+	readonly anchorRatePct = ANCHOR_RATE_PCT;
+
+	// Curve steepness. The formula was originally written with this fixed at
+	// 1.5, but that value makes the curve raise about $4.17T against 2022's
+	// $2.14T -- and it only gets there by charging the top 1% an effective
+	// rate near 85%, which no real system uses. So the tool opens on the
+	// steepness that matches the revenue target instead, and "Calibrate"
+	// re-solves it after the target or the poverty lines change. 1.5 is kept
+	// only as the fallback for the degenerate case where no steepness reaches
+	// the target at all.
+	steepness = TaxesComponent.FALLBACK_STEEPNESS;
 
 	private readonly COLOR_PROPOSED = "#2563eb"; // blue
 	private readonly COLOR_FEDERAL = "#dc2626"; // red
@@ -138,10 +240,15 @@ export class TaxesComponent implements AfterViewInit {
 			return;
 		}
 
-		this.exponent = (1.5 * L) / L0;
-		this.middleAnchor = 10 * L;
+		// Resolve steepness first: the peak search, the readouts and the chart
+		// all call taxRateAt, which reads it. Solving it afterwards would
+		// leave every derived number one edit behind.
+		this.resolveSteepness(L, L0);
 
-		const xMax = 100 * L;
+		this.exponent = (this.steepness * L) / L0;
+		this.middleAnchor = TaxesComponent.ANCHOR_MULTIPLE_LOCAL * L;
+
+		const xMax = this.chartXMax(L);
 		let bestX = 0;
 		let bestTH = -Infinity;
 		const coarse = 4000;
@@ -191,6 +298,101 @@ export class TaxesComponent implements AfterViewInit {
 		this.userIncome = clamp(toFiniteNumber(this.userIncome, this.minIncome), this.minIncome, this.maxIncome);
 
 		this.computeUser();
+		this.computeRevenue(L, L0);
+	}
+
+	/**
+	 * Pick the steepness that raises the revenue target, and record whether a
+	 * solution exists. Adopted automatically: there is no control for the
+	 * original 1.5, because that curve raises roughly double the target by
+	 * charging the top 1% about 85%.
+	 */
+	private resolveSteepness(L: number, L0: number): void {
+		const targetMillions = this.targetMillions();
+		this.neutralSteepness = solveSteepnessForRevenue(targetMillions, L, L0);
+		this.targetOutOfReach = this.neutralSteepness === null;
+
+		// Surface the span the curve can actually reach, so an unreachable
+		// target reads as a property of the curve rather than a failed input.
+		const span = reachableRevenue(L, L0);
+		this.reachableMinBillions = span ? Math.ceil(span.minMillions / 1e3) : 0;
+		this.reachableMaxBillions = span ? Math.floor(span.maxMillions / 1e3) : 0;
+
+		this.steepness = this.neutralSteepness ?? TaxesComponent.FALLBACK_STEEPNESS;
+
+		const ceiling = findIncomeCeiling(this.steepness, L, L0);
+		this.hasCeiling = ceiling !== null;
+		this.ceilingIncome = ceiling?.income ?? 0;
+		this.ceilingTakeHome = ceiling?.takeHome ?? 0;
+		this.ceilingMultiple = ceiling?.multipleOfPovertyLine ?? 0;
+		// Exactly 100/exponent -- see ceilingRatePct in revenue-model.ts.
+		this.ceilingRate = ceiling?.ratePct ?? 0;
+	}
+
+	private computeRevenue(L: number, L0: number): void {
+		this.revenue = projectRevenue(makeRateFn(this.steepness, L, L0), undefined, this.targetMillions());
+
+		// Flag a rate the curve needs but no real system uses. Searched across
+		// anchors and anchor rates, every funding curve with an income ceiling
+		// charges the top band above 60%; saying so is more useful than
+		// presenting the number without comment.
+		// If the ceiling is real, the bands above it have no reason to keep
+		// reporting what they report today.
+		if (this.hasCeiling) {
+			const behavioural = projectRevenueWithCeilingBehaviour(
+				makeRateFn(this.steepness, L, L0),
+				this.ceilingIncome,
+			);
+			this.behaviouralTotalMillions = behavioural.proposedTotalMillions;
+			this.cappedBandNames = behavioural.cappedGroups;
+			this.behaviouralShortfallMillions = Math.max(
+				0,
+				this.revenue.proposedTotalMillions - behavioural.proposedTotalMillions,
+			);
+		} else {
+			this.behaviouralTotalMillions = this.revenue.proposedTotalMillions;
+			this.cappedBandNames = [];
+			this.behaviouralShortfallMillions = 0;
+		}
+
+		const top = this.revenue.groups[0];
+		this.topBandRatePct = top?.proposedRatePct ?? 0;
+		this.topBandName = top?.name ?? "";
+		this.topRateIsExtreme = this.topBandRatePct >= 60;
+	}
+
+	/** Left edge of the logarithmic x domain. */
+	private chartXMin(L: number): number {
+		return L * TaxesComponent.X_MIN_POVERTY_FRACTION;
+	}
+
+	/**
+	 * The income range the chart covers.
+	 *
+	 * The point of the curve is the ceiling, so the x axis has to reach past
+	 * it -- otherwise the one feature worth seeing sits off the right edge.
+	 * With a ceiling, the axis runs to 1.35x the ceiling income so the
+	 * turn-over is visibly a turn and not just a flattening. Without one it
+	 * falls back to a fixed multiple of the poverty line.
+	 */
+	private chartXMax(L: number): number {
+		if (this.hasCeiling && this.ceilingIncome > 0) {
+			return this.ceilingIncome * 1.35;
+		}
+		return TaxesComponent.DEFAULT_X_MULTIPLE * L;
+	}
+
+	/** The calibration target in millions, guarded against a bad input. */
+	private targetMillions(): number {
+		const fallback = TaxesComponent.DEFAULT_REVENUE_TARGET_BILLIONS;
+		const billions = toFiniteNumber(this.revenueTargetBillions, fallback);
+		return (billions > 0 ? billions : fallback) * 1e3;
+	}
+
+	/** Recompute after the revenue target changes; the curve itself is unmoved. */
+	onRevenueTarget(): void {
+		this.computeDerived();
+		this.draw();
 	}
 
 	onUserIncome(): void {
@@ -214,8 +416,9 @@ export class TaxesComponent implements AfterViewInit {
 		if (!isPositiveNumber(x) || !isPositiveNumber(L) || !isPositiveNumber(L0)) {
 			return 0;
 		}
-		const n = (1.5 * L) / L0;
-		return 100 / (1 + 9 * Math.pow((10 * L) / x, n));
+		const n = (this.steepness * L) / L0;
+		const coefficient = (100 - ANCHOR_RATE_PCT) / ANCHOR_RATE_PCT;
+		return 100 / (1 + coefficient * Math.pow((ANCHOR_MULTIPLE * L) / x, n));
 	}
 
 	takeHomeAt(x: number): number {
@@ -267,7 +470,12 @@ export class TaxesComponent implements AfterViewInit {
 			return;
 		}
 		const W = wrap.clientWidth || 800;
-		const H = 500;
+		// Rotated labels claim roughly 110px more of the canvas in margins
+		// than horizontal ones. Growing the canvas on a narrow viewport keeps
+		// the plot area itself about as tall as it is on a desktop, instead of
+		// squeezing the curves into what the labels leave over.
+		const narrow = W - 72 - 88 < TaxesComponent.ROTATE_LABELS_BELOW_PX;
+		const H = narrow ? 580 : 500;
 		const dpr = window.devicePixelRatio || 1;
 		canvas.width = W * dpr;
 		canvas.height = H * dpr;
@@ -287,15 +495,46 @@ export class TaxesComponent implements AfterViewInit {
 
 		const marginLeft = 72;
 		const marginRight = 88;
-		const marginTop = 36;
-		const marginBottom = 56;
+
+		// On a narrow canvas the x labels ("$1.5M", "$301K") run into each
+		// other, so they snap to 45 degrees rather than being rotated by a
+		// continuously computed angle. The threshold is the plot width, not
+		// the device, so a narrowed desktop window gets the same treatment.
+		// Compared against the horizontal-label plot width so the decision
+		// does not depend on the margin it is about to pick.
+		const rotateXLabels = W - marginLeft - marginRight < TaxesComponent.ROTATE_LABELS_BELOW_PX;
+
+		// The three marker labels ("Poverty Line", "10% Tax Anchor", ...) sit
+		// above the plot and are far longer than the money ticks, so they
+		// collide first. They rotate on the same threshold, and marginTop has
+		// to make room the same way marginBottom does below.
+		let marginTop = 36;
+		if (rotateXLabels) {
+			ctx.font = TaxesComponent.MARKER_FONT;
+			const widestMarker = this.widestMarkerLabel(ctx);
+			marginTop = 20 + Math.ceil(widestMarker * TaxesComponent.SIN_45);
+		}
+
+		// A label rotated 45 degrees occupies textWidth * sin(45) vertically
+		// instead of a line height, so the bottom margin has to grow or the
+		// canvas clips it. Only the widest label matters for sizing.
+		ctx.font = TaxesComponent.TICK_FONT;
+		let marginBottom = 56;
+		if (rotateXLabels) {
+			const widest = this.widestXLabel(ctx, this.chartXMax(L), L);
+			marginBottom = 56 + Math.ceil(widest * TaxesComponent.SIN_45) - 14;
+		}
+
 		const plotW = W - marginLeft - marginRight;
 		const plotH = H - marginTop - marginBottom;
 
-		const xMax = 100 * L;
+		const xMax = this.chartXMax(L);
 		const moneyMax = this.niceCeil(this.peakTakeHome * 1.12);
 
-		const xToPx = (x: number) => marginLeft + (x / xMax) * plotW;
+		// Logarithmic: equal pixel width per decade of income.
+		const xMin = this.chartXMin(L);
+		const logSpan = Math.log(xMax / xMin);
+		const xToPx = (x: number) => marginLeft + (Math.log(clamp(x, xMin, xMax) / xMin) / logSpan) * plotW;
 		const rateToPy = (r: number) => marginTop + (1 - r / 100) * plotH;
 		const moneyToPy = (m: number) => marginTop + (1 - m / moneyMax) * plotH;
 
@@ -304,7 +543,7 @@ export class TaxesComponent implements AfterViewInit {
 		ctx.strokeStyle = "#e5e7eb";
 		ctx.fillStyle = "#374151";
 		ctx.lineWidth = 1;
-		ctx.font = "12px 'Trebuchet MS', sans-serif";
+		ctx.font = TaxesComponent.TICK_FONT;
 		ctx.textAlign = "right";
 		ctx.textBaseline = "middle";
 		for (let r = 0; r <= 100; r += 10) {
@@ -325,9 +564,11 @@ export class TaxesComponent implements AfterViewInit {
 			const py = moneyToPy(m);
 			ctx.fillText(this.formatMoney(m), marginLeft + plotW + 8, py);
 		}
-		ctx.textAlign = "center";
-		ctx.textBaseline = "top";
 		ctx.fillStyle = "#374151";
+		// Rotated labels anchor by their right end at the tick, so the text
+		// trails away down-left; horizontal ones stay centred under it.
+		ctx.textAlign = rotateXLabels ? "right" : "center";
+		ctx.textBaseline = rotateXLabels ? "middle" : "top";
 		const xTicks = this.buildXTicks(xMax, L);
 		for (const t of xTicks) {
 			const px = xToPx(t);
@@ -341,23 +582,62 @@ export class TaxesComponent implements AfterViewInit {
 			ctx.moveTo(px, marginTop + plotH);
 			ctx.lineTo(px, marginTop + plotH + 5);
 			ctx.stroke();
-			ctx.fillText(this.formatMoney(t), px, marginTop + plotH + 8);
+
+			const label = this.formatMoney(t);
+			if (rotateXLabels) {
+				// translate to the tick, then rotate: the transform must be
+				// undone per label, since ctx.rotate() is cumulative.
+				ctx.save();
+				ctx.translate(px, marginTop + plotH + 10);
+				ctx.rotate(TaxesComponent.LABEL_ANGLE_RAD);
+				ctx.fillText(label, 0, 0);
+				ctx.restore();
+			} else {
+				ctx.fillText(label, px, marginTop + plotH + 8);
+			}
 		}
 		ctx.strokeStyle = "#9ca3af";
 		ctx.lineWidth = 1;
 		ctx.strokeRect(marginLeft, marginTop, plotW, plotH);
 		const samples = 600;
-		this.drawCurve(ctx, samples, xMax, xToPx, x => moneyToPy(this.takeHomeAt(x)), this.COLOR_TAKEHOME, 2.5);
-		this.drawCurve(ctx, samples, xMax, xToPx, x => rateToPy(this.federalEffectiveRate(x)), this.COLOR_FEDERAL, 2);
-		this.drawCurve(ctx, samples, xMax, xToPx, x => rateToPy(this.taxRateAt(x)), this.COLOR_PROPOSED, 2.5);
-		this.drawMarker(ctx, xToPx(L), marginTop, plotH, "Poverty Line");
-		this.drawMarker(ctx, xToPx(10 * L), marginTop, plotH, "10% Tax Anchor");
+		this.drawCurve(ctx, samples, xMin, xMax, xToPx, x => moneyToPy(this.takeHomeAt(x)), this.COLOR_TAKEHOME, 2.5);
+		this.drawCurve(
+			ctx,
+			samples,
+			xMin,
+			xMax,
+			xToPx,
+			x => rateToPy(this.federalEffectiveRate(x)),
+			this.COLOR_FEDERAL,
+			2,
+		);
+		this.drawCurve(ctx, samples, xMin, xMax, xToPx, x => rateToPy(this.taxRateAt(x)), this.COLOR_PROPOSED, 2.5);
+		this.drawMarker(ctx, xToPx(L), marginTop, plotH, "Poverty Line", rotateXLabels);
+		this.drawMarker(ctx, xToPx(ANCHOR_MULTIPLE * L), marginTop, plotH, ANCHOR_RATE_PCT + "% Anchor", rotateXLabels);
+		if (this.hasCeiling) {
+			this.drawMarker(ctx, xToPx(this.ceilingIncome), marginTop, plotH, "Income Ceiling", rotateXLabels);
+			// A dot where the ceiling meets the rate curve. The rate there is
+			// 100/exponent, and it is the number that decides whether the
+			// curve is usable, so it gets a mark of its own.
+			const cx = xToPx(this.ceilingIncome);
+			const cy = rateToPy(this.ceilingRate);
+			ctx.save();
+			ctx.beginPath();
+			ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+			ctx.fillStyle = this.COLOR_PROPOSED;
+			ctx.fill();
+			ctx.lineWidth = 2;
+			ctx.strokeStyle = "#fff";
+			ctx.stroke();
+			ctx.restore();
+		}
 		this.drawMarker(
 			ctx,
 			xToPx(this.peakIncome),
 			marginTop,
 			plotH,
 			this.peakIsAtRangeEdge ? "Still Rising" : "Peak Take-Home",
+			rotateXLabels,
 		);
 
 		if (this.userIncome > 0 && this.userIncome <= xMax) {
@@ -376,7 +656,9 @@ export class TaxesComponent implements AfterViewInit {
 		ctx.font = "14px 'Trebuchet MS', sans-serif";
 		ctx.textAlign = "center";
 		ctx.textBaseline = "alphabetic";
-		ctx.fillText("Annual Gross Income", marginLeft + plotW / 2, H - 6);
+		// Saying the scale is log is not optional: without it the curve looks
+		// like a different function than it is.
+		ctx.fillText("Annual Gross Income (log scale)", marginLeft + plotW / 2, H - 6);
 		ctx.save();
 		ctx.translate(16, marginTop + plotH / 2);
 		ctx.rotate(-Math.PI / 2);
@@ -397,6 +679,7 @@ export class TaxesComponent implements AfterViewInit {
 	private drawCurve(
 		ctx: CanvasRenderingContext2D,
 		samples: number,
+		xMin: number,
 		xMax: number,
 		xToPx: (x: number) => number,
 		yToPy: (x: number) => number,
@@ -406,8 +689,12 @@ export class TaxesComponent implements AfterViewInit {
 		ctx.beginPath();
 		ctx.lineWidth = width;
 		ctx.strokeStyle = color;
+		// Sample geometrically, to match the axis. Linear sampling on a log
+		// axis puts almost every point in the last decade and renders the
+		// low-income end of the curve as a few straight segments.
+		const ratio = xMax / xMin;
 		for (let i = 0; i <= samples; i++) {
-			const x = (xMax * i) / samples;
+			const x = xMin * Math.pow(ratio, i / samples);
 			const px = xToPx(x);
 			const py = yToPy(x);
 			if (i === 0) {
@@ -419,7 +706,14 @@ export class TaxesComponent implements AfterViewInit {
 		ctx.stroke();
 	}
 
-	private drawMarker(ctx: CanvasRenderingContext2D, px: number, top: number, plotH: number, label: string): void {
+	private drawMarker(
+		ctx: CanvasRenderingContext2D,
+		px: number,
+		top: number,
+		plotH: number,
+		label: string,
+		rotated: boolean,
+	): void {
 		ctx.save();
 		ctx.setLineDash([6, 4]);
 		ctx.strokeStyle = "#6b7280";
@@ -431,11 +725,22 @@ export class TaxesComponent implements AfterViewInit {
 		ctx.restore();
 
 		ctx.save();
-		ctx.font = "11px 'Trebuchet MS', sans-serif";
+		ctx.font = TaxesComponent.MARKER_FONT;
 		ctx.fillStyle = "#374151";
-		ctx.textAlign = "center";
-		ctx.textBaseline = "bottom";
-		ctx.fillText(label, px, top + 2);
+		if (rotated) {
+			// +45 degrees, the mirror of the bottom axis's -45. Anchored at
+			// the text's right end so it reads up-LEFT into the tick, keeping
+			// left-to-right as the primary reading direction.
+			ctx.translate(px, top - 4);
+			ctx.rotate(TaxesComponent.MARKER_ANGLE_RAD);
+			ctx.textAlign = "right";
+			ctx.textBaseline = "middle";
+			ctx.fillText(label, 0, 0);
+		} else {
+			ctx.textAlign = "center";
+			ctx.textBaseline = "bottom";
+			ctx.fillText(label, px, top + 2);
+		}
 		ctx.restore();
 	}
 
@@ -477,39 +782,77 @@ export class TaxesComponent implements AfterViewInit {
 		});
 	}
 
-	private buildXTicks(xMax: number, L: number): number[] {
-		const ticks = new Set<number>();
-		const step = this.niceStep(xMax / 7);
-		for (let v = step; v < xMax; v += step) {
-			ticks.add(Math.round(v));
+	// Width of the longest marker label, used to size the top margin when the
+	// markers are rotated. The set is fixed, so both peak variants are
+	// measured: the margin must not change when the curve regime flips.
+	private widestMarkerLabel(ctx: CanvasRenderingContext2D): number {
+		const labels = ["Poverty Line", "10% Tax Anchor", "Peak Take-Home", "Still Rising"];
+		let widest = 0;
+		for (const label of labels) {
+			widest = Math.max(widest, ctx.measureText(label).width);
 		}
-		ticks.add(Math.round(L));
-		ticks.add(Math.round(10 * L));
-		ticks.add(Math.round(this.peakIncome));
-
-		const sorted = Array.from(ticks)
-			.filter(v => v > 0 && v <= xMax)
-			.sort((a, b) => a - b);
-
-		const minGap = xMax * 0.04;
-		const result: number[] = [];
-		for (const v of sorted) {
-			if (result.length === 0 || v - result[result.length - 1] >= minGap) {
-				result.push(v);
-			}
-		}
-		return result;
+		return widest;
 	}
 
-	private niceStep(raw: number): number {
-		const pow = Math.pow(10, Math.floor(Math.log10(raw)));
-		const norm = raw / pow;
-		let nice: number;
-		if (norm < 1.5) nice = 1;
-		else if (norm < 3) nice = 2;
-		else if (norm < 7) nice = 5;
-		else nice = 10;
-		return nice * pow;
+	// Width of the longest x-axis label, used to size the bottom margin when
+	// the labels are rotated. Measures only what buildXTicks will actually
+	// draw, so an axis of "$50K"s reserves less room than one reaching "$1.5M".
+	private widestXLabel(ctx: CanvasRenderingContext2D, xMax: number, L: number): number {
+		let widest = 0;
+		for (const t of this.buildXTicks(xMax, L)) {
+			widest = Math.max(widest, ctx.measureText(this.formatMoney(t)).width);
+		}
+		return widest;
+	}
+
+	/**
+	 * Tick values for the logarithmic x axis.
+	 *
+	 * One tick at 1, 2 and 5 per decade, which is the usual log-axis
+	 * convention and lands about a dozen labels across the range. The curve's
+	 * own landmarks are added on top, then crowding is resolved in LOG space:
+	 * a linear minimum gap would discard every tick below the top decade,
+	 * because $20K and $50K sit a rounding error apart next to $50M.
+	 */
+	private buildXTicks(xMax: number, L: number): number[] {
+		const xMin = this.chartXMin(L);
+		const decades: number[] = [];
+		const firstDecade = Math.floor(Math.log10(xMin));
+		const lastDecade = Math.ceil(Math.log10(xMax));
+		for (let d = firstDecade; d <= lastDecade; d++) {
+			for (const mantissa of [1, 2, 5]) {
+				decades.push(mantissa * Math.pow(10, d));
+			}
+		}
+
+		// Landmarks first, so crowding removes a round decade tick rather than
+		// the poverty line or the ceiling.
+		const landmarks = [L, ANCHOR_MULTIPLE * L];
+		if (this.hasCeiling) {
+			landmarks.push(this.ceilingIncome);
+		}
+
+		const inRange = (v: number) => v >= xMin && v <= xMax;
+		const logSpan = Math.log(xMax / xMin);
+		const minLogGap = logSpan * 0.045;
+
+		const result: number[] = [];
+		const accept = (value: number) => {
+			if (!inRange(value) || !(value > 0)) {
+				return;
+			}
+			const rounded = Math.round(value);
+			for (const existing of result) {
+				if (Math.abs(Math.log(rounded / existing)) < minLogGap) {
+					return;
+				}
+			}
+			result.push(rounded);
+		};
+
+		landmarks.forEach(accept);
+		decades.forEach(accept);
+		return result.sort((a, b) => a - b);
 	}
 
 	private niceCeil(value: number): number {
@@ -518,6 +861,17 @@ export class TaxesComponent implements AfterViewInit {
 		}
 		const pow = Math.pow(10, Math.floor(Math.log10(value)));
 		return Math.ceil(value / pow) * pow;
+	}
+
+	/** Formats a dollar amount given in millions, for revenue scale. */
+	formatBigMoney(millions: number): string {
+		if (!Number.isFinite(millions)) {
+			return "$0";
+		}
+		if (Math.abs(millions) >= 1e6) {
+			return "$" + (millions / 1e6).toFixed(2) + "T";
+		}
+		return "$" + Math.round(millions / 1e3) + "B";
 	}
 
 	formatMoney(v: number): string {

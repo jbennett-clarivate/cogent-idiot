@@ -117,7 +117,8 @@
           {{ info["steepness"] }}
         </div>
       </div>
-      <strong>{{ exponent | number: "1.2-2" }}</strong>
+      <strong>{{ exponent | number: "1.3-3" }}</strong>
+      <span class="derived-note">solved to fund the target</span>
     </div>
 
     <div class="derived-card">
@@ -190,7 +191,47 @@
 
     <div class="derived-card">
       <div class="label-row">
-        <span class="derived-label">Middle anchor</span>
+        <span class="derived-label">Income ceiling</span>
+        <span
+          class="info-marker"
+          #ceilingTrigger
+          tabindex="0"
+          role="button"
+          aria-label="About the income ceiling"
+          (mouseenter)="showInfo('ceiling')"
+          (mouseleave)="hideInfo('ceiling')"
+          (focus)="showInfo('ceiling')"
+          (blur)="hideInfo('ceiling')"
+          (touchstart)="onTouchStart('ceiling')"
+          (click)="onMarkerClick('ceiling')"
+          (keydown.enter)="toggleInfo('ceiling')"
+          (keydown.space)="toggleInfo('ceiling')"
+          ><img src="assets/images/info.svg" alt="More info"
+        /></span>
+        <div
+          class="anchor-content wide"
+          quadrantAnchor
+          [anchorTarget]="ceilingTrigger"
+          [anchorVisible]="activeInfo === 'ceiling'"
+        >
+          {{ info["ceiling"] }}
+        </div>
+      </div>
+      @if (hasCeiling) {
+        <strong>{{ formatMoney(ceilingIncome) }}</strong>
+        <span class="derived-note">
+          taxed {{ ceilingRate | number: "1.1-1" }}% &middot; keeps {{ formatMoney(ceilingTakeHome) }} &middot;
+          {{ ceilingMultiple | number: "1.0-0" }}&times; poverty
+        </span>
+      } @else {
+        <strong>none</strong>
+        <span class="derived-note">take-home never turns over</span>
+      }
+    </div>
+
+    <div class="derived-card">
+      <div class="label-row">
+        <span class="derived-label">{{ anchorRatePct }}% anchor</span>
         <span
           class="info-marker"
           #anchorTrigger
@@ -217,7 +258,7 @@
         </div>
       </div>
       <strong>{{ formatMoney(middleAnchor) }}</strong>
-      <span class="derived-note">always exactly 10%</span>
+      <span class="derived-note">{{ anchorMultiple }}&times; poverty &middot; always exactly {{ anchorRatePct }}%</span>
     </div>
   </section>
 
@@ -287,6 +328,170 @@
         >Take-home: <strong>{{ formatMoney(userTakeHome) }}</strong></span
       >
     </div>
+  </section>
+
+  <section class="revenue-section" aria-label="Revenue check">
+    <div class="label-row">
+      <h2>Would it actually fund the government?</h2>
+      <span
+        class="info-marker"
+        #revenueTrigger
+        tabindex="0"
+        role="button"
+        aria-label="About the revenue check"
+        (mouseenter)="showInfo('revenue')"
+        (mouseleave)="hideInfo('revenue')"
+        (focus)="showInfo('revenue')"
+        (blur)="hideInfo('revenue')"
+        (touchstart)="onTouchStart('revenue')"
+        (click)="onMarkerClick('revenue')"
+        (keydown.enter)="toggleInfo('revenue')"
+        (keydown.space)="toggleInfo('revenue')"
+        ><img src="assets/images/info.svg" alt="More info"
+      /></span>
+      <div
+        class="anchor-content wide"
+        quadrantAnchor
+        [anchorTarget]="revenueTrigger"
+        [anchorVisible]="activeInfo === 'revenue'"
+      >
+        {{ info["revenue"] }}
+      </div>
+    </div>
+
+    @if (revenue) {
+      <div class="revenue-summary">
+        <div class="revenue-figure">
+          <span class="derived-label">This curve would raise</span>
+          <strong>{{ formatBigMoney(revenue.proposedTotalMillions) }}</strong>
+        </div>
+        <div class="revenue-figure">
+          <div class="label-row">
+            <span class="derived-label">Target to match</span>
+            <span
+              class="info-marker"
+              #targetTrigger
+              tabindex="0"
+              role="button"
+              aria-label="About the revenue target"
+              (mouseenter)="showInfo('revenueTarget')"
+              (mouseleave)="hideInfo('revenueTarget')"
+              (focus)="showInfo('revenueTarget')"
+              (blur)="hideInfo('revenueTarget')"
+              (touchstart)="onTouchStart('revenueTarget')"
+              (click)="onMarkerClick('revenueTarget')"
+              (keydown.enter)="toggleInfo('revenueTarget')"
+              (keydown.space)="toggleInfo('revenueTarget')"
+              ><img src="assets/images/info.svg" alt="More info"
+            /></span>
+            <div
+              class="anchor-content wide"
+              quadrantAnchor
+              [anchorTarget]="targetTrigger"
+              [anchorVisible]="activeInfo === 'revenueTarget'"
+            >
+              {{ info["revenueTarget"] }}
+            </div>
+          </div>
+          <div class="money-input compact">
+            <span aria-hidden="true">$</span>
+            <input
+              id="revenueTargetInput"
+              type="text"
+              appInputController
+              [validator]="numberValidator"
+              [enforcer]="noWhitespaceEnforcer"
+              [(ngModel)]="revenueTargetBillions"
+              (ngModelChange)="onRevenueTarget()"
+              name="revenueTarget"
+              inputmode="numeric"
+              aria-label="Revenue target in billions of dollars"
+            />
+            <span class="unit" aria-hidden="true">B</span>
+          </div>
+        </div>
+        <div class="revenue-figure">
+          <span class="derived-label">Difference</span>
+          <strong [class.over]="revenue.differencePct > 0" [class.under]="revenue.differencePct < 0">
+            {{ revenue.differencePct > 0 ? "+" : "" }}{{ revenue.differencePct | number: "1.0-1" }}%
+          </strong>
+        </div>
+      </div>
+
+      @if (cappedBandNames.length > 0) {
+        <div class="premise-note">
+          <p>
+            <strong>This figure assumes a forced annual realisation.</strong> At the top, pay is mostly unrealised
+            equity, which is not income and so is never touched by an income tax. This system is predicated on a
+            mandatory sale of {{ forcedRealisationPct | number: "1.0-2" }}% of holdings each year, with the proceeds
+            taxed as ordinary income under the curve above. Without it, the ceiling applies to a base that barely
+            reaches the wealth it is aimed at.
+          </p>
+          <p>
+            The ceiling cuts the other way too: {{ cappedBandNames.join(", ") }} already reports a mean income above
+            {{ formatMoney(ceilingIncome) }}, and under this system has no reason to. If that band reported only the
+            ceiling, the curve would raise {{ formatBigMoney(behaviouralTotalMillions) }} instead &middot;
+            {{ formatBigMoney(behaviouralShortfallMillions) }} short. The real figure sits between the two, and no rate
+            curve can say where.
+          </p>
+        </div>
+      }
+
+      <table class="revenue-table">
+        <caption>
+          Effective rate by filer group &middot; filer counts and incomes from IRS data for tax year
+          {{
+            revenue.taxYear
+          }}
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Group</th>
+            <th scope="col">Mean income</th>
+            <th scope="col">Pays now</th>
+            <th scope="col">Would pay</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (g of revenue.groups; track g.name) {
+            <tr>
+              <th scope="row">{{ g.name }}</th>
+              <td>{{ formatMoney(g.meanAgi) }}</td>
+              <td>{{ g.actualRatePct | number: "1.1-1" }}%</td>
+              <td
+                [class.over]="g.proposedRatePct > g.actualRatePct"
+                [class.under]="g.proposedRatePct < g.actualRatePct"
+              >
+                {{ g.proposedRatePct | number: "1.1-1" }}%
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <div class="revenue-actions">
+        @if (targetOutOfReach) {
+          <span class="revenue-warning">
+            No steepness reaches {{ formatBigMoney(revenue.actualTotalMillions) }} at these poverty lines. This curve
+            can raise between {{ formatBigMoney(reachableMinBillions * 1000) }} and
+            {{ formatBigMoney(reachableMaxBillions * 1000) }}, so the chart falls back to its uncalibrated shape.
+          </span>
+        } @else if (topRateIsExtreme) {
+          <span class="revenue-warning">
+            To raise this total with an income ceiling, the curve has to tax {{ topBandName }} at
+            {{ topBandRatePct | number: "1.0-0" }}% &middot; higher than any real system. That is a property of this
+            curve shape, not of the target: income is concentrated enough that no anchor setting both funds the system
+            and keeps this band under 60%.
+          </span>
+          <span class="derived-note">steepness {{ steepness | number: "1.3-3" }}</span>
+        } @else {
+          <span class="derived-note">
+            Curve steepness is solved to meet this total &middot; currently
+            {{ steepness | number: "1.3-3" }}. Change the target or either poverty line and it re-solves.
+          </span>
+        }
+      </div>
+    }
   </section>
 
   <section class="chart-section" aria-label="Tax graph">
