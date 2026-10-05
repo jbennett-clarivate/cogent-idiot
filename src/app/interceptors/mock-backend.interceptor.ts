@@ -1,18 +1,11 @@
 import { Injectable } from "@angular/core";
-import {
-	HttpInterceptor,
-	HttpRequest,
-	HttpHandler,
-	HttpEvent,
-	HttpResponse,
-} from "@angular/common/http";
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpResponse } from "@angular/common/http";
 import { Observable, of, from } from "rxjs";
 import { delay, mergeMap, materialize, dematerialize } from "rxjs/operators";
 import { useMockBackend } from "@app/config/app.config";
 
 @Injectable()
 export class MockBackendInterceptor implements HttpInterceptor {
-
 	private readonly seedUsers: { email: string; salt: string; storedDHP: string }[] = [
 		{
 			email: "glados@brightmatter.tools",
@@ -119,9 +112,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
 		}
 
 		const known = this.seedUsers.find(u => u.email === username);
-		const storedDHP = known
-			? known.storedDHP
-			: await this.sha256(salt + "\u0000no-such-user");
+		const storedDHP = known ? known.storedDHP : await this.sha256(salt + "\u0000no-such-user");
 
 		const expectedHash = await this.sha256(storedDHP + pepper);
 
@@ -161,10 +152,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
 	private readonly LOGIN_KEY = "mock_session_login";
 
 	private setLogin(email: string): void {
-		sessionStorage.setItem(
-			this.LOGIN_KEY,
-			JSON.stringify({ email, logged_in_at: Math.floor(Date.now() / 1000) }),
-		);
+		sessionStorage.setItem(this.LOGIN_KEY, JSON.stringify({ email, logged_in_at: Math.floor(Date.now() / 1000) }));
 	}
 
 	private getLogin(): { email: string; logged_in_at: number } | null {

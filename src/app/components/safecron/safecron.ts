@@ -50,14 +50,16 @@ export class SafecronComponent implements AfterViewInit, OnDestroy {
 	}
 
 	// True when the displayed answer no longer describes the current zones.
-	isScheduleStale = computed(() =>
-		this.computedFor() !== "" &&
-		this.computedFor() !== SafecronComponent.fingerprint(this.selectedLocalTimes()));
+	isScheduleStale = computed(
+		() =>
+			this.computedFor() !== "" &&
+			this.computedFor() !== SafecronComponent.fingerprint(this.selectedLocalTimes()),
+	);
 
 	// Blank rather than stale: the template binds these, so a changed zone set
 	// retracts the old answer instead of misrepresenting it.
-	displayedMeetingTime = computed(() => this.isScheduleStale() ? "" : this.meetingTime());
-	displayedDowntime = computed(() => this.isScheduleStale() ? "" : this.downtime());
+	displayedMeetingTime = computed(() => (this.isScheduleStale() ? "" : this.meetingTime()));
+	displayedDowntime = computed(() => (this.isScheduleStale() ? "" : this.downtime()));
 
 	timeZones = computed(() => {
 		this.labelEpoch(); // re-derive labels after a DST transition
@@ -191,14 +193,22 @@ export class SafecronComponent implements AfterViewInit, OnDestroy {
 		const hp = h / 60;
 		const x = c * (1 - Math.abs((hp % 2) - 1));
 		const [r1, g1, b1] =
-			hp < 1 ? [c, x, 0] :
-			hp < 2 ? [x, c, 0] :
-			hp < 3 ? [0, c, x] :
-			hp < 4 ? [0, x, c] :
-			hp < 5 ? [x, 0, c] :
-			[c, 0, x];
+			hp < 1
+				? [c, x, 0]
+				: hp < 2
+					? [x, c, 0]
+					: hp < 3
+						? [0, c, x]
+						: hp < 4
+							? [0, x, c]
+							: hp < 5
+								? [x, 0, c]
+								: [c, 0, x];
 		const m = lf - c / 2;
-		const hex = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, "0");
+		const hex = (v: number) =>
+			Math.round((v + m) * 255)
+				.toString(16)
+				.padStart(2, "0");
 		return `#${hex(r1)}${hex(g1)}${hex(b1)}`;
 	}
 
@@ -276,7 +286,9 @@ export class SafecronComponent implements AfterViewInit, OnDestroy {
 			if (windowSums[i] === maxSum) candidates.push(i);
 		}
 
-		const containedCandidates = candidates.filter(start => this.isContainedForTopZones(start, windowSize, topZones, zoneWindows));
+		const containedCandidates = candidates.filter(start =>
+			this.isContainedForTopZones(start, windowSize, topZones, zoneWindows),
+		);
 		const finalMeetingCandidates = containedCandidates.length > 0 ? containedCandidates : candidates;
 
 		const meetingStart = this.tieBreakMeeting(finalMeetingCandidates, topZones, zoneWindows);
@@ -307,7 +319,12 @@ export class SafecronComponent implements AfterViewInit, OnDestroy {
 		return sums;
 	}
 
-	private isContainedForTopZones(start: number, windowSize: number, topZones: TimeZoneData[], zoneWindows: Map<string, { start: number, end: number }>): boolean {
+	private isContainedForTopZones(
+		start: number,
+		windowSize: number,
+		topZones: TimeZoneData[],
+		zoneWindows: Map<string, { start: number; end: number }>,
+	): boolean {
 		if (topZones.length === 0) return true;
 		for (const z of topZones) {
 			const w = zoneWindows.get(z.code)!;
@@ -332,7 +349,11 @@ export class SafecronComponent implements AfterViewInit, OnDestroy {
 		return slot >= spanStart || slot < spanEnd;
 	}
 
-	private tieBreakMeeting(candidates: number[], topZones: TimeZoneData[], zoneWindows: Map<string, { start: number, end: number }>): number {
+	private tieBreakMeeting(
+		candidates: number[],
+		topZones: TimeZoneData[],
+		zoneWindows: Map<string, { start: number; end: number }>,
+	): number {
 		if (candidates.length === 0) return 0;
 		if (candidates.length === 1) return candidates[0];
 
@@ -407,7 +428,11 @@ export class SafecronComponent implements AfterViewInit, OnDestroy {
 
 	private getShortTimezoneAbbrev(date: Date): string {
 		try {
-			const parts = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" }).formatToParts(date);
+			const parts = new Intl.DateTimeFormat("en-US", {
+				hour: "numeric",
+				minute: "2-digit",
+				timeZoneName: "short",
+			}).formatToParts(date);
 			const tz = parts.find(p => p.type === "timeZoneName")?.value;
 			if (tz) return tz;
 		} catch (e) {
@@ -415,7 +440,9 @@ export class SafecronComponent implements AfterViewInit, OnDestroy {
 		}
 		const offsetMin = -date.getTimezoneOffset();
 		const sign = offsetMin >= 0 ? "+" : "-";
-		const hh = Math.floor(Math.abs(offsetMin) / 60).toString().padStart(2, "0");
+		const hh = Math.floor(Math.abs(offsetMin) / 60)
+			.toString()
+			.padStart(2, "0");
 		const mm = (Math.abs(offsetMin) % 60).toString().padStart(2, "0");
 		return `UTC${sign}${hh}:${mm}`;
 	}
@@ -426,7 +453,9 @@ export class SafecronComponent implements AfterViewInit, OnDestroy {
 		} catch (e) {
 			const offset = -new Date().getTimezoneOffset();
 			const sign = offset >= 0 ? "+" : "-";
-			const hours = Math.floor(Math.abs(offset) / 60).toString().padStart(2, "0");
+			const hours = Math.floor(Math.abs(offset) / 60)
+				.toString()
+				.padStart(2, "0");
 			const minutes = (Math.abs(offset) % 60).toString().padStart(2, "0");
 			return `UTC${sign}${hours}:${minutes}`;
 		}
@@ -459,7 +488,8 @@ export class SafecronComponent implements AfterViewInit, OnDestroy {
 		ctx.strokeStyle = "#e0e0e0";
 		ctx.lineWidth = 1;
 
-		for (let i = 0; i <= 96; i += 4) { // Every hour
+		for (let i = 0; i <= 96; i += 4) {
+			// Every hour
 			const x = margin.left + (i / 96) * chartWidth;
 			ctx.beginPath();
 			ctx.moveTo(x, margin.top);
@@ -531,8 +561,13 @@ export class SafecronComponent implements AfterViewInit, OnDestroy {
 		ctx.restore();
 	}
 
-	private drawCurrentTimeLine(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement,
-		margin: any, chartWidth: number, chartHeight: number) {
+	private drawCurrentTimeLine(
+		ctx: CanvasRenderingContext2D,
+		canvas: HTMLCanvasElement,
+		margin: any,
+		chartWidth: number,
+		chartHeight: number,
+	) {
 		const now = new Date();
 		const currentHour = now.getHours();
 		const currentMinute = now.getMinutes();
@@ -572,7 +607,8 @@ export class SafecronComponent implements AfterViewInit, OnDestroy {
 				const x = margin.left + (startSlot / 96) * chartWidth;
 				const width = ((endSlot - startSlot) / 96) * chartWidth;
 				ctx.fillRect(x, y, width, zoneHeight);
-			} else { // Wraps around midnight
+			} else {
+				// Wraps around midnight
 				const x1 = margin.left + (startSlot / 96) * chartWidth;
 				const width1 = ((96 - startSlot) / 96) * chartWidth;
 				ctx.fillRect(x1, y, width1, zoneHeight);
@@ -589,7 +625,7 @@ export class SafecronComponent implements AfterViewInit, OnDestroy {
 
 		const canvas = this.cronChart.nativeElement;
 
-		canvas.addEventListener("mousemove", (event) => {
+		canvas.addEventListener("mousemove", event => {
 			this.handleCanvasMouseMove(event);
 		});
 

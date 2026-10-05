@@ -7,7 +7,6 @@ import { buildLowerSpike } from "./lower-spike";
 import { buildSpadeTail } from "./spade-tail";
 import { buildSpheres } from "./spheres";
 
-
 export function buildIceEmblem(): THREE.BufferGeometry {
 	const parts: THREE.BufferGeometry[] = [
 		buildCentralSpike(),

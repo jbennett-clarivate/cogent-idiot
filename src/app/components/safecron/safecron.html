@@ -20,12 +20,18 @@
       </label>
       <div class="width-limit flex-r h-center h-spaced">
         <button type="button" class="btn btn-primary" (click)="addZone()">Chart It</button>
-        <button type="button" class="btn btn-primary" [disabled]="!canComputeSafeTime()" (click)="computeSafeTime()">Best Time</button>
+        <button type="button" class="btn btn-primary" [disabled]="!canComputeSafeTime()" (click)="computeSafeTime()">
+          Best Time
+        </button>
       </div>
     </div>
     <div class="flex-r h-center h-spaced v-padding">
-      <div>Schedule meeting:&nbsp;<span id="meeting">{{ displayedMeetingTime() }}</span></div>
-      <div>Schedule downtime:&nbsp;<span id="downtime">{{ displayedDowntime() }}</span></div>
+      <div>
+        Schedule meeting:&nbsp;<span id="meeting">{{ displayedMeetingTime() }}</span>
+      </div>
+      <div>
+        Schedule downtime:&nbsp;<span id="downtime">{{ displayedDowntime() }}</span>
+      </div>
     </div>
   </form>
   <div class="cron-container">

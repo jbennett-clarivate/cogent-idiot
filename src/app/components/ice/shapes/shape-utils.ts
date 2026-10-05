@@ -8,8 +8,7 @@ export const toWorld3 = (x: number, y: number): THREE.Vector3 =>
 	new THREE.Vector3((x - CX) * SCALE, -(y - CY) * SCALE, 0);
 export const rawRadius = (radius: number): number => radius * SCALE;
 export const mirrorX = (x: number): number => 2 * CX - x;
-export const mirrorPoints = (points: number[][]): number[][] =>
-	points.map(([x, y]) => [mirrorX(x), y]);
+export const mirrorPoints = (points: number[][]): number[][] => points.map(([x, y]) => [mirrorX(x), y]);
 export type CapKind = "apex" | "dome";
 export interface EnvelopeSweptOptions {
 	polygon: number[][];
@@ -44,20 +43,13 @@ function pointInPolygon(px: number, py: number, polygon: number[][]): boolean {
 	for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
 		const [xi, yi] = polygon[i];
 		const [xj, yj] = polygon[j];
-		const intersects =
-			yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi;
+		const intersects = yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi;
 		if (intersects) inside = !inside;
 	}
 	return inside;
 }
 
-function rayToBoundary(
-	ox: number,
-	oy: number,
-	dx: number,
-	dy: number,
-	polygon: number[][],
-): number {
+function rayToBoundary(ox: number, oy: number, dx: number, dy: number, polygon: number[][]): number {
 	let best = Infinity;
 	for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
 		const ax = polygon[j][0];
@@ -104,14 +96,19 @@ export function buildEnvelopeSweep(options: EnvelopeSweptOptions): THREE.BufferG
 	} = options;
 
 	// Normalize every accepted form to [at, radius] pairs sorted along the spine.
-	const profile: Array<[number, number]> | undefined = radiusProfile === undefined
-		? undefined
-		: typeof radiusProfile === "number"
-			? [[0, radiusProfile], [1, radiusProfile]]
-			: Array.isArray(radiusProfile[0])
-				? (radiusProfile as Array<[number, number]>)
-				: (radiusProfile as number[]).map((r, i, all) =>
-					[all.length === 1 ? 0 : i / (all.length - 1), r] as [number, number]);
+	const profile: Array<[number, number]> | undefined =
+		radiusProfile === undefined
+			? undefined
+			: typeof radiusProfile === "number"
+				? [
+						[0, radiusProfile],
+						[1, radiusProfile],
+					]
+				: Array.isArray(radiusProfile[0])
+					? (radiusProfile as Array<[number, number]>)
+					: (radiusProfile as number[]).map(
+							(r, i, all) => [all.length === 1 ? 0 : i / (all.length - 1), r] as [number, number],
+						);
 
 	// Radius at fraction `at` along the spine, interpolating between the
 	// nearest control points on either side.
@@ -203,9 +200,7 @@ export function buildEnvelopeSweep(options: EnvelopeSweptOptions): THREE.BufferG
 		const abLen = Math.hypot(b.px - a.px, b.py - a.py);
 		const bcLen = Math.hypot(c.px - b.px, c.py - b.py);
 		const caLen = Math.hypot(a.px - c.px, a.py - c.py);
-		const area2 = Math.abs(
-			(b.px - a.px) * (c.py - a.py) - (c.px - a.px) * (b.py - a.py),
-		);
+		const area2 = Math.abs((b.px - a.px) * (c.py - a.py) - (c.px - a.px) * (b.py - a.py));
 		if (area2 < 1e-6) continue;
 		const bendRadius = (abLen * bcLen * caLen) / (2 * area2);
 		const safeRadius = bendRadius * 0.85;
@@ -361,7 +356,7 @@ function validateContainment(name: string, positions: number[], polygon: number[
 	} else {
 		console.warn(
 			`[ice] ${name}: ${breaches}/${total} vertices outside envelope; ` +
-			`worst breach ${worst.toFixed(1)} SVG units.`,
+				`worst breach ${worst.toFixed(1)} SVG units.`,
 		);
 	}
 }

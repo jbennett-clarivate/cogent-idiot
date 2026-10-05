@@ -1,71 +1,70 @@
 .tool-bg {
-  min-height: 100vh;
-  background: #b3b3b3 url('/assets/images/concrete.jpg') repeat;
+	min-height: 100vh;
+	background: #b3b3b3 url("/assets/images/concrete.jpg") repeat;
 }
 
 .toolbar {
-  display: flex;
-  align-items: center;
-  padding: 8px 16px;
-  background: rgba(255,255,255,0.8);
-  border-radius: 0 0 8px 8px;
-  margin: 0 auto 16px auto;
-  max-width: 900px;
+	display: flex;
+	align-items: center;
+	padding: 8px 16px;
+	background: rgba(255, 255, 255, 0.8);
+	border-radius: 0 0 8px 8px;
+	margin: 0 auto 16px auto;
+	max-width: 900px;
 }
 
 .icon-btn {
-  border: none;
-  margin-right: 4px;
-  padding: 4px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.2s;
-  position: relative;
+	border: none;
+	margin-right: 4px;
+	padding: 4px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background 0.2s;
+	position: relative;
 }
 
 .icon-btn.active {
-  border: 2px solid #007bff;
+	border: 2px solid #007bff;
 }
 
 .icon-btn img {
-  width: 28px;
-  height: 28px;
+	width: 28px;
+	height: 28px;
 }
 
 .spacer {
-  flex: 1;
+	flex: 1;
 }
 
 @media (max-width: 600px) {
-  .toolbar {
-    padding: 8px 6px;
-  }
+	.toolbar {
+		padding: 8px 6px;
+	}
 
-  .icon-btn {
-    margin-right: 2px;
-    padding: 3px;
-  }
+	.icon-btn {
+		margin-right: 2px;
+		padding: 3px;
+	}
 
-  .icon-btn:last-child {
-    margin-right: 0;
-  }
+	.icon-btn:last-child {
+		margin-right: 0;
+	}
 
-  .icon-btn img {
-    width: 24px;
-    height: 24px;
-  }
+	.icon-btn img {
+		width: 24px;
+		height: 24px;
+	}
 }
 
 .tool-title {
-  text-align: center;
-  font-size: 2.2rem;
-  font-weight: 400;
-  margin-bottom: 16px;
-  color: #333;
+	text-align: center;
+	font-size: 2.2rem;
+	font-weight: 400;
+	margin-bottom: 16px;
+	color: #333;
 }
 
 .tool-content {
-  max-width: 1200px;
-  margin: 0 auto;
+	max-width: 1200px;
+	margin: 0 auto;
 }
-

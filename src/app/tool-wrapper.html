@@ -1,23 +1,34 @@
 <div class="tool-bg">
   <div class="toolbar">
     @for (tool of tools; track tool) {
-      <button class="icon-btn non-standard-button-action" [class.active]="isActive(tool.route)" [class.btn-secondary]="isActive(tool.route)" (click)="navigate(tool.route)"
-              (mouseenter)="showTooltip($event, 'Navigate to ' + tool.name + ' tool')"
-              (mouseleave)="hideTooltip()">
+      <button
+        class="icon-btn non-standard-button-action"
+        [class.active]="isActive(tool.route)"
+        [class.btn-secondary]="isActive(tool.route)"
+        (click)="navigate(tool.route)"
+        (mouseenter)="showTooltip($event, 'Navigate to ' + tool.name + ' tool')"
+        (mouseleave)="hideTooltip()"
+      >
         <img [ngSrc]="'assets/images/' + tool.icon" [alt]="tool.name" width="24" height="24" />
       </button>
     }
     <span class="spacer"></span>
-    <button class="icon-btn non-standard-button-action info-help" id="info-text-button"
-            (click)="navigate('/home')"
-            (mouseenter)="showTooltip($event, infoText())"
-            (mouseleave)="hideTooltip()">
+    <button
+      class="icon-btn non-standard-button-action info-help"
+      id="info-text-button"
+      (click)="navigate('/home')"
+      (mouseenter)="showTooltip($event, infoText())"
+      (mouseleave)="hideTooltip()"
+    >
       <img ngSrc="assets/images/info.svg" alt="Info" width="24" height="24" />
     </button>
-    <button class="icon-btn non-standard-button-action" id="logout-button"
-						(click)="logout()"
-            (mouseenter)="showTooltip($event, 'Logout from application')"
-            (mouseleave)="hideTooltip()">
+    <button
+      class="icon-btn non-standard-button-action"
+      id="logout-button"
+      (click)="logout()"
+      (mouseenter)="showTooltip($event, 'Logout from application')"
+      (mouseleave)="hideTooltip()"
+    >
       <img ngSrc="assets/images/logout.svg" alt="Logout" width="24" height="24" />
     </button>
   </div>
@@ -28,4 +39,3 @@
     <router-outlet></router-outlet>
   </div>
 </div>
-

@@ -1,0 +1,6 @@
+node_modules/
+public_html/
+.angular/
+sessions/
+package-lock.json
+src/assets/

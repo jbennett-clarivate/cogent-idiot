@@ -43,7 +43,11 @@ export class ToolWrapperComponent {
 
 	toolTitle$: Observable<string>;
 
-	constructor(private router: Router, private route: ActivatedRoute, private authService: AuthService) {
+	constructor(
+		private router: Router,
+		private route: ActivatedRoute,
+		private authService: AuthService,
+	) {
 		this.toolTitle$ = this.router.events.pipe(
 			filter(event => event instanceof NavigationEnd),
 			map(() => {
@@ -84,17 +88,17 @@ export class ToolWrapperComponent {
 		quadrantAnchorPositioner.applyPosition(tooltipElement, button);
 
 		requestAnimationFrame(() => {
-			tooltipElement.classList.add('visible');
+			tooltipElement.classList.add("visible");
 		});
 	}
 
 	private createTooltipElement(trigger: HTMLElement, text: string): HTMLElement {
-		const tooltip = document.createElement('div');
-		tooltip.className = 'anchor-content dynamic-tooltip';
+		const tooltip = document.createElement("div");
+		tooltip.className = "anchor-content dynamic-tooltip";
 		tooltip.textContent = text;
 
-		if (trigger.classList.contains('info-help')) {
-			tooltip.classList.add('wide');
+		if (trigger.classList.contains("info-help")) {
+			tooltip.classList.add("wide");
 		}
 
 		return tooltip;
@@ -118,4 +122,3 @@ export class ToolWrapperComponent {
 		});
 	}
 }
-

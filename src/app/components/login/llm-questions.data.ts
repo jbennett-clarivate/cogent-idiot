@@ -13,8 +13,14 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 	{
 		title: "Phase 0: Purpose, Scope, and Success Criteria",
 		questions: [
-			{ id: "p0q0", html: "Which use cases must this support: chat, coding help, document Q&A, image generation, or something else?" },
-			{ id: "p0q1", html: "Confirmed: inference only, using pre-trained downloaded models -> no training, no fine-tuning. Is that still accurate?" },
+			{
+				id: "p0q0",
+				html: "Which use cases must this support: chat, coding help, document Q&A, image generation, or something else?",
+			},
+			{
+				id: "p0q1",
+				html: "Confirmed: inference only, using pre-trained downloaded models -> no training, no fine-tuning. Is that still accurate?",
+			},
 			{ id: "p0q2", html: "Who are the exact four users, and what devices will each use?" },
 			{ id: "p0q3", html: "Will any user need more than one device connected under their single key?" },
 			{ id: "p0q4", html: "Will access be private-only (family via VPN/mesh) or exposed as a public URL?" },
@@ -23,7 +29,10 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 			{ id: "p0q7", html: "How many of the four users might realistically use it at the same time?" },
 			{ id: "p0q8", html: "What maximum context length (conversation/document size) is required?" },
 			{ id: "p0q9", html: "What availability is expected -> occasional use, or always-on reliability?" },
-			{ id: "p0q10", html: "What kind of data will family members send it (personal, financial, medical, schoolwork)?" },
+			{
+				id: "p0q10",
+				html: "What kind of data will family members send it (personal, financial, medical, schoolwork)?",
+			},
 			{ id: "p0q11", html: "What would make this project a success?" },
 			{ id: "p0q12", html: "What would make it not worth continuing?" },
 		],
@@ -32,7 +41,10 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 		title: "Phase 1: Budget, Procurement, and Ownership",
 		questions: [
 			{ id: "p1q0", html: "What is the maximum upfront hardware budget?" },
-			{ id: "p1q1", html: "What is the maximum acceptable monthly running cost (electricity plus subscriptions)?" },
+			{
+				id: "p1q1",
+				html: "What is the maximum acceptable monthly running cost (electricity plus subscriptions)?",
+			},
 			{ id: "p1q2", html: "What is the estimated annual electricity cost at idle, typical, and peak load?" },
 			{ id: "p1q3", html: "Prebuilt system or self-assembled?" },
 			{ id: "p1q4", html: "Are the required components available in your country?" },
@@ -97,7 +109,10 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 			{ id: "p4q6", html: "Does your ISP use CGNAT or give you a public IP?" },
 			{ id: "p4q7", html: "Does your public IP change over time?" },
 			{ id: "p4q8", html: "How will the server get a stable local IP (DHCP reservation or static)?" },
-			{ id: "p4q9", html: "Should the server sit on a separate VLAN to isolate it from personal devices and smart-home gear?" },
+			{
+				id: "p4q9",
+				html: "Should the server sit on a separate VLAN to isolate it from personal devices and smart-home gear?",
+			},
 			{ id: "p4q10", html: "What firewall rules are needed between segments?" },
 			{ id: "p4q11", html: "Will local access still work if the internet goes down?" },
 		],
@@ -128,11 +143,17 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 		questions: [
 			{ id: "p6q0", html: "Which models do you want for each use case?" },
 			{ id: "p6q1", html: "Does each model's license permit sharing access with family members over an API?" },
-			{ id: "p6q2", html: "Does the license restrict commercial use (relevant if any family member uses it for work)?" },
+			{
+				id: "p6q2",
+				html: "Does the license restrict commercial use (relevant if any family member uses it for work)?",
+			},
 			{ id: "p6q3", html: "What model sizes/quantizations give acceptable quality and speed?" },
 			{ id: "p6q4", html: "From which trusted source will you download models?" },
 			{ id: "p6q5", html: "How will you verify downloaded files are genuine and uncorrupted?" },
-			{ id: "p6q6", html: "How will family apps reference models -> fixed names or an alias like <code>best-model</code>?" },
+			{
+				id: "p6q6",
+				html: "How will family apps reference models -> fixed names or an alias like <code>best-model</code>?",
+			},
 			{ id: "p6q7", html: "How will you reassign that alias when you upgrade models?" },
 			{ id: "p6q8", html: "How will you test a new model before making it the family default?" },
 			{ id: "p6q9", html: "How will you roll back a bad model change?" },
@@ -145,7 +166,10 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 		title: "Phase 7: Private Remote Access (Family Away From Home)",
 		questions: [
 			{ id: "p7q0", html: "Confirmed private-only: no public URL exposed to the open internet?" },
-			{ id: "p7q1", html: "Which method: a private mesh VPN (Tailscale/WireGuard) so only enrolled family devices can connect?" },
+			{
+				id: "p7q1",
+				html: "Which method: a private mesh VPN (Tailscale/WireGuard) so only enrolled family devices can connect?",
+			},
 			{ id: "p7q2", html: "Are you behind CGNAT (which makes a mesh VPN the practical choice)?" },
 			{ id: "p7q3", html: "How will each family member's device be enrolled into the VPN?" },
 			{ id: "p7q4", html: "How will you remove a lost/stolen device from the VPN?" },
@@ -175,9 +199,15 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 	{
 		title: "Phase 9: Per-User Keys, Authentication, and Authorization",
 		questions: [
-			{ id: "p9q0", html: "Where will the authentication layer live -> does Ollama handle keys natively, or do you need a proxy (LiteLLM, Nginx, or similar) in front of it?" },
+			{
+				id: "p9q0",
+				html: "Where will the authentication layer live -> does Ollama handle keys natively, or do you need a proxy (LiteLLM, Nginx, or similar) in front of it?",
+			},
 			{ id: "p9q1", html: "Will you issue exactly one API key per family member (four total)?" },
-			{ id: "p9q2", html: "How does a key travel in requests (e.g., <code>Authorization: Bearer &lt;key&gt;</code>)?" },
+			{
+				id: "p9q2",
+				html: "How does a key travel in requests (e.g., <code>Authorization: Bearer &lt;key&gt;</code>)?",
+			},
 			{ id: "p9q3", html: "How will you generate strong, unique keys?" },
 			{ id: "p9q4", html: "How will you securely deliver each key to each family member?" },
 			{ id: "p9q5", html: "Where will each person store their key on their device safely?" },
@@ -190,24 +220,42 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 	{
 		title: "Phase 10: Key Monitoring, Revocation, and Reissuance",
 		questions: [
-			{ id: "p10q0", html: "What per-key data will you log (requests, timestamps, source device/IP, token counts)?" },
-			{ id: "p10q1", html: "How will you view that log -> a dashboard, a proxy's built-in analytics (e.g., LiteLLM), or manual log review?" },
-			{ id: "p10q2", html: "What patterns would signal a compromised key (unusual volume, unfamiliar location, odd hours)?" },
+			{
+				id: "p10q0",
+				html: "What per-key data will you log (requests, timestamps, source device/IP, token counts)?",
+			},
+			{
+				id: "p10q1",
+				html: "How will you view that log -> a dashboard, a proxy's built-in analytics (e.g., LiteLLM), or manual log review?",
+			},
+			{
+				id: "p10q2",
+				html: "What patterns would signal a compromised key (unusual volume, unfamiliar location, odd hours)?",
+			},
 			{ id: "p10q3", html: "Will you set per-key rate limits or usage quotas to cap damage from a leaked key?" },
 			{ id: "p10q4", html: "How will you be alerted automatically when a key exceeds normal usage?" },
-			{ id: "p10q5", html: "What is the exact procedure to revoke one key immediately without affecting the other three?" },
+			{
+				id: "p10q5",
+				html: "What is the exact procedure to revoke one key immediately without affecting the other three?",
+			},
 			{ id: "p10q6", html: "Can revocation take effect without restarting the whole server?" },
 			{ id: "p10q7", html: "What is the exact procedure to issue a replacement key to that one person?" },
 			{ id: "p10q8", html: "How will you re-deliver the new key securely?" },
 			{ id: "p10q9", html: "How will you confirm the old key no longer works after revocation?" },
 			{ id: "p10q10", html: "How will you periodically rotate all keys as good hygiene?" },
-			{ id: "p10q11", html: "Where might a key accidentally leak (screenshots, chat apps, synced notes, backups) and how will you prevent that?" },
+			{
+				id: "p10q11",
+				html: "Where might a key accidentally leak (screenshots, chat apps, synced notes, backups) and how will you prevent that?",
+			},
 		],
 	},
 	{
 		title: "Phase 11: Security Hardening",
 		questions: [
-			{ id: "p11q0", html: "Which ports/services are exposed, and can the inference port stay unreachable from the open internet (only via VPN)?" },
+			{
+				id: "p11q0",
+				html: "Which ports/services are exposed, and can the inference port stay unreachable from the open internet (only via VPN)?",
+			},
 			{ id: "p11q1", html: "Will default passwords and sample credentials be removed?" },
 			{ id: "p11q2", html: "How will SSH admin access be secured (keys, not passwords)?" },
 			{ id: "p11q3", html: "What host firewall rules are required?" },
@@ -215,7 +263,10 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 			{ id: "p11q5", html: "How will you apply OS, driver, and software security updates promptly?" },
 			{ id: "p11q6", html: "Will services run as a non-root user with minimal privileges?" },
 			{ id: "p11q7", html: "How will you prevent brute-force attempts against keys or SSH?" },
-			{ id: "p11q8", html: "Could a malicious or careless prompt trigger local tools, shell access, or read private files? Which tools/plugins will you enable or disable?" },
+			{
+				id: "p11q8",
+				html: "Could a malicious or careless prompt trigger local tools, shell access, or read private files? Which tools/plugins will you enable or disable?",
+			},
 			{ id: "p11q9", html: "What is your response plan if you suspect a key or the server is compromised?" },
 		],
 	},
@@ -235,7 +286,10 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 	{
 		title: "Phase 13: Performance and Load Management",
 		questions: [
-			{ id: "p13q0", html: "What token speed and first-response time must be met before you consider it usable?" },
+			{
+				id: "p13q0",
+				html: "What token speed and first-response time must be met before you consider it usable?",
+			},
 			{ id: "p13q1", html: "How does performance hold up with two or more family members at once?" },
 			{ id: "p13q2", html: "What happens when requests queue up -> do they wait, or fail?" },
 			{ id: "p13q3", html: "Can one very large request block everyone else?" },
@@ -247,13 +301,19 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 	{
 		title: "Phase 14: Monitoring, Administration, and Maintenance",
 		questions: [
-			{ id: "p14q0", html: "Which system metrics will you monitor (CPU, GPU, memory, temperature, disk, network)?" },
+			{
+				id: "p14q0",
+				html: "Which system metrics will you monitor (CPU, GPU, memory, temperature, disk, network)?",
+			},
 			{ id: "p14q1", html: "How will you know if the service fails while you're away?" },
 			{ id: "p14q2", html: "Where will alerts be sent, and will they work if home internet is down?" },
 			{ id: "p14q3", html: "How long will logs and metrics be kept, and how will you cap their growth?" },
 			{ id: "p14q4", html: "How will you administer the server remotely (via the VPN)?" },
 			{ id: "p14q5", html: "Can you reboot it remotely if the inference service freezes?" },
-			{ id: "p14q6", html: "Which services must auto-start after a reboot, and in what order (network → VPN → auth/proxy → inference)?" },
+			{
+				id: "p14q6",
+				html: "Which services must auto-start after a reboot, and in what order (network → VPN → auth/proxy → inference)?",
+			},
 			{ id: "p14q7", html: "How will failed services restart without looping endlessly?" },
 			{ id: "p14q8", html: "Who maintains this, and what happens if that person is unavailable?" },
 		],
@@ -264,10 +324,19 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 			{ id: "p15q0", html: "What happens on a brief power blink versus an extended outage?" },
 			{ id: "p15q1", html: "Will the UPS trigger a clean shutdown before the battery dies?" },
 			{ id: "p15q2", html: "Will the machine auto-power-on when power returns?" },
-			{ id: "p15q3", html: "Will all services (VPN, auth proxy, inference, model loading) recover automatically without you present?" },
-			{ id: "p15q4", html: "What happens if the public IP changes during an outage -> does the VPN still reconnect?" },
+			{
+				id: "p15q3",
+				html: "Will all services (VPN, auth proxy, inference, model loading) recover automatically without you present?",
+			},
+			{
+				id: "p15q4",
+				html: "What happens if the public IP changes during an outage -> does the VPN still reconnect?",
+			},
 			{ id: "p15q5", html: "Could an interrupted download or write corrupt data, and how would you detect it?" },
-			{ id: "p15q6", html: "What must be backed up (config, the four keys/user records, aliases, conversation history if kept)?" },
+			{
+				id: "p15q6",
+				html: "What must be backed up (config, the four keys/user records, aliases, conversation history if kept)?",
+			},
 			{ id: "p15q7", html: "Where are backups stored, and is at least one copy off-site?" },
 			{ id: "p15q8", html: "Can you restore from backup onto new hardware?" },
 			{ id: "p15q9", html: "Have you actually tested a restore?" },
@@ -280,7 +349,10 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 			{ id: "p16q0", html: "Does your ISP permit this kind of home hosting, even if private?" },
 			{ id: "p16q1", html: "Does your lease/HOA impose relevant restrictions?" },
 			{ id: "p16q2", html: "Does each model's license permit your family-shared use?" },
-			{ id: "p16q3", html: "Could copyrighted or confidential material be uploaded by family members, and does that matter?" },
+			{
+				id: "p16q3",
+				html: "Could copyrighted or confidential material be uploaded by family members, and does that matter?",
+			},
 			{ id: "p16q4", html: "Are parental controls or age-appropriate restrictions needed for younger users?" },
 			{ id: "p16q5", html: "Could remote use while traveling abroad raise any data-crossing-borders concerns?" },
 		],
@@ -303,9 +375,18 @@ export const LLM_CHECKLIST: ChecklistSection[] = [
 			{ id: "p17q12", html: "Has disk-full behavior been tested?" },
 			{ id: "p17q13", html: "Have temperature and noise been measured under sustained real use?" },
 			{ id: "p17q14", html: "Have two-plus simultaneous users been tested?" },
-			{ id: "p17q15", html: "Have logs been checked to confirm no keys or sensitive data are leaking into them?" },
-			{ id: "p17q16", html: "Is your setup, key-management procedure, and recovery process documented so you (or family) can follow it later?" },
-			{ id: "p17q17", html: "Are the total cost, maintenance effort, and performance acceptable before you commit?" },
+			{
+				id: "p17q15",
+				html: "Have logs been checked to confirm no keys or sensitive data are leaking into them?",
+			},
+			{
+				id: "p17q16",
+				html: "Is your setup, key-management procedure, and recovery process documented so you (or family) can follow it later?",
+			},
+			{
+				id: "p17q17",
+				html: "Are the total cost, maintenance effort, and performance acceptable before you commit?",
+			},
 		],
 	},
 ];

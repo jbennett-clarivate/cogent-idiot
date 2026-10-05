@@ -1,76 +1,164 @@
 <div class="white-bg">
-	<form>
-		<div>
-			<div class="flex-c h-center h-spaced lv-spaced strong v-padding">
-				<label for="stringquantity" class="flex-c h-center">
-					<span data-title="How many random strings to generate">Quantity:</span>
-					<input type="text" inputmode="numeric" name="stringquantity" appInputController [validator]="numberValidator"
-						[enforcer]="noWhitespaceEnforcer" [(ngModel)]="stringQuantity" />
-				</label>
-				<label for="stringlength" class="flex-c h-center">
-					<span data-title="Length of each string">Length:</span>
-					<input type="text" inputmode="numeric" name="stringlength" appInputController [validator]="numberValidator"
-						[enforcer]="noWhitespaceEnforcer" [(ngModel)]="stringLength" />
-				</label>
-			</div>
-			<div class="flex-r h-center h-spaced v-padding">
-				<div class="option-item">
-					<label><input type="checkbox" name="lowercase" [(ngModel)]="lowercase" /><span>Lowercase</span></label>
-					<span class="info-marker" #lowercaseTrigger tabindex="0" (mouseenter)="showInfo('lowercase')"
-						(mouseleave)="hideInfo('lowercase')" (focus)="showInfo('lowercase')" (blur)="hideInfo('lowercase')"
-						(click)="toggleInfo('lowercase')"><img src="assets/images/info.svg" alt="More info" /></span>
-					<div class="anchor-content wide" quadrantAnchor [anchorTarget]="lowercaseTrigger"
-						[anchorVisible]="activeInfo() === 'lowercase'">{{ info['lowercase'] }}</div>
-				</div>
-				<div class="option-item">
-					<label><input type="checkbox" name="uppercase" [(ngModel)]="uppercase" /><span>Uppercase</span></label>
-					<span class="info-marker" #uppercaseTrigger tabindex="0" (mouseenter)="showInfo('uppercase')"
-						(mouseleave)="hideInfo('uppercase')" (focus)="showInfo('uppercase')" (blur)="hideInfo('uppercase')"
-						(click)="toggleInfo('uppercase')"><img src="assets/images/info.svg" alt="More info" /></span>
-					<div class="anchor-content wide" quadrantAnchor [anchorTarget]="uppercaseTrigger"
-						[anchorVisible]="activeInfo() === 'uppercase'">{{ info['uppercase'] }}</div>
-				</div>
-				<div class="option-item">
-					<label><input type="checkbox" name="numbers" [(ngModel)]="numbers" /><span>Numbers</span></label>
-					<span class="info-marker" #numbersTrigger tabindex="0" (mouseenter)="showInfo('numbers')"
-						(mouseleave)="hideInfo('numbers')" (focus)="showInfo('numbers')" (blur)="hideInfo('numbers')"
-						(click)="toggleInfo('numbers')"><img src="assets/images/info.svg" alt="More info" /></span>
-					<div class="anchor-content wide" quadrantAnchor [anchorTarget]="numbersTrigger"
-						[anchorVisible]="activeInfo() === 'numbers'">{{ info['numbers'] }}</div>
-				</div>
-				<div class="option-item">
-					<label><input type="checkbox" name="special" [(ngModel)]="special" /><span>Special</span></label>
-					<span class="info-marker" #specialTrigger tabindex="0" (mouseenter)="showInfo('special')"
-						(mouseleave)="hideInfo('special')" (focus)="showInfo('special')" (blur)="hideInfo('special')"
-						(click)="toggleInfo('special')"><img src="assets/images/info.svg" alt="More info" /></span>
-					<div class="anchor-content wide" quadrantAnchor [anchorTarget]="specialTrigger"
-						[anchorVisible]="activeInfo() === 'special'">{{ info['special'] }}</div>
-				</div>
-				<div class="option-item">
-					<label><input type="checkbox" name="utf8" [(ngModel)]="utf8" /><span>UTF-8</span></label>
-					<span class="info-marker" #utf8Trigger tabindex="0" (mouseenter)="showInfo('utf8')" (mouseleave)="hideInfo('utf8')"
-						(focus)="showInfo('utf8')" (blur)="hideInfo('utf8')" (click)="toggleInfo('utf8')"><img
-							src="assets/images/info.svg" alt="More info" /></span>
-					<div class="anchor-content wide" quadrantAnchor [anchorTarget]="utf8Trigger"
-						[anchorVisible]="activeInfo() === 'utf8'">{{ info['utf8'] }}</div>
-				</div>
-			</div>
-			<div class="flex-r h-center h-spaced">
-				<div class="flex-c height-500 width-half">
-					<label class="top-spaced">May Contain:<span>{{ stringQuantity || '' }}</span></label>
-					<hr>
-					<div class="output-display" [innerHTML]="mayContainListDisplay"></div>
-				</div>
-				<div class="flex-c height-500 width-half">
-					<label class="top-spaced">Must Contain:<span>{{ stringQuantity || '' }}</span></label>
-					<hr>
-					<div class="output-display" [innerHTML]="mustContainListDisplay"></div>
-				</div>
-			</div>
-		</div>
-		<div class="flex-r h-center h-spaced v-padding">
-			<button type="button" (click)="generateIt()">Generate</button>
-			<button type="button" (click)="reset()">⎚&nbsp;Reset</button>
-		</div>
-	</form>
+  <form>
+    <div>
+      <div class="flex-c h-center h-spaced lv-spaced strong v-padding">
+        <label for="stringquantity" class="flex-c h-center">
+          <span data-title="How many random strings to generate">Quantity:</span>
+          <input
+            type="text"
+            inputmode="numeric"
+            name="stringquantity"
+            appInputController
+            [validator]="numberValidator"
+            [enforcer]="noWhitespaceEnforcer"
+            [(ngModel)]="stringQuantity"
+          />
+        </label>
+        <label for="stringlength" class="flex-c h-center">
+          <span data-title="Length of each string">Length:</span>
+          <input
+            type="text"
+            inputmode="numeric"
+            name="stringlength"
+            appInputController
+            [validator]="numberValidator"
+            [enforcer]="noWhitespaceEnforcer"
+            [(ngModel)]="stringLength"
+          />
+        </label>
+      </div>
+      <div class="flex-r h-center h-spaced v-padding">
+        <div class="option-item">
+          <label><input type="checkbox" name="lowercase" [(ngModel)]="lowercase" /><span>Lowercase</span></label>
+          <span
+            class="info-marker"
+            #lowercaseTrigger
+            tabindex="0"
+            (mouseenter)="showInfo('lowercase')"
+            (mouseleave)="hideInfo('lowercase')"
+            (focus)="showInfo('lowercase')"
+            (blur)="hideInfo('lowercase')"
+            (click)="toggleInfo('lowercase')"
+            ><img src="assets/images/info.svg" alt="More info"
+          /></span>
+          <div
+            class="anchor-content wide"
+            quadrantAnchor
+            [anchorTarget]="lowercaseTrigger"
+            [anchorVisible]="activeInfo() === 'lowercase'"
+          >
+            {{ info["lowercase"] }}
+          </div>
+        </div>
+        <div class="option-item">
+          <label><input type="checkbox" name="uppercase" [(ngModel)]="uppercase" /><span>Uppercase</span></label>
+          <span
+            class="info-marker"
+            #uppercaseTrigger
+            tabindex="0"
+            (mouseenter)="showInfo('uppercase')"
+            (mouseleave)="hideInfo('uppercase')"
+            (focus)="showInfo('uppercase')"
+            (blur)="hideInfo('uppercase')"
+            (click)="toggleInfo('uppercase')"
+            ><img src="assets/images/info.svg" alt="More info"
+          /></span>
+          <div
+            class="anchor-content wide"
+            quadrantAnchor
+            [anchorTarget]="uppercaseTrigger"
+            [anchorVisible]="activeInfo() === 'uppercase'"
+          >
+            {{ info["uppercase"] }}
+          </div>
+        </div>
+        <div class="option-item">
+          <label><input type="checkbox" name="numbers" [(ngModel)]="numbers" /><span>Numbers</span></label>
+          <span
+            class="info-marker"
+            #numbersTrigger
+            tabindex="0"
+            (mouseenter)="showInfo('numbers')"
+            (mouseleave)="hideInfo('numbers')"
+            (focus)="showInfo('numbers')"
+            (blur)="hideInfo('numbers')"
+            (click)="toggleInfo('numbers')"
+            ><img src="assets/images/info.svg" alt="More info"
+          /></span>
+          <div
+            class="anchor-content wide"
+            quadrantAnchor
+            [anchorTarget]="numbersTrigger"
+            [anchorVisible]="activeInfo() === 'numbers'"
+          >
+            {{ info["numbers"] }}
+          </div>
+        </div>
+        <div class="option-item">
+          <label><input type="checkbox" name="special" [(ngModel)]="special" /><span>Special</span></label>
+          <span
+            class="info-marker"
+            #specialTrigger
+            tabindex="0"
+            (mouseenter)="showInfo('special')"
+            (mouseleave)="hideInfo('special')"
+            (focus)="showInfo('special')"
+            (blur)="hideInfo('special')"
+            (click)="toggleInfo('special')"
+            ><img src="assets/images/info.svg" alt="More info"
+          /></span>
+          <div
+            class="anchor-content wide"
+            quadrantAnchor
+            [anchorTarget]="specialTrigger"
+            [anchorVisible]="activeInfo() === 'special'"
+          >
+            {{ info["special"] }}
+          </div>
+        </div>
+        <div class="option-item">
+          <label><input type="checkbox" name="utf8" [(ngModel)]="utf8" /><span>UTF-8</span></label>
+          <span
+            class="info-marker"
+            #utf8Trigger
+            tabindex="0"
+            (mouseenter)="showInfo('utf8')"
+            (mouseleave)="hideInfo('utf8')"
+            (focus)="showInfo('utf8')"
+            (blur)="hideInfo('utf8')"
+            (click)="toggleInfo('utf8')"
+            ><img src="assets/images/info.svg" alt="More info"
+          /></span>
+          <div
+            class="anchor-content wide"
+            quadrantAnchor
+            [anchorTarget]="utf8Trigger"
+            [anchorVisible]="activeInfo() === 'utf8'"
+          >
+            {{ info["utf8"] }}
+          </div>
+        </div>
+      </div>
+      <div class="flex-r h-center h-spaced">
+        <div class="flex-c height-500 width-half">
+          <label class="top-spaced"
+            >May Contain:<span>{{ stringQuantity || "" }}</span></label
+          >
+          <hr />
+          <div class="output-display" [innerHTML]="mayContainListDisplay"></div>
+        </div>
+        <div class="flex-c height-500 width-half">
+          <label class="top-spaced"
+            >Must Contain:<span>{{ stringQuantity || "" }}</span></label
+          >
+          <hr />
+          <div class="output-display" [innerHTML]="mustContainListDisplay"></div>
+        </div>
+      </div>
+    </div>
+    <div class="flex-r h-center h-spaced v-padding">
+      <button type="button" (click)="generateIt()">Generate</button>
+      <button type="button" (click)="reset()">⎚&nbsp;Reset</button>
+    </div>
+  </form>
 </div>

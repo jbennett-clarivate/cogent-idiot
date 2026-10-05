@@ -47,11 +47,9 @@ export interface RodSource {
 	radiusProfile?: number | number[] | Array<[number, number]>;
 }
 
-const translateY = (points: number[][], dy: number): number[][] =>
-	points.map(([x, y]) => [x, y + dy]);
+const translateY = (points: number[][], dy: number): number[][] => points.map(([x, y]) => [x, y + dy]);
 
-const translate = (points: number[][], dx: number, dy: number): number[][] =>
-	points.map(([x, y]) => [x + dx, y + dy]);
+const translate = (points: number[][], dx: number, dy: number): number[][] => points.map(([x, y]) => [x + dx, y + dy]);
 
 // Margin pass. Measured surface-to-surface, the objects that actually touch
 // sat anywhere from -169 (the central spike overlapping the crown) to 1030
@@ -70,18 +68,32 @@ const SPHERE_NUDGE = { dx: 495, dy: 437 };
 
 export const CENTRAL_SPIKE: RodSource = {
 	name: "central-spike",
-	polygon: translate(translateY([
-		[10777, 5445],
-		[11343, 15006],
-		[10777, 15568],
-		[10211, 15006],
-	], -AXIS_GAP_INCREASE), SPIKE_NUDGE.dx, SPIKE_NUDGE.dy),
-	centerline: translate(translateY([
-		[10777, 5445],
-		[10777, 12000],
-		[10777, 15006],
-		[10777, 15568],
-	], -AXIS_GAP_INCREASE), SPIKE_NUDGE.dx, SPIKE_NUDGE.dy),
+	polygon: translate(
+		translateY(
+			[
+				[10777, 5445],
+				[11343, 15006],
+				[10777, 15568],
+				[10211, 15006],
+			],
+			-AXIS_GAP_INCREASE,
+		),
+		SPIKE_NUDGE.dx,
+		SPIKE_NUDGE.dy,
+	),
+	centerline: translate(
+		translateY(
+			[
+				[10777, 5445],
+				[10777, 12000],
+				[10777, 15006],
+				[10777, 15568],
+			],
+			-AXIS_GAP_INCREASE,
+		),
+		SPIKE_NUDGE.dx,
+		SPIKE_NUDGE.dy,
+	),
 	sharp: [0], // outer tip only; the near-center end is rounded
 	// Point at the tip, swelling to radius 566 (half the kite's 1132 widest
 	// span) at the blunt end that meets the crown.
@@ -135,14 +147,18 @@ export const UPPER_CROWN: RodSource = {
 
 export const SIDE_SPIKE_RIGHT: RodSource = {
 	name: "side-spike-right",
-	polygon: translate([
-		[13031, 14444],
-		[13313, 14162],
-		[13828, 14162],
-		[14437, 15287],
-		[20155, 16590],
-		[13828, 16079],
-	], SIDE_SPIKE_NUDGE.dx, SIDE_SPIKE_NUDGE.dy),
+	polygon: translate(
+		[
+			[13031, 14444],
+			[13313, 14162],
+			[13828, 14162],
+			[14437, 15287],
+			[20155, 16590],
+			[13828, 16079],
+		],
+		SIDE_SPIKE_NUDGE.dx,
+		SIDE_SPIKE_NUDGE.dy,
+	),
 	// Blunt at the base, tapering to the outer point. Starts at the centre of
 	// the rounded base pad (vertices 0-2), not outside it: the old start sat
 	// 339 units beyond the envelope, left over from a base vertex that has
@@ -152,16 +168,20 @@ export const SIDE_SPIKE_RIGHT: RodSource = {
 	// The intermediate points track the midline between the envelope's upper
 	// and lower edges. They are not decoration: the outline bows, so a spine
 	// drawn straight from base to tip cuts up to 217 units outside it.
-	centerline: translate([
-		[13391, 14256],
-		[14491, 15748],
-		[15435, 15889],
-		[16379, 16029],
-		[17323, 16169],
-		[18267, 16309],
-		[19211, 16450],
-		[20155, 16590],
-	], SIDE_SPIKE_NUDGE.dx, SIDE_SPIKE_NUDGE.dy),
+	centerline: translate(
+		[
+			[13391, 14256],
+			[14491, 15748],
+			[15435, 15889],
+			[16379, 16029],
+			[17323, 16169],
+			[18267, 16309],
+			[19211, 16450],
+			[20155, 16590],
+		],
+		SIDE_SPIKE_NUDGE.dx,
+		SIDE_SPIKE_NUDGE.dy,
+	),
 	sharp: [4], // outermost tip
 	// Blunt end radius 423 = half the base pad's measured 845 width, and the
 	// same stock as the two spheres (422.5).
@@ -200,33 +220,47 @@ export const LOWER_SPIKE_RIGHT: RodSource = {
 	// much thinner rod - its spur pad left only 128-299 units of clearance
 	// where the cap now needs 419 - so it described a rod the model no longer
 	// builds.
-	polygon: translate(translateY([
-		[12870, 15398],
-		[12183, 15986],
-		[11415, 16669],
-		[11440, 17286],
-		[12361, 18400],
-		[13247, 19447],
-		[14967, 21586],
-		[13359, 19363],
-		[12583, 18230],
-		[11840, 17162],
-		[11907, 16933],
-		[12595, 16550],
-		[13364, 16074],
-	], LOWER_GROUP_SHIFT), LOWER_SPIKE_NUDGE.dx, LOWER_SPIKE_NUDGE.dy),
+	polygon: translate(
+		translateY(
+			[
+				[12870, 15398],
+				[12183, 15986],
+				[11415, 16669],
+				[11440, 17286],
+				[12361, 18400],
+				[13247, 19447],
+				[14967, 21586],
+				[13359, 19363],
+				[12583, 18230],
+				[11840, 17162],
+				[11907, 16933],
+				[12595, 16550],
+				[13364, 16074],
+			],
+			LOWER_GROUP_SHIFT,
+		),
+		LOWER_SPIKE_NUDGE.dx,
+		LOWER_SPIKE_NUDGE.dy,
+	),
 	// Blunt end near the crown, down-left to the bend, then down-right to the
 	// point. Intermediate points are midlines between the matching pair of
 	// flanks, so the spine stays inside the envelope on both runs.
-	centerline: translate(translateY([
-		[13117, 15736],
-		[12389, 16268],
-		[11661, 16801],
-		[11640, 17224],
-		[12472, 18315],
-		[13303, 19405],
-		[14967, 21586],
-	], LOWER_GROUP_SHIFT), LOWER_SPIKE_NUDGE.dx, LOWER_SPIKE_NUDGE.dy),
+	centerline: translate(
+		translateY(
+			[
+				[13117, 15736],
+				[12389, 16268],
+				[11661, 16801],
+				[11640, 17224],
+				[12472, 18315],
+				[13303, 19405],
+				[14967, 21586],
+			],
+			LOWER_GROUP_SHIFT,
+		),
+		LOWER_SPIKE_NUDGE.dx,
+		LOWER_SPIKE_NUDGE.dy,
+	),
 	sharp: [6], // outermost tip
 	radiusProfile: [419, 0],
 };
@@ -236,21 +270,35 @@ export const LOWER_SPIKE_RIGHT: RodSource = {
 // and keeping them pointed is what gives the tail its spade read.
 export const SPADE_TAIL: RodSource = {
 	name: "spade-tail",
-	polygon: translate(translateY([
-		[10777, 16974],
-		[11710, 18396],
-		[11091, 19050],
-		[10777, 25130],
-		[10463, 19050],
-		[9844, 18396],
-	], AXIS_GAP_INCREASE + LOWER_GROUP_SHIFT), SPADE_NUDGE.dx, SPADE_NUDGE.dy),
-	centerline: translate(translateY([
-		[10777, 16974],
-		[10777, 18396],
-		[10777, 19050],
-		[10777, 21500],
-		[10777, 25130],
-	], AXIS_GAP_INCREASE + LOWER_GROUP_SHIFT), SPADE_NUDGE.dx, SPADE_NUDGE.dy),
+	polygon: translate(
+		translateY(
+			[
+				[10777, 16974],
+				[11710, 18396],
+				[11091, 19050],
+				[10777, 25130],
+				[10463, 19050],
+				[9844, 18396],
+			],
+			AXIS_GAP_INCREASE + LOWER_GROUP_SHIFT,
+		),
+		SPADE_NUDGE.dx,
+		SPADE_NUDGE.dy,
+	),
+	centerline: translate(
+		translateY(
+			[
+				[10777, 16974],
+				[10777, 18396],
+				[10777, 19050],
+				[10777, 21500],
+				[10777, 25130],
+			],
+			AXIS_GAP_INCREASE + LOWER_GROUP_SHIFT,
+		),
+		SPADE_NUDGE.dx,
+		SPADE_NUDGE.dy,
+	),
 	sharp: [1, 3, 5], // both shoulders and the outer tip
 	// The spade's four landmarks, at their true fractions along the spine:
 	// a point at the waist tucked under the crown, flaring hard to the
@@ -262,7 +310,12 @@ export const SPADE_TAIL: RodSource = {
 	// one both started at 314 instead of 0 and never pinched back - it held
 	// ~800 down a tail that should be ~250, filling the waist in and losing
 	// the spade entirely. These four pairs reproduce the outline exactly.
-	radiusProfile: [[0, 0], [0.1744, 933], [0.2545, 314], [1, 0]],
+	radiusProfile: [
+		[0, 0],
+		[0.1744, 933],
+		[0.2545, 314],
+		[1, 0],
+	],
 };
 
 export interface SphereSource {

@@ -2,88 +2,223 @@
   <form>
     <div class="flex-c h-center h-spaced lv-spaced strong v-padding">
       <label class="width-limit">
-        <span class="control-help"
-              (mouseenter)="showTooltip($event, 'How solid the ice looks. At 0 the emblem is fully see-through and the transmission slider has no effect; raising it fades the emblem in toward whatever transmission is set below.')"
-              (mouseleave)="hideTooltip()">Solidity: {{ solidity() | number:"1.2-2" }}</span>
-        <input type="range" min="0" max="1" step="0.01"
-               [ngModel]="solidity()" name="solidity"
-               (ngModelChange)="onSolidityChange($event)" />
+        <span
+          class="control-help"
+          (mouseenter)="
+            showTooltip(
+              $event,
+              'How solid the ice looks. At 0 the emblem is fully see-through and the transmission slider has no effect; raising it fades the emblem in toward whatever transmission is set below.'
+            )
+          "
+          (mouseleave)="hideTooltip()"
+          >Solidity: {{ solidity() | number: "1.2-2" }}</span
+        >
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          [ngModel]="solidity()"
+          name="solidity"
+          (ngModelChange)="onSolidityChange($event)"
+        />
       </label>
       <label class="width-limit">
-        <span class="control-help"
-              (mouseenter)="showTooltip($event, 'How much light passes through the ice once it is solid. High values look like clear glass, low values look like frozen milk. Only takes effect as Solidity rises above 0.')"
-              (mouseleave)="hideTooltip()">Base transmission: {{ transmission() | number:"1.2-2" }}</span>
-        <input type="range" min="0" max="1" step="0.01"
-               [ngModel]="transmission()" name="transmission"
-               (ngModelChange)="onTransmissionChange($event)" />
+        <span
+          class="control-help"
+          (mouseenter)="
+            showTooltip(
+              $event,
+              'How much light passes through the ice once it is solid. High values look like clear glass, low values look like frozen milk. Only takes effect as Solidity rises above 0.'
+            )
+          "
+          (mouseleave)="hideTooltip()"
+          >Base transmission: {{ transmission() | number: "1.2-2" }}</span
+        >
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          [ngModel]="transmission()"
+          name="transmission"
+          (ngModelChange)="onTransmissionChange($event)"
+        />
       </label>
       <label class="width-limit">
-        <span class="control-help"
-              (mouseenter)="showTooltip($event, 'How deep the ice is treated as being when light travels through it. Larger values tint and bend light more, so the emblem reads as a chunkier block.')"
-              (mouseleave)="hideTooltip()">Thickness: {{ thickness() | number:"1.1-1" }}</span>
-        <input type="range" min="0.1" max="4" step="0.1"
-               [ngModel]="thickness()" name="thickness"
-               (ngModelChange)="onThicknessChange($event)" />
+        <span
+          class="control-help"
+          (mouseenter)="
+            showTooltip(
+              $event,
+              'How deep the ice is treated as being when light travels through it. Larger values tint and bend light more, so the emblem reads as a chunkier block.'
+            )
+          "
+          (mouseleave)="hideTooltip()"
+          >Thickness: {{ thickness() | number: "1.1-1" }}</span
+        >
+        <input
+          type="range"
+          min="0.1"
+          max="4"
+          step="0.1"
+          [ngModel]="thickness()"
+          name="thickness"
+          (ngModelChange)="onThicknessChange($event)"
+        />
       </label>
       <label class="width-limit">
-        <span class="control-help"
-              (mouseenter)="showTooltip($event, 'Surface texture. 0 is polished, mirror-smooth ice; higher values scatter light for a frosted, matte finish.')"
-              (mouseleave)="hideTooltip()">Frost (roughness): {{ roughness() | number:"1.2-2" }}</span>
-        <input type="range" min="0" max="1" step="0.01"
-               [ngModel]="roughness()" name="roughness"
-               (ngModelChange)="onRoughnessChange($event)" />
+        <span
+          class="control-help"
+          (mouseenter)="
+            showTooltip(
+              $event,
+              'Surface texture. 0 is polished, mirror-smooth ice; higher values scatter light for a frosted, matte finish.'
+            )
+          "
+          (mouseleave)="hideTooltip()"
+          >Frost (roughness): {{ roughness() | number: "1.2-2" }}</span
+        >
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          [ngModel]="roughness()"
+          name="roughness"
+          (ngModelChange)="onRoughnessChange($event)"
+        />
       </label>
       <label class="width-limit">
-        <span class="control-help"
-              (mouseenter)="showTooltip($event, 'How metallic the surface behaves. Near 0 for ice; raising it makes the emblem reflect its surroundings like polished chrome and lose its glassy depth.')"
-              (mouseleave)="hideTooltip()">Metalness: {{ metalness() | number:"1.2-2" }}</span>
-        <input type="range" min="0" max="1" step="0.01"
-               [ngModel]="metalness()" name="metalness"
-               (ngModelChange)="onMetalnessChange($event)" />
+        <span
+          class="control-help"
+          (mouseenter)="
+            showTooltip(
+              $event,
+              'How metallic the surface behaves. Near 0 for ice; raising it makes the emblem reflect its surroundings like polished chrome and lose its glassy depth.'
+            )
+          "
+          (mouseleave)="hideTooltip()"
+          >Metalness: {{ metalness() | number: "1.2-2" }}</span
+        >
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          [ngModel]="metalness()"
+          name="metalness"
+          (ngModelChange)="onMetalnessChange($event)"
+        />
       </label>
       <label class="width-limit">
-        <span class="control-help"
-              (mouseenter)="showTooltip($event, 'Index of refraction: how sharply light bends entering the ice. Real ice is about 1.31, water 1.33, glass 1.5, diamond 2.4. Higher values distort what you see through the emblem.')"
-              (mouseleave)="hideTooltip()">IOR: {{ ior() | number:"1.2-2" }}</span>
-        <input type="range" min="1" max="2.5" step="0.01"
-               [ngModel]="ior()" name="ior"
-               (ngModelChange)="onIorChange($event)" />
+        <span
+          class="control-help"
+          (mouseenter)="
+            showTooltip(
+              $event,
+              'Index of refraction: how sharply light bends entering the ice. Real ice is about 1.31, water 1.33, glass 1.5, diamond 2.4. Higher values distort what you see through the emblem.'
+            )
+          "
+          (mouseleave)="hideTooltip()"
+          >IOR: {{ ior() | number: "1.2-2" }}</span
+        >
+        <input
+          type="range"
+          min="1"
+          max="2.5"
+          step="0.01"
+          [ngModel]="ior()"
+          name="ior"
+          (ngModelChange)="onIorChange($event)"
+        />
       </label>
       <label class="width-limit">
-        <span class="control-help"
-              (mouseenter)="showTooltip($event, 'Strength of the bright highlights where light glances off the surface. Lower values dull the shine without changing the surface texture.')"
-              (mouseleave)="hideTooltip()">Specular intensity: {{ specularIntensity() | number:"1.2-2" }}</span>
-        <input type="range" min="0" max="1" step="0.01"
-               [ngModel]="specularIntensity()" name="specularIntensity"
-               (ngModelChange)="onSpecularIntensityChange($event)" />
+        <span
+          class="control-help"
+          (mouseenter)="
+            showTooltip(
+              $event,
+              'Strength of the bright highlights where light glances off the surface. Lower values dull the shine without changing the surface texture.'
+            )
+          "
+          (mouseleave)="hideTooltip()"
+          >Specular intensity: {{ specularIntensity() | number: "1.2-2" }}</span
+        >
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          [ngModel]="specularIntensity()"
+          name="specularIntensity"
+          (ngModelChange)="onSpecularIntensityChange($event)"
+        />
       </label>
       <label class="width-limit">
-        <span class="control-help"
-              (mouseenter)="showTooltip($event, 'Colour of the ice itself, and of the tint light picks up as it passes through. Thicker parts of the emblem show this colour more strongly.')"
-              (mouseleave)="hideTooltip()">Tint:</span>
-        <input type="color"
-               [ngModel]="tint()" name="tint"
-               (ngModelChange)="onTintChange($event)" />
+        <span
+          class="control-help"
+          (mouseenter)="
+            showTooltip(
+              $event,
+              'Colour of the ice itself, and of the tint light picks up as it passes through. Thicker parts of the emblem show this colour more strongly.'
+            )
+          "
+          (mouseleave)="hideTooltip()"
+          >Tint:</span
+        >
+        <input type="color" [ngModel]="tint()" name="tint" (ngModelChange)="onTintChange($event)" />
       </label>
       <label class="width-limit">
-        <span class="control-help"
-              (mouseenter)="showTooltip($event, 'Colour of the surface highlights. Usually white; a warm or cool tint here suggests a differently coloured light source in the room.')"
-              (mouseleave)="hideTooltip()">Specular color:</span>
-        <input type="color"
-               [ngModel]="specularColor()" name="specularColor"
-               (ngModelChange)="onSpecularColorChange($event)" />
+        <span
+          class="control-help"
+          (mouseenter)="
+            showTooltip(
+              $event,
+              'Colour of the surface highlights. Usually white; a warm or cool tint here suggests a differently coloured light source in the room.'
+            )
+          "
+          (mouseleave)="hideTooltip()"
+          >Specular color:</span
+        >
+        <input
+          type="color"
+          [ngModel]="specularColor()"
+          name="specularColor"
+          (ngModelChange)="onSpecularColorChange($event)"
+        />
       </label>
       <div class="width-limit flex-r h-center h-spaced">
-        <button type="button" class="btn btn-primary"
-                (mouseenter)="showTooltip($event, autoRotate() ? 'Stop the emblem turning on its own. You can still drag to rotate it, scroll to zoom.' : 'Turn the emblem slowly on its own so you can see all sides. You can still drag to rotate it, scroll to zoom.')"
-                (mouseleave)="hideTooltip()"
-                (click)="toggleAutoRotate()">
+        <button
+          type="button"
+          class="btn btn-primary"
+          (mouseenter)="
+            showTooltip(
+              $event,
+              autoRotate()
+                ? 'Stop the emblem turning on its own. You can still drag to rotate it, scroll to zoom.'
+                : 'Turn the emblem slowly on its own so you can see all sides. You can still drag to rotate it, scroll to zoom.'
+            )
+          "
+          (mouseleave)="hideTooltip()"
+          (click)="toggleAutoRotate()"
+        >
           {{ autoRotate() ? "Stop Spin" : "Spin" }}
         </button>
-        <button type="button" class="btn btn-primary"
-                (mouseenter)="showTooltip($event, 'Return the camera to its starting position and angle. Leaves the material settings untouched.')"
-                (mouseleave)="hideTooltip()"
-                (click)="resetView()">Reset View</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (mouseenter)="
+            showTooltip(
+              $event,
+              'Return the camera to its starting position and angle. Leaves the material settings untouched.'
+            )
+          "
+          (mouseleave)="hideTooltip()"
+          (click)="resetView()"
+        >
+          Reset View
+        </button>
       </div>
     </div>
   </form>
@@ -95,23 +230,23 @@
         <h3>3D preview unavailable</h3>
         <p>This emblem is rendered with WebGL, which this browser is not allowing.</p>
         <p>
-          LibreWolf, Tor Browser and hardened Firefox profiles restrict WebGL by
-          default, because it can be used to fingerprint your machine. That is a
-          deliberate privacy trade-off, not a fault in your setup.
+          LibreWolf, Tor Browser and hardened Firefox profiles restrict WebGL by default, because it can be used to
+          fingerprint your machine. That is a deliberate privacy trade-off, not a fault in your setup.
         </p>
         <p>
-          In <code>about:config</code>, check these in order &mdash; the first is
-          the usual cause, and it stays in effect even when the second is already
-          <code>false</code>:
+          In <code>about:config</code>, check these in order &mdash; the first is the usual cause, and it stays in
+          effect even when the second is already <code>false</code>:
         </p>
         <ul>
           <li><code>privacy.resistFingerprinting</code> &mdash; set to <code>false</code></li>
           <li><code>webgl.disabled</code> &mdash; set to <code>false</code></li>
-          <li><code>webgl.force-enabled</code> &mdash; set to <code>true</code> if your GPU or driver is blocklisted</li>
+          <li>
+            <code>webgl.force-enabled</code> &mdash; set to <code>true</code> if your GPU or driver is blocklisted
+          </li>
         </ul>
         <p>
-          Reload after changing one. <code>about:support</code> lists the WebGL
-          rows and any blocklist reason under Graphics.
+          Reload after changing one. <code>about:support</code> lists the WebGL rows and any blocklist reason under
+          Graphics.
         </p>
       </div>
     }

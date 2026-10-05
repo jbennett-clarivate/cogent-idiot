@@ -1,149 +1,348 @@
 <div class="white-bg">
-	<form>
-		<div>
-			<div class="flex-r h-center h-spaced">
-				<div class="flex-c height-500 width-half">
-					<input id="file_input_list_a" name="file_input_list_a" type="file" accept=".txt,.csv,.tsv,text/plain,text/csv,text/tab-separated-values" (change)="onFileSelectedA($event)" aria-label="Upload List A"/>
-					@if (errorA()) {
-						<div class="error">{{ errorA() }}</div>
-					}
-					@if (loadingA()) {
-						<div class="loading">Loading...</div>
-					}
-					<div class="label-row top-spaced">
-						<label for="file_input_list_a">List A:<span>{{ inputListACount() }}</span></label>
-						<span class="info-marker" #fileUploadATrigger tabindex="0" (mouseenter)="showInfo('fileUploadA')"
-							(mouseleave)="hideInfo('fileUploadA')" (focus)="showInfo('fileUploadA')" (blur)="hideInfo('fileUploadA')"
-							(click)="toggleInfo('fileUploadA')"><img src="assets/images/info.svg" alt="More info" /></span>
-						<div class="anchor-content wide" quadrantAnchor [anchorTarget]="fileUploadATrigger"
-							[anchorVisible]="activeInfo() === 'fileUploadA'">{{ info['fileUpload'] }}</div>
-					</div>
-					<hr>
-					<textarea #inputA tabindex="10" name="input_list_a" [value]="inputListA()" (input)="inputListA.set(inputA.value)" aria-label="List A" placeholder="Enter list A here..."></textarea>
-				</div>
-				<div class="flex-c height-500 width-half">
-					<input id="file_input_list_b" name="file_input_list_b" type="file" accept=".txt,.csv,.tsv,text/plain,text/csv,text/tab-separated-values" (change)="onFileSelectedB($event)" aria-label="Upload List B"/>
-					@if (errorB()) {
-						<div class="error">{{ errorB() }}</div>
-					}
-					@if (loadingB()) {
-						<div class="loading">Loading...</div>
-					}
-					<div class="label-row top-spaced">
-						<label for="file_input_list_b">List B:<span>{{ inputListBCount() }}</span></label>
-						<span class="info-marker" #fileUploadBTrigger tabindex="0" (mouseenter)="showInfo('fileUploadB')"
-							(mouseleave)="hideInfo('fileUploadB')" (focus)="showInfo('fileUploadB')" (blur)="hideInfo('fileUploadB')"
-							(click)="toggleInfo('fileUploadB')"><img src="assets/images/info.svg" alt="More info" /></span>
-						<div class="anchor-content wide" quadrantAnchor [anchorTarget]="fileUploadBTrigger"
-							[anchorVisible]="activeInfo() === 'fileUploadB'">{{ info['fileUpload'] }}</div>
-					</div>
-					<hr>
-					<textarea #inputB tabindex="11" name="input_list_b" [value]="inputListB()" (input)="inputListB.set(inputB.value)" aria-label="List B" placeholder="Enter list B here..."></textarea>
-				</div>
-			</div>
-		</div>
-		<div>
-			<div class="comparison-flags flex-r h-center h-spaced v-padding">
-				<div class="flag-item">
-					<label><input tabindex="14" type="checkbox" [checked]="caseSensitive()"
-							(change)="caseSensitive.set($event.target.checked)" [attr.aria-label]="'Case Sensitive'" /><span> Case
-							Sensitive</span></label>
-					<span class="info-marker" #caseSensitiveTrigger tabindex="0" (mouseenter)="showInfo('caseSensitive')"
-						(mouseleave)="hideInfo('caseSensitive')" (focus)="showInfo('caseSensitive')" (blur)="hideInfo('caseSensitive')"
-						(click)="toggleInfo('caseSensitive')"><img src="assets/images/info.svg" alt="More info" /></span>
-					<div class="anchor-content wide" quadrantAnchor [anchorTarget]="caseSensitiveTrigger"
-						[anchorVisible]="activeInfo() === 'caseSensitive'">{{ info['caseSensitive'] }}</div>
-				</div>
-				<div class="flag-item">
-					<label><input tabindex="16" type="checkbox" [checked]="dedupe()" (change)="dedupe.set($event.target.checked)"
-							[attr.aria-label]="'Dedupe'" /><span> Dedupe</span></label>
-					<span class="info-marker" #dedupeTrigger tabindex="0" (mouseenter)="showInfo('dedupe')"
-						(mouseleave)="hideInfo('dedupe')" (focus)="showInfo('dedupe')" (blur)="hideInfo('dedupe')"
-						(click)="toggleInfo('dedupe')"><img src="assets/images/info.svg" alt="More info" /></span>
-					<div class="anchor-content wide" quadrantAnchor [anchorTarget]="dedupeTrigger"
-						[anchorVisible]="activeInfo() === 'dedupe'">{{ info['dedupe'] }}</div>
-				</div>
-			</div>
-			<hr>
-			<div class="comparison-flags flex-r h-center h-spaced v-padding">
-				@for (delim of ['\t','\n',',',' ','"',';','\'']; track delim) {
-					<label>
-						<input type="checkbox" [checked]="selectedDelimiters().includes(delim)" (change)="toggleDelimiter(delim, $event.target.checked)" [attr.aria-label]="'Delimiter: ' + delim"/>
-						<span
-							[attr.data-title]="delim === '\t' ? 'Split entries wherever a tab character appears' : delim === '\n' ? 'Split entries on new lines' : delim === ',' ? 'Split entries on commas' : delim === ' ' ? 'Split entries on spaces' : delim === '&quot;' ? 'Split entries on double-quote characters' : delim === ';' ? 'Split entries on semicolons' : 'Split entries on apostrophes'">{{
-							delim === '\t' ? 'Tab' : delim === '\n' ? 'Newline' : delim === ',' ? 'Comma' : delim === ' ' ? 'Space' : delim ===
-							'"' ? 'Quote' : delim === ';' ? 'Semicolon' : 'Apostrophe' }}</span>
-					</label>
-				}
-			</div>
-		</div>
-		<div class="action-buttons flex-r h-center h-spaced v-padding">
-			<button tabindex="19" type="button" (click)="reset()" aria-label="Reset">Reset</button>
-			<button tabindex="20" type="button" (click)="exportResults('csv')" aria-label="Export CSV">Export CSV</button>
-			<button tabindex="21" type="button" (click)="exportResults('txt')" aria-label="Export TXT">Export TXT</button>
-		</div>
-	</form>
-	<div class="output-grid">
-		<div class="output-column height-500">
-			<div class="label-row output-label-row">
-				<label class="output-label">Unique to A:<span>{{ outputListACount() }}</span></label>
-				<span class="info-marker" #uniqueToATrigger tabindex="0" (mouseenter)="showInfo('uniqueToA')"
-					(mouseleave)="hideInfo('uniqueToA')" (focus)="showInfo('uniqueToA')" (blur)="hideInfo('uniqueToA')"
-					(click)="toggleInfo('uniqueToA')"><img src="assets/images/info.svg" alt="More info" /></span>
-				<div class="anchor-content wide" quadrantAnchor [anchorTarget]="uniqueToATrigger"
-					[anchorVisible]="activeInfo() === 'uniqueToA'">{{ info['uniqueToA'] }}</div>
-			</div>
-			<ul>
-				@for (item of uniqueToA(); track item) {
-					<li>{{ item }}</li>
-				}
-			</ul>
-		</div>
-		<div class="output-column height-500">
-			<div class="label-row output-label-row">
-				<label class="output-label">Unique to B:<span>{{ outputListBCount() }}</span></label>
-				<span class="info-marker" #uniqueToBTrigger tabindex="0" (mouseenter)="showInfo('uniqueToB')"
-					(mouseleave)="hideInfo('uniqueToB')" (focus)="showInfo('uniqueToB')" (blur)="hideInfo('uniqueToB')"
-					(click)="toggleInfo('uniqueToB')"><img src="assets/images/info.svg" alt="More info" /></span>
-				<div class="anchor-content wide" quadrantAnchor [anchorTarget]="uniqueToBTrigger"
-					[anchorVisible]="activeInfo() === 'uniqueToB'">{{ info['uniqueToB'] }}</div>
-			</div>
-			<ul>
-				@for (item of uniqueToB(); track item) {
-					<li>{{ item }}</li>
-				}
-			</ul>
-		</div>
-		<div class="output-column height-500">
-			<div class="label-row output-label-row">
-				<label class="output-label">Intersection:<span>{{ outputListIntersectionCount() }}</span></label>
-				<span class="info-marker" #intersectionTrigger tabindex="0" (mouseenter)="showInfo('intersection')"
-					(mouseleave)="hideInfo('intersection')" (focus)="showInfo('intersection')" (blur)="hideInfo('intersection')"
-					(click)="toggleInfo('intersection')"><img src="assets/images/info.svg" alt="More info" /></span>
-				<div class="anchor-content wide" quadrantAnchor [anchorTarget]="intersectionTrigger"
-					[anchorVisible]="activeInfo() === 'intersection'">{{ info['intersection'] }}</div>
-			</div>
-			<ul>
-				@for (item of intersection(); track item) {
-					<li>{{ item }}</li>
-				}
-			</ul>
-		</div>
-		<div class="output-column height-500">
-			<div class="label-row output-label-row">
-				<label class="output-label">Combination:<span>{{ outputListUnionCount() }}</span></label>
-				<span class="info-marker" #unionTrigger tabindex="0" (mouseenter)="showInfo('union')"
-					(mouseleave)="hideInfo('union')" (focus)="showInfo('union')" (blur)="hideInfo('union')"
-					(click)="toggleInfo('union')"><img src="assets/images/info.svg" alt="More info" /></span>
-				<div class="anchor-content wide" quadrantAnchor [anchorTarget]="unionTrigger"
-					[anchorVisible]="activeInfo() === 'union'">{{ info['union'] }}</div>
-			</div>
-			<ul>
-				@for (item of union(); track item) {
-					<li>{{ item }}</li>
-				}
-			</ul>
-		</div>
-	</div>
+  <form>
+    <div>
+      <div class="flex-r h-center h-spaced">
+        <div class="flex-c height-500 width-half">
+          <input
+            id="file_input_list_a"
+            name="file_input_list_a"
+            type="file"
+            accept=".txt,.csv,.tsv,text/plain,text/csv,text/tab-separated-values"
+            (change)="onFileSelectedA($event)"
+            aria-label="Upload List A"
+          />
+          @if (errorA()) {
+            <div class="error">{{ errorA() }}</div>
+          }
+          @if (loadingA()) {
+            <div class="loading">Loading...</div>
+          }
+          <div class="label-row top-spaced">
+            <label for="file_input_list_a"
+              >List A:<span>{{ inputListACount() }}</span></label
+            >
+            <span
+              class="info-marker"
+              #fileUploadATrigger
+              tabindex="0"
+              (mouseenter)="showInfo('fileUploadA')"
+              (mouseleave)="hideInfo('fileUploadA')"
+              (focus)="showInfo('fileUploadA')"
+              (blur)="hideInfo('fileUploadA')"
+              (click)="toggleInfo('fileUploadA')"
+              ><img src="assets/images/info.svg" alt="More info"
+            /></span>
+            <div
+              class="anchor-content wide"
+              quadrantAnchor
+              [anchorTarget]="fileUploadATrigger"
+              [anchorVisible]="activeInfo() === 'fileUploadA'"
+            >
+              {{ info["fileUpload"] }}
+            </div>
+          </div>
+          <hr />
+          <textarea
+            #inputA
+            tabindex="10"
+            name="input_list_a"
+            [value]="inputListA()"
+            (input)="inputListA.set(inputA.value)"
+            aria-label="List A"
+            placeholder="Enter list A here..."
+          ></textarea>
+        </div>
+        <div class="flex-c height-500 width-half">
+          <input
+            id="file_input_list_b"
+            name="file_input_list_b"
+            type="file"
+            accept=".txt,.csv,.tsv,text/plain,text/csv,text/tab-separated-values"
+            (change)="onFileSelectedB($event)"
+            aria-label="Upload List B"
+          />
+          @if (errorB()) {
+            <div class="error">{{ errorB() }}</div>
+          }
+          @if (loadingB()) {
+            <div class="loading">Loading...</div>
+          }
+          <div class="label-row top-spaced">
+            <label for="file_input_list_b"
+              >List B:<span>{{ inputListBCount() }}</span></label
+            >
+            <span
+              class="info-marker"
+              #fileUploadBTrigger
+              tabindex="0"
+              (mouseenter)="showInfo('fileUploadB')"
+              (mouseleave)="hideInfo('fileUploadB')"
+              (focus)="showInfo('fileUploadB')"
+              (blur)="hideInfo('fileUploadB')"
+              (click)="toggleInfo('fileUploadB')"
+              ><img src="assets/images/info.svg" alt="More info"
+            /></span>
+            <div
+              class="anchor-content wide"
+              quadrantAnchor
+              [anchorTarget]="fileUploadBTrigger"
+              [anchorVisible]="activeInfo() === 'fileUploadB'"
+            >
+              {{ info["fileUpload"] }}
+            </div>
+          </div>
+          <hr />
+          <textarea
+            #inputB
+            tabindex="11"
+            name="input_list_b"
+            [value]="inputListB()"
+            (input)="inputListB.set(inputB.value)"
+            aria-label="List B"
+            placeholder="Enter list B here..."
+          ></textarea>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="comparison-flags flex-r h-center h-spaced v-padding">
+        <div class="flag-item">
+          <label
+            ><input
+              tabindex="14"
+              type="checkbox"
+              [checked]="caseSensitive()"
+              (change)="caseSensitive.set($event.target.checked)"
+              [attr.aria-label]="'Case Sensitive'"
+            /><span> Case Sensitive</span></label
+          >
+          <span
+            class="info-marker"
+            #caseSensitiveTrigger
+            tabindex="0"
+            (mouseenter)="showInfo('caseSensitive')"
+            (mouseleave)="hideInfo('caseSensitive')"
+            (focus)="showInfo('caseSensitive')"
+            (blur)="hideInfo('caseSensitive')"
+            (click)="toggleInfo('caseSensitive')"
+            ><img src="assets/images/info.svg" alt="More info"
+          /></span>
+          <div
+            class="anchor-content wide"
+            quadrantAnchor
+            [anchorTarget]="caseSensitiveTrigger"
+            [anchorVisible]="activeInfo() === 'caseSensitive'"
+          >
+            {{ info["caseSensitive"] }}
+          </div>
+        </div>
+        <div class="flag-item">
+          <label
+            ><input
+              tabindex="16"
+              type="checkbox"
+              [checked]="dedupe()"
+              (change)="dedupe.set($event.target.checked)"
+              [attr.aria-label]="'Dedupe'"
+            /><span> Dedupe</span></label
+          >
+          <span
+            class="info-marker"
+            #dedupeTrigger
+            tabindex="0"
+            (mouseenter)="showInfo('dedupe')"
+            (mouseleave)="hideInfo('dedupe')"
+            (focus)="showInfo('dedupe')"
+            (blur)="hideInfo('dedupe')"
+            (click)="toggleInfo('dedupe')"
+            ><img src="assets/images/info.svg" alt="More info"
+          /></span>
+          <div
+            class="anchor-content wide"
+            quadrantAnchor
+            [anchorTarget]="dedupeTrigger"
+            [anchorVisible]="activeInfo() === 'dedupe'"
+          >
+            {{ info["dedupe"] }}
+          </div>
+        </div>
+      </div>
+      <hr />
+      <div class="comparison-flags flex-r h-center h-spaced v-padding">
+        @for (delim of ["\t", "\n", ",", " ", '"', ";", "'"]; track delim) {
+          <label>
+            <input
+              type="checkbox"
+              [checked]="selectedDelimiters().includes(delim)"
+              (change)="toggleDelimiter(delim, $event.target.checked)"
+              [attr.aria-label]="'Delimiter: ' + delim"
+            />
+            <span
+              [attr.data-title]="
+                delim === '\t'
+                  ? 'Split entries wherever a tab character appears'
+                  : delim === '\n'
+                    ? 'Split entries on new lines'
+                    : delim === ','
+                      ? 'Split entries on commas'
+                      : delim === ' '
+                        ? 'Split entries on spaces'
+                        : delim === '&quot;'
+                          ? 'Split entries on double-quote characters'
+                          : delim === ';'
+                            ? 'Split entries on semicolons'
+                            : 'Split entries on apostrophes'
+              "
+              >{{
+                delim === "\t"
+                  ? "Tab"
+                  : delim === "\n"
+                    ? "Newline"
+                    : delim === ","
+                      ? "Comma"
+                      : delim === " "
+                        ? "Space"
+                        : delim === '"'
+                          ? "Quote"
+                          : delim === ";"
+                            ? "Semicolon"
+                            : "Apostrophe"
+              }}</span
+            >
+          </label>
+        }
+      </div>
+    </div>
+    <div class="action-buttons flex-r h-center h-spaced v-padding">
+      <button tabindex="19" type="button" (click)="reset()" aria-label="Reset">Reset</button>
+      <button tabindex="20" type="button" (click)="exportResults('csv')" aria-label="Export CSV">Export CSV</button>
+      <button tabindex="21" type="button" (click)="exportResults('txt')" aria-label="Export TXT">Export TXT</button>
+    </div>
+  </form>
+  <div class="output-grid">
+    <div class="output-column height-500">
+      <div class="label-row output-label-row">
+        <label class="output-label"
+          >Unique to A:<span>{{ outputListACount() }}</span></label
+        >
+        <span
+          class="info-marker"
+          #uniqueToATrigger
+          tabindex="0"
+          (mouseenter)="showInfo('uniqueToA')"
+          (mouseleave)="hideInfo('uniqueToA')"
+          (focus)="showInfo('uniqueToA')"
+          (blur)="hideInfo('uniqueToA')"
+          (click)="toggleInfo('uniqueToA')"
+          ><img src="assets/images/info.svg" alt="More info"
+        /></span>
+        <div
+          class="anchor-content wide"
+          quadrantAnchor
+          [anchorTarget]="uniqueToATrigger"
+          [anchorVisible]="activeInfo() === 'uniqueToA'"
+        >
+          {{ info["uniqueToA"] }}
+        </div>
+      </div>
+      <ul>
+        @for (item of uniqueToA(); track item) {
+          <li>{{ item }}</li>
+        }
+      </ul>
+    </div>
+    <div class="output-column height-500">
+      <div class="label-row output-label-row">
+        <label class="output-label"
+          >Unique to B:<span>{{ outputListBCount() }}</span></label
+        >
+        <span
+          class="info-marker"
+          #uniqueToBTrigger
+          tabindex="0"
+          (mouseenter)="showInfo('uniqueToB')"
+          (mouseleave)="hideInfo('uniqueToB')"
+          (focus)="showInfo('uniqueToB')"
+          (blur)="hideInfo('uniqueToB')"
+          (click)="toggleInfo('uniqueToB')"
+          ><img src="assets/images/info.svg" alt="More info"
+        /></span>
+        <div
+          class="anchor-content wide"
+          quadrantAnchor
+          [anchorTarget]="uniqueToBTrigger"
+          [anchorVisible]="activeInfo() === 'uniqueToB'"
+        >
+          {{ info["uniqueToB"] }}
+        </div>
+      </div>
+      <ul>
+        @for (item of uniqueToB(); track item) {
+          <li>{{ item }}</li>
+        }
+      </ul>
+    </div>
+    <div class="output-column height-500">
+      <div class="label-row output-label-row">
+        <label class="output-label"
+          >Intersection:<span>{{ outputListIntersectionCount() }}</span></label
+        >
+        <span
+          class="info-marker"
+          #intersectionTrigger
+          tabindex="0"
+          (mouseenter)="showInfo('intersection')"
+          (mouseleave)="hideInfo('intersection')"
+          (focus)="showInfo('intersection')"
+          (blur)="hideInfo('intersection')"
+          (click)="toggleInfo('intersection')"
+          ><img src="assets/images/info.svg" alt="More info"
+        /></span>
+        <div
+          class="anchor-content wide"
+          quadrantAnchor
+          [anchorTarget]="intersectionTrigger"
+          [anchorVisible]="activeInfo() === 'intersection'"
+        >
+          {{ info["intersection"] }}
+        </div>
+      </div>
+      <ul>
+        @for (item of intersection(); track item) {
+          <li>{{ item }}</li>
+        }
+      </ul>
+    </div>
+    <div class="output-column height-500">
+      <div class="label-row output-label-row">
+        <label class="output-label"
+          >Combination:<span>{{ outputListUnionCount() }}</span></label
+        >
+        <span
+          class="info-marker"
+          #unionTrigger
+          tabindex="0"
+          (mouseenter)="showInfo('union')"
+          (mouseleave)="hideInfo('union')"
+          (focus)="showInfo('union')"
+          (blur)="hideInfo('union')"
+          (click)="toggleInfo('union')"
+          ><img src="assets/images/info.svg" alt="More info"
+        /></span>
+        <div
+          class="anchor-content wide"
+          quadrantAnchor
+          [anchorTarget]="unionTrigger"
+          [anchorVisible]="activeInfo() === 'union'"
+        >
+          {{ info["union"] }}
+        </div>
+      </div>
+      <ul>
+        @for (item of union(); track item) {
+          <li>{{ item }}</li>
+        }
+      </ul>
+    </div>
+  </div>
 </div>
-

@@ -27,7 +27,10 @@ export class AuthService {
 	public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 	public currentUser$ = this.currentUserSubject.asObservable();
 
-	constructor(private http: HttpClient, private environmentService: Environment) {
+	constructor(
+		private http: HttpClient,
+		private environmentService: Environment,
+	) {
 		this.baseUrl = this.environmentService.apiBaseUrl;
 		this.checkAuthStatus();
 	}
@@ -53,15 +56,18 @@ export class AuthService {
 	}
 
 	checkAuthStatus(): void {
-		this.http.get<AuthStatus>(`${this.baseUrl}/auth/status`).pipe(
-			catchError(error => {
-				console.error("Auth status check failed:", error);
-				return of({ authenticated: false, email: undefined });
-			}),
-		).subscribe(status => {
-			this.isAuthenticatedSubject.next(status.authenticated);
-			this.currentUserSubject.next((status as AuthStatus).email || null);
-		});
+		this.http
+			.get<AuthStatus>(`${this.baseUrl}/auth/status`)
+			.pipe(
+				catchError(error => {
+					console.error("Auth status check failed:", error);
+					return of({ authenticated: false, email: undefined });
+				}),
+			)
+			.subscribe(status => {
+				this.isAuthenticatedSubject.next(status.authenticated);
+				this.currentUserSubject.next((status as AuthStatus).email || null);
+			});
 	}
 
 	refreshLogin(): Observable<AuthStatus> {

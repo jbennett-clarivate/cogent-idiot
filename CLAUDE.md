@@ -97,11 +97,39 @@ a Flatpak sandbox with no browser on `PATH`; a `chrome`-type config would look
 for a Chrome that is not installed. The `firefox` debug type requires the
 `firefox-devtools.vscode-firefox-debug` extension.
 
-There is no separate lint script in `package.json`; ESLint config exists at `.eslintrc.json` (run via `npx eslint` if needed). Tabs for indentation, double quotes, semicolons required — enforced by ESLint.
+Linting and formatting are split, deliberately:
+
+- `npm run lint` / `npm run lint:fix` — ESLint v9 **flat config** at
+  `eslint.config.js` (the old `.eslintrc.json` is gone; v9 cannot read it).
+  Correctness and Angular rules only: `@angular-eslint` selector prefixes,
+  `prefer-inject`, unused vars, `no-explicit-any` as a warning.
+- `npm run format` / `npm run format:check` — Prettier, configured in
+  `.prettierrc`: **tabs, double quotes, semicolons**, `printWidth: 120`,
+  `trailingComma: all`, `arrowParens: avoid`. HTML/JSON/Markdown override to
+  2 spaces.
+
+`eslint-config-prettier` is applied last in every flat-config block, so ESLint
+holds no stylistic opinion that could fight the formatter. Do not add `quotes`,
+`semi` or `indent` rules back to `eslint.config.js` — that is what the two
+tools fighting looks like.
+
+`dist/` and `coverage/` are in ESLint's `ignores`. Without them a lint run
+reports ~1,990 `no-undef` errors against webpack's generated bundles and buries
+the ~26 real findings.
+
+The editor is wired for this in `.vscode/settings.json`: format-on-save via
+`rvest.vs-code-prettier-eslint` (Prettier, then ESLint `--fix`), with
+`eslint.useFlatConfig: true`, which the v9 extension needs.
+
+Known pre-existing findings, not yet addressed: 20 `prefer-inject` errors
+(constructor injection in `auth.service.ts`, `environment.ts`, `tool-wrapper.ts`),
+and `quadrant-anchor.directive.ts` uses the selector `[quadrantAnchor]` without
+the `app` prefix its own rule requires — renaming it touches eight templates.
 
 ## Architecture
 
 ### Frontend structure (`src/app/`)
+
 - `app.routes.ts` — all routing. Standalone, lazy-loaded (`loadComponent`) routes. Most routes live under `/tools/*` inside `ToolWrapperComponent` and are gated by `AuthGuard`.
 - `components/` — one directory per route/feature (`bayes`, `listcomparator`, `listrandom`, `pwned`, `safecron`, `taxes`, `ice`, `home`, `login`, `exit`).
 - `services/` — `auth.service.ts` (login/session state as `BehaviorSubject`s), `environment.ts` (API base URL), `app-utils.ts`, `quadrant-anchor-positioner.ts`.
@@ -111,6 +139,7 @@ There is no separate lint script in `package.json`; ESLint config exists at `.es
 - Path aliases (see `tsconfig.json`): `@/*` → `src/*`, `@app/*` → `src/app/*`, `@services/*` → `src/app/services/*`, `@components/*` → `src/app/components/*`.
 
 ### Mock backend — the live `/api` implementation
+
 `MockBackendInterceptor` is active whenever `APP_CONFIG.apiServerUrl` is empty,
 which is the committed default. **This is the app's real backend today.**
 
@@ -133,14 +162,17 @@ sends `/api/*` to that origin, which is what `server.js` implements. Keep the tw
 in sync if the auth flow ever changes.
 
 ### Login flow (salt + pepper hashing, both real and mock backend)
+
 1. Client requests a per-session `pepper` (`GET /api/auth/pepper`), stored server-side in the session.
 2. Client requests the user's `salt` (`POST /api/auth/salt` with `username`); server looks up or deterministically fakes a salt (to avoid username enumeration) and stores `username`/`salt` in the session.
 3. Client hashes the password with salt and pepper client-side and posts `hashedPepperedPassword` to `POST /api/login`; server recomputes the expected hash from the stored password hash + pepper and compares with `crypto.timingSafeEqual`.
 4. On success the session records `login`; `AuthService` tracks auth state via `/api/auth/status` and `/api/auth/refresh`.
 
 ### Backend (`server.js`) — reference implementation, not in the live path
+
 Single-file Express app, retained for reference and for the self-hosted case.
 The deployed site does not run it. Key behaviors:
+
 - `isLocalhost` (`HOSTING_PROVIDER !== "godaddy"`) toggles between a real MySQL pool (`mysql2/promise`) and an in-memory `mockDatabase` for `queryDatabase()`.
 - Sessions: `express-session`, with `session-file-store` (`./sessions/`) when not on localhost, MemoryStore otherwise.
 - `helmet` CSP is configured to allow `api.pwnedpasswords.com` (used by the `pwned` tool) and Google Analytics domains.
@@ -148,6 +180,7 @@ The deployed site does not run it. Key behaviors:
 - `DEBUG_AUTH=true` env var enables verbose session logging on every request — noisy, dev-only.
 
 ### Ice emblem 3D component (`src/app/components/ice/`)
+
 A Three.js-rendered 3D crystal emblem derived from `src/assets/images/3d-image.svg` (LibreOffice Draw export, viewBox `0 0 21590 27940`, symmetry axis `x = 10777`). See `AGENTS.md` for full details on the SVG source-of-truth convention, per-object file layout under `shapes/`, and known gotchas (e.g. `mergeGeometries` silently returns null on mismatched/mixed indexed geometry — always `.toNonIndexed()` before merging; blades must stay flat bevel-extruded outlines, not swept tubes).
 
 ## Environment / secrets

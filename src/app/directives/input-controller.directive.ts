@@ -1,11 +1,4 @@
-import {
-	Directive,
-	ElementRef,
-	Input,
-	OnInit,
-	OnDestroy,
-	Renderer2,
-} from "@angular/core";
+import { Directive, ElementRef, Input, OnInit, OnDestroy, Renderer2 } from "@angular/core";
 
 /**
  * A validator inspects the element and returns true when its value is valid.
@@ -44,15 +37,14 @@ export type InputCSS = (el: HTMLInputElement) => void;
 export class InputControllerDirective implements OnInit, OnDestroy {
 	static readonly DEFAULT_TEST_REGEXP = /\p{Cc}/u;
 	static readonly DEFAULT_REPLACE_REGEXP = /\p{Cc}/gu;
-	static readonly numberValidator: InputValidator = (el) =>
-		el.value.trim() === "" || !Number.isNaN(Number(el.value));
-	static readonly noWhitespaceEnforcer: InputEnforcer = (el) => {
+	static readonly numberValidator: InputValidator = el => el.value.trim() === "" || !Number.isNaN(Number(el.value));
+	static readonly noWhitespaceEnforcer: InputEnforcer = el => {
 		const cleaned = el.value.replace(/\s/g, "");
 		if (el.value !== cleaned) {
 			el.value = cleaned;
 		}
 	};
-	static readonly digitsOnlyEnforcer: InputEnforcer = (el) => {
+	static readonly digitsOnlyEnforcer: InputEnforcer = el => {
 		const cleaned = el.value.replace(/\D/g, "");
 		if (el.value !== cleaned) {
 			el.value = cleaned;
@@ -75,9 +67,7 @@ export class InputControllerDirective implements OnInit, OnDestroy {
 		const el = this.elementRef.nativeElement;
 
 		if (!(el instanceof HTMLInputElement)) {
-			throw new TypeError(
-				"InputControllerDirective requires an HTMLInputElement",
-			);
+			throw new TypeError("InputControllerDirective requires an HTMLInputElement");
 		}
 
 		this.unlisten = this.renderer.listen(el, "input", () => this.handleInput());
@@ -98,31 +88,25 @@ export class InputControllerDirective implements OnInit, OnDestroy {
 		}
 	}
 
-	private readonly defaultValidator: InputValidator = (el) =>
+	private readonly defaultValidator: InputValidator = el =>
 		!InputControllerDirective.DEFAULT_TEST_REGEXP.test(el.value);
 
-	private readonly defaultEnforcer: InputEnforcer = (el) => {
+	private readonly defaultEnforcer: InputEnforcer = el => {
 		if (!el.value) {
 			return;
 		}
-		const cleaned = el.value.replace(
-			InputControllerDirective.DEFAULT_REPLACE_REGEXP,
-			"",
-		);
+		const cleaned = el.value.replace(InputControllerDirective.DEFAULT_REPLACE_REGEXP, "");
 		if (el.value.length !== cleaned.length) {
 			el.value = cleaned;
 		}
 	};
 
-	private readonly defaultInvalidCSS: InputCSS = (el) => {
-		el.animate(
-			[{ transform: "translateX(4px)" }, { transform: "translateX(0)" }],
-			{ duration: 150 },
-		);
+	private readonly defaultInvalidCSS: InputCSS = el => {
+		el.animate([{ transform: "translateX(4px)" }, { transform: "translateX(0)" }], { duration: 150 });
 		this.renderer.setStyle(el, "outline", "2px solid red");
 	};
 
-	private readonly defaultValidCSS: InputCSS = (el) => {
+	private readonly defaultValidCSS: InputCSS = el => {
 		this.renderer.removeStyle(el, "outline");
 	};
 }

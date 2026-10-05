@@ -56,14 +56,14 @@ describe("SafecronComponent", () => {
 
 	describe("obligation 1: a zone's band is its own 9-to-5 in the viewer's slots", () => {
 		it("puts a zone sharing the viewer's offset at 9:00am-5:00pm", () => {
-			withZoneOffsets({ "X": 0 });
+			withZoneOffsets({ X: 0 });
 			const w = (component as any).computeZoneSlots(zone("X", "X", 1), 0);
 			expect(w.start).toBe(36); // 9am
 			expect(w.end).toBe(68); // 5pm
 		});
 
 		it("shifts a zone ahead of the viewer earlier in the viewer's day", () => {
-			withZoneOffsets({ "TOKYO": 9 });
+			withZoneOffsets({ TOKYO: 9 });
 			// Tokyo 9am is 0:00 for a UTC viewer.
 			const w = (component as any).computeZoneSlots(zone("TOKYO", "TOKYO", 1), 0);
 			expect(w.start).toBe(0);
@@ -71,22 +71,22 @@ describe("SafecronComponent", () => {
 		});
 
 		it("keeps the band exactly eight hours wide for half-hour zones", () => {
-			withZoneOffsets({ "MUMBAI": 5.5 });
+			withZoneOffsets({ MUMBAI: 5.5 });
 			const w = (component as any).computeZoneSlots(zone("MUMBAI", "MUMBAI", 1), 0);
-			expect(((w.end - w.start) + 96) % 96).toBe(32);
+			expect((w.end - w.start + 96) % 96).toBe(32);
 		});
 
 		it("keeps the band exactly eight hours wide for quarter-hour zones", () => {
-			withZoneOffsets({ "CHATHAM": 12.75 });
+			withZoneOffsets({ CHATHAM: 12.75 });
 			const w = (component as any).computeZoneSlots(zone("CHATHAM", "CHATHAM", 1), 0);
-			expect(((w.end - w.start) + 96) % 96).toBe(32);
+			expect((w.end - w.start + 96) % 96).toBe(32);
 		});
 	});
 
 	describe("obligation 2: a slot's value is the total weight working then", () => {
 		it("stacks overlapping zones' weights additively", () => {
 			withLocalOffset(0);
-			withZoneOffsets({ "A": 0, "B": 0 });
+			withZoneOffsets({ A: 0, B: 0 });
 			component.selectedLocalTimes.set([zone("A", "A", 1), zone("B", "B", 2)]);
 			component.computeSafeTime();
 			const arr = component.safeScheduleArray();
@@ -96,7 +96,7 @@ describe("SafecronComponent", () => {
 
 		it("leaves slots at zero when nobody is working", () => {
 			withLocalOffset(0);
-			withZoneOffsets({ "A": 0 });
+			withZoneOffsets({ A: 0 });
 			component.selectedLocalTimes.set([zone("A", "A", 1)]);
 			component.computeSafeTime();
 			expect(component.safeScheduleArray()[0]).toBe(0); // midnight
@@ -106,7 +106,7 @@ describe("SafecronComponent", () => {
 	describe("obligation 3: meeting is the hour of maximum total weight", () => {
 		it("picks the hour inside the only zone's working window", () => {
 			withLocalOffset(0);
-			withZoneOffsets({ "A": 0 });
+			withZoneOffsets({ A: 0 });
 			component.selectedLocalTimes.set([zone("A", "A", 1)]);
 			component.computeSafeTime();
 			const s = slotsOf(component.meetingTime());
@@ -117,7 +117,7 @@ describe("SafecronComponent", () => {
 		it("favours the heaviest zone when two zones do not overlap", () => {
 			withLocalOffset(0);
 			// A works 9am-5pm viewer-time; B is 12h away, working 9pm-5am.
-			withZoneOffsets({ "A": 0, "B": 12 });
+			withZoneOffsets({ A: 0, B: 12 });
 			component.selectedLocalTimes.set([zone("A", "A", 1), zone("B", "B", 3)]);
 			component.computeSafeTime();
 			const s = slotsOf(component.meetingTime());
@@ -130,7 +130,7 @@ describe("SafecronComponent", () => {
 	describe("obligation 4: downtime is the QUIETEST hour", () => {
 		it("never suggests an hour when someone is working", () => {
 			withLocalOffset(0);
-			withZoneOffsets({ "A": 0 });
+			withZoneOffsets({ A: 0 });
 			component.selectedLocalTimes.set([zone("A", "A", 1)]);
 			component.computeSafeTime();
 			const s = slotsOf(component.downtime());
@@ -149,7 +149,7 @@ describe("SafecronComponent", () => {
 			withLocalOffset(0);
 			// Offset +9 puts this zone's 9-to-5 at 12:00am-8:00am viewer-time,
 			// so slot 0 is busy and must not be chosen.
-			withZoneOffsets({ "A": 9 });
+			withZoneOffsets({ A: 9 });
 			component.selectedLocalTimes.set([zone("A", "A", 1)]);
 			component.computeSafeTime();
 			const s = slotsOf(component.downtime());
@@ -164,7 +164,7 @@ describe("SafecronComponent", () => {
 	describe("obligation 3+4: suggestions describe the CURRENT set of zones", () => {
 		it("does not keep showing a stale suggestion after a zone is added", () => {
 			withLocalOffset(0);
-			withZoneOffsets({ "A": 0, "B": 12 });
+			withZoneOffsets({ A: 0, B: 12 });
 
 			// User adds one zone and asks for the best time.
 			component.selectedLocalTimes.set([zone("A", "A", 1)]);
@@ -190,17 +190,14 @@ describe("SafecronComponent", () => {
 
 		it("clears a suggestion when an existing zone's weight changes", () => {
 			withLocalOffset(0);
-			withZoneOffsets({ "A": 0, "B": 12 });
+			withZoneOffsets({ A: 0, B: 12 });
 			component.selectedLocalTimes.set([zone("A", "A", 1), zone("B", "B", 1)]);
 			component.computeSafeTime();
 			expect(component.displayedMeetingTime()).not.toBe("");
 
 			// Re-adding a zone bumps its weight in place, which changes the
 			// answer without changing the array length.
-			component.selectedLocalTimes.update(t => [
-				{ ...t[0], weight: t[0].weight + 3 },
-				t[1],
-			]);
+			component.selectedLocalTimes.update(t => [{ ...t[0], weight: t[0].weight + 3 }, t[1]]);
 			expect(component.isScheduleStale()).toBe(true);
 			expect(component.displayedMeetingTime()).toBe("");
 			expect(component.displayedDowntime()).toBe("");

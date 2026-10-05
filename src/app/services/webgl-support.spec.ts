@@ -53,7 +53,9 @@ describe("isWebGLAvailable", () => {
 	});
 
 	it("is false when getContext throws rather than returning null", () => {
-		stubCanvas(() => { throw new Error("WebGL is currently disabled"); });
+		stubCanvas(() => {
+			throw new Error("WebGL is currently disabled");
+		});
 		expect(isWebGLAvailable()).toBe(false);
 	});
 
@@ -66,7 +68,10 @@ describe("isWebGLAvailable", () => {
 
 	it("probes only once, because live contexts are a limited resource", () => {
 		let calls = 0;
-		stubCanvas(() => { calls++; return { isContextLost: () => false }; });
+		stubCanvas(() => {
+			calls++;
+			return { isContextLost: () => false };
+		});
 		isWebGLAvailable();
 		isWebGLAvailable();
 		isWebGLAvailable();

@@ -53,13 +53,13 @@ describe("TaxesComponent", () => {
 	// n > 1 (steep), n === 1, and n < 1 (shallow). The shallow case is the
 	// one a reviewer reading only the defaults never reaches.
 	const PAIRS: [number, number][] = [
-		[15060, 15060],	// defaults, n = 1.50
-		[15060, 20000],	// today's line higher, n = 1.99
-		[15060, 45180],	// far higher, n = 4.50
-		[22590, 15060],	// n = 1.00 exactly
-		[15060, 9000],	// today's line lower, n = 0.90
-		[15060, 5000],	// n = 0.50
-		[10000, 50000],	// n = 7.50
+		[15060, 15060], // defaults, n = 1.50
+		[15060, 20000], // today's line higher, n = 1.99
+		[15060, 45180], // far higher, n = 4.50
+		[22590, 15060], // n = 1.00 exactly
+		[15060, 9000], // today's line lower, n = 0.90
+		[15060, 5000], // n = 0.50
+		[10000, 50000], // n = 7.50
 	];
 
 	describe("the middle anchor is taxed at exactly 10%", () => {
@@ -175,7 +175,7 @@ describe("TaxesComponent", () => {
 			// taxes.html must not name an income as "where you keep the most"
 			// when take-home is still climbing at the edge of the chart. The
 			// exponent 1.5*L/L0 at or below 1 is exactly that regime.
-			withLines(15060, 9000);	// n = 0.90
+			withLines(15060, 9000); // n = 0.90
 			expect(component.exponent).toBeLessThanOrEqual(1);
 			expect(component.peakIsAtRangeEdge).toBe(true);
 			// The ternary search converges to the clamped edge, not exactly onto
@@ -184,7 +184,7 @@ describe("TaxesComponent", () => {
 		});
 
 		it("does not flag the regime where a genuine peak exists", () => {
-			withLines(15060, 15060);	// n = 1.50
+			withLines(15060, 15060); // n = 1.50
 			expect(component.peakIsAtRangeEdge).toBe(false);
 			expect(component.peakIncome).toBeLessThan(100 * component.current);
 		});
@@ -203,7 +203,7 @@ describe("TaxesComponent", () => {
 			component.userIncome = 80000;
 			(component as any).computeUser();
 			expect(component.userTaxRate).toBeCloseTo(component.taxRateAt(80000), 10);
-			expect(component.userTax).toBeCloseTo(80000 * component.userTaxRate / 100, 6);
+			expect(component.userTax).toBeCloseTo((80000 * component.userTaxRate) / 100, 6);
 			expect(component.userTakeHome).toBeCloseTo(80000 - component.userTax, 6);
 		});
 
@@ -223,7 +223,7 @@ describe("TaxesComponent", () => {
 		it("pulls an out-of-range income back onto the chart", () => {
 			withLines(15060, 15060);
 			component.userIncome = 900000;
-			withLines(15060, 1000);	// xMax collapses to 100,000
+			withLines(15060, 1000); // xMax collapses to 100,000
 			expect(component.userIncome).toBeLessThanOrEqual(100 * component.current);
 			expect(component.userIncome).toBeGreaterThanOrEqual(component.minIncome);
 		});
@@ -259,6 +259,119 @@ describe("TaxesComponent", () => {
 		});
 	});
 
+	describe("info popups", () => {
+		// The explanatory prose moved out of the template into tool-info.ts
+		// and surfaces through info icons, so the tool fits a phone viewport.
+		// A phone has no cursor, so the tap path is the only way in -- and a
+		// tap fires a synthetic mouseenter BEFORE click on mobile browsers,
+		// which is what makes a naive hover+click pair cancel itself out.
+		it("exposes a description for every labelled readout", () => {
+			for (const key of [
+				"baseline",
+				"current",
+				"steepness",
+				"peakIncome",
+				"peakTaxRate",
+				"middleAnchor",
+				"userIncome",
+			]) {
+				expect(component.info[key]).withContext(`missing info text for ${key}`).toBeTruthy();
+			}
+		});
+
+		it("starts with nothing open", () => {
+			expect(component.activeInfo).toBeNull();
+		});
+
+		it("opens and closes on hover for a mouse user", () => {
+			component.showInfo("baseline");
+			expect(component.activeInfo).toBe("baseline");
+			component.hideInfo("baseline");
+			expect(component.activeInfo).toBeNull();
+		});
+
+		it("does not close on a stale mouseleave from another marker", () => {
+			component.showInfo("baseline");
+			component.hideInfo("current");
+			expect(component.activeInfo).toBe("baseline");
+		});
+
+		// The full sequence a mobile browser delivers for one tap. The click
+		// is the part that matters: with a naive hover handler, mouseenter has
+		// already set the key, so the click's toggle reads "already open" and
+		// shuts it again -- the popup flashes and vanishes.
+		function tapSequence(key: string): void {
+			component.onTouchStart(key);
+			component.showInfo(key);
+			component.onMarkerClick(key);
+		}
+
+		it("opens on a full tap sequence including the trailing click", () => {
+			tapSequence("baseline");
+			expect(component.activeInfo)
+				.withContext("the synthetic mouseenter + click after a tap closed the popup")
+				.toBe("baseline");
+		});
+
+		it("closes on a second full tap of the same marker", () => {
+			tapSequence("baseline");
+			tapSequence("baseline");
+			expect(component.activeInfo).toBeNull();
+		});
+
+		it("ignores the synthetic mouseleave that follows a tap", () => {
+			component.onTouchStart("baseline");
+			component.hideInfo("baseline");
+			expect(component.activeInfo).toBe("baseline");
+		});
+
+		it("closes on a second tap of the same marker", () => {
+			component.onTouchStart("baseline");
+			component.onTouchStart("baseline");
+			expect(component.activeInfo).toBeNull();
+		});
+
+		it("switches directly between markers on tap", () => {
+			component.onTouchStart("baseline");
+			component.onTouchStart("current");
+			expect(component.activeInfo).toBe("current");
+		});
+
+		it("closes when the page is tapped away from any marker", () => {
+			// On a phone there is no pointer to move away, so an outside tap
+			// is the only dismissal gesture available.
+			component.onTouchStart("baseline");
+			const outside = document.createElement("div");
+			document.body.appendChild(outside);
+			component.onDocumentPointerDown({ target: outside } as unknown as Event);
+			expect(component.activeInfo).toBeNull();
+			outside.remove();
+		});
+
+		it("stays open when the popup's own text is tapped", () => {
+			component.onTouchStart("baseline");
+			const inside = document.createElement("div");
+			inside.className = "anchor-content";
+			document.body.appendChild(inside);
+			component.onDocumentPointerDown({ target: inside } as unknown as Event);
+			expect(component.activeInfo).toBe("baseline");
+			inside.remove();
+		});
+
+		it("toggles on a plain mouse click with no touch involved", () => {
+			component.onMarkerClick("baseline");
+			expect(component.activeInfo).toBe("baseline");
+			component.onMarkerClick("baseline");
+			expect(component.activeInfo).toBeNull();
+		});
+
+		it("closes on Escape for a keyboard user", () => {
+			component.showInfo("baseline");
+			component.onEscape();
+			expect(component.activeInfo).toBeNull();
+		});
+	});
+
 	describe("formatMoney", () => {
 		// The chart's axis ticks and every money readout go through this.
 		it("renders exact magnitudes", () => {
@@ -289,7 +402,7 @@ describe("TaxesComponent", () => {
 		it("matches the published tax on a known taxable income", () => {
 			// Taxable 100,000 -> 17,053 under 2024 single brackets.
 			const gross = 100000 + 14600;
-			expect(component.federalEffectiveRate(gross) * gross / 100).toBeCloseTo(17053, 0);
+			expect((component.federalEffectiveRate(gross) * gross) / 100).toBeCloseTo(17053, 0);
 		});
 
 		it("stays below the top marginal rate", () => {

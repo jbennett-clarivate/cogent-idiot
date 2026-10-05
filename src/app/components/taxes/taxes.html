@@ -1,12 +1,33 @@
 <div class="tax-page white-bg">
-
-
   <section class="entry-section" aria-label="Poverty line inputs">
     <div class="question-card">
-      <label for="baselineInput">What was the federal poverty line for a single adult in the year this system was adopted?</label>
-      <p class="hint">
-        This number acts as a permanent anchor. Once set, it does not change; it defines what the tax curve looks like under normal conditions.
-      </p>
+      <div class="label-row">
+        <label for="baselineInput">Poverty line when adopted</label>
+        <span
+          class="info-marker"
+          #baselineTrigger
+          tabindex="0"
+          role="button"
+          aria-label="About the adopted poverty line"
+          (mouseenter)="showInfo('baseline')"
+          (mouseleave)="hideInfo('baseline')"
+          (focus)="showInfo('baseline')"
+          (blur)="hideInfo('baseline')"
+          (touchstart)="onTouchStart('baseline')"
+          (click)="onMarkerClick('baseline')"
+          (keydown.enter)="toggleInfo('baseline')"
+          (keydown.space)="toggleInfo('baseline')"
+          ><img src="assets/images/info.svg" alt="More info"
+        /></span>
+        <div
+          class="anchor-content wide"
+          quadrantAnchor
+          [anchorTarget]="baselineTrigger"
+          [anchorVisible]="activeInfo === 'baseline'"
+        >
+          {{ info["baseline"] }}
+        </div>
+      </div>
       <div class="money-input">
         <span aria-hidden="true">$</span>
         <input
@@ -19,15 +40,37 @@
           (ngModelChange)="recompute()"
           name="baseline"
           inputmode="numeric"
-          aria-describedby="baselineHelp"
         />
       </div>
     </div>
     <div class="question-card">
-      <label for="currentInput">What is the federal poverty line for a single adult today?</label>
-      <p class="hint">
-        This number changes the shape of the tax curve. When it is higher than the baseline, high earners pay more; when it is lower, they receive relief.
-      </p>
+      <div class="label-row">
+        <label for="currentInput">Poverty line today</label>
+        <span
+          class="info-marker"
+          #currentTrigger
+          tabindex="0"
+          role="button"
+          aria-label="About today's poverty line"
+          (mouseenter)="showInfo('current')"
+          (mouseleave)="hideInfo('current')"
+          (focus)="showInfo('current')"
+          (blur)="hideInfo('current')"
+          (touchstart)="onTouchStart('current')"
+          (click)="onMarkerClick('current')"
+          (keydown.enter)="toggleInfo('current')"
+          (keydown.space)="toggleInfo('current')"
+          ><img src="assets/images/info.svg" alt="More info"
+        /></span>
+        <div
+          class="anchor-content wide"
+          quadrantAnchor
+          [anchorTarget]="currentTrigger"
+          [anchorVisible]="activeInfo === 'current'"
+        >
+          {{ info["current"] }}
+        </div>
+      </div>
       <div class="money-input">
         <span aria-hidden="true">$</span>
         <input
@@ -40,41 +83,171 @@
           (ngModelChange)="recompute()"
           name="current"
           inputmode="numeric"
-          aria-describedby="currentHelp"
         />
       </div>
     </div>
   </section>
+
   <section class="derived-grid" aria-label="Calculated values">
     <div class="derived-card">
-      <span class="derived-label">Curve steepness</span>
-      <strong>{{ exponent | number:'1.2-2' }}</strong>
-      <span class="derived-note">1.50 is neutral</span>
+      <div class="label-row">
+        <span class="derived-label">Curve steepness</span>
+        <span
+          class="info-marker"
+          #steepnessTrigger
+          tabindex="0"
+          role="button"
+          aria-label="About curve steepness"
+          (mouseenter)="showInfo('steepness')"
+          (mouseleave)="hideInfo('steepness')"
+          (focus)="showInfo('steepness')"
+          (blur)="hideInfo('steepness')"
+          (touchstart)="onTouchStart('steepness')"
+          (click)="onMarkerClick('steepness')"
+          (keydown.enter)="toggleInfo('steepness')"
+          (keydown.space)="toggleInfo('steepness')"
+          ><img src="assets/images/info.svg" alt="More info"
+        /></span>
+        <div
+          class="anchor-content wide"
+          quadrantAnchor
+          [anchorTarget]="steepnessTrigger"
+          [anchorVisible]="activeInfo === 'steepness'"
+        >
+          {{ info["steepness"] }}
+        </div>
+      </div>
+      <strong>{{ exponent | number: "1.2-2" }}</strong>
     </div>
+
     <div class="derived-card">
-      <span class="derived-label">Income where you keep the most</span>
-      <strong>{{ peakIsAtRangeEdge ? formatMoney(peakIncome) + '+' : formatMoney(peakIncome) }}</strong>
-      <span class="derived-note" *ngIf="peakIsAtRangeEdge">
-        no peak at this steepness &middot; take-home keeps rising past the chart
-      </span>
+      <div class="label-row">
+        <span class="derived-label">Peak take-home income</span>
+        <span
+          class="info-marker"
+          #peakTrigger
+          tabindex="0"
+          role="button"
+          aria-label="About peak take-home income"
+          (mouseenter)="showInfo('peakIncome')"
+          (mouseleave)="hideInfo('peakIncome')"
+          (focus)="showInfo('peakIncome')"
+          (blur)="hideInfo('peakIncome')"
+          (touchstart)="onTouchStart('peakIncome')"
+          (click)="onMarkerClick('peakIncome')"
+          (keydown.enter)="toggleInfo('peakIncome')"
+          (keydown.space)="toggleInfo('peakIncome')"
+          ><img src="assets/images/info.svg" alt="More info"
+        /></span>
+        <div
+          class="anchor-content wide"
+          quadrantAnchor
+          [anchorTarget]="peakTrigger"
+          [anchorVisible]="activeInfo === 'peakIncome'"
+        >
+          {{ info["peakIncome"] }}
+        </div>
+      </div>
+      <strong>{{ peakIsAtRangeEdge ? formatMoney(peakIncome) + "+" : formatMoney(peakIncome) }}</strong>
+      @if (peakIsAtRangeEdge) {
+        <span class="derived-note">no peak &middot; still rising</span>
+      }
     </div>
+
     <div class="derived-card">
-      <span class="derived-label">Your tax rate at peak take-home</span>
-      <strong>{{ peakTaxRate | number:'1.1-1' }}%</strong>
-      <span class="derived-note" *ngIf="peakIsAtRangeEdge">at the edge of the chart</span>
+      <div class="label-row">
+        <span class="derived-label">Rate at that income</span>
+        <span
+          class="info-marker"
+          #peakRateTrigger
+          tabindex="0"
+          role="button"
+          aria-label="About the rate at peak take-home"
+          (mouseenter)="showInfo('peakTaxRate')"
+          (mouseleave)="hideInfo('peakTaxRate')"
+          (focus)="showInfo('peakTaxRate')"
+          (blur)="hideInfo('peakTaxRate')"
+          (touchstart)="onTouchStart('peakTaxRate')"
+          (click)="onMarkerClick('peakTaxRate')"
+          (keydown.enter)="toggleInfo('peakTaxRate')"
+          (keydown.space)="toggleInfo('peakTaxRate')"
+          ><img src="assets/images/info.svg" alt="More info"
+        /></span>
+        <div
+          class="anchor-content wide"
+          quadrantAnchor
+          [anchorTarget]="peakRateTrigger"
+          [anchorVisible]="activeInfo === 'peakTaxRate'"
+        >
+          {{ info["peakTaxRate"] }}
+        </div>
+      </div>
+      <strong>{{ peakTaxRate | number: "1.1-1" }}%</strong>
+      @if (peakIsAtRangeEdge) {
+        <span class="derived-note">at chart edge</span>
+      }
     </div>
+
     <div class="derived-card">
-      <span class="derived-label">Middle anchor point</span>
+      <div class="label-row">
+        <span class="derived-label">Middle anchor</span>
+        <span
+          class="info-marker"
+          #anchorTrigger
+          tabindex="0"
+          role="button"
+          aria-label="About the middle anchor"
+          (mouseenter)="showInfo('middleAnchor')"
+          (mouseleave)="hideInfo('middleAnchor')"
+          (focus)="showInfo('middleAnchor')"
+          (blur)="hideInfo('middleAnchor')"
+          (touchstart)="onTouchStart('middleAnchor')"
+          (click)="onMarkerClick('middleAnchor')"
+          (keydown.enter)="toggleInfo('middleAnchor')"
+          (keydown.space)="toggleInfo('middleAnchor')"
+          ><img src="assets/images/info.svg" alt="More info"
+        /></span>
+        <div
+          class="anchor-content wide"
+          quadrantAnchor
+          [anchorTarget]="anchorTrigger"
+          [anchorVisible]="activeInfo === 'middleAnchor'"
+        >
+          {{ info["middleAnchor"] }}
+        </div>
+      </div>
       <strong>{{ formatMoney(middleAnchor) }}</strong>
-      <span class="derived-note">tax rate is always exactly 10%</span>
+      <span class="derived-note">always exactly 10%</span>
     </div>
   </section>
+
   <section class="income-explorer" aria-label="Optional income explorer">
-    <div class="income-copy">
-      <label for="incomeSlider">Optional: where would your income sit on the curve?</label>
-      <p class="hint">
-        Move the slider or type your yearly income. The black dot marks that income on the proposed tax-rate line.
-      </p>
+    <div class="label-row">
+      <label for="incomeSlider">Your income</label>
+      <span
+        class="info-marker"
+        #incomeTrigger
+        tabindex="0"
+        role="button"
+        aria-label="About the income explorer"
+        (mouseenter)="showInfo('userIncome')"
+        (mouseleave)="hideInfo('userIncome')"
+        (focus)="showInfo('userIncome')"
+        (blur)="hideInfo('userIncome')"
+        (touchstart)="onTouchStart('userIncome')"
+        (click)="onMarkerClick('userIncome')"
+        (keydown.enter)="toggleInfo('userIncome')"
+        (keydown.space)="toggleInfo('userIncome')"
+        ><img src="assets/images/info.svg" alt="More info"
+      /></span>
+      <div
+        class="anchor-content wide"
+        quadrantAnchor
+        [anchorTarget]="incomeTrigger"
+        [anchorVisible]="activeInfo === 'userIncome'"
+      >
+        {{ info["userIncome"] }}
+      </div>
     </div>
     <div class="income-controls">
       <input
@@ -104,15 +277,25 @@
       </div>
     </div>
     <div class="income-results">
-      <span>Tax rate: <strong>{{ userTaxRate | number:'1.1-1' }}%</strong></span>
-      <span>Tax paid: <strong>{{ formatMoney(userTax) }}</strong></span>
-      <span>Take-home: <strong>{{ formatMoney(userTakeHome) }}</strong></span>
+      <span
+        >Rate: <strong>{{ userTaxRate | number: "1.1-1" }}%</strong></span
+      >
+      <span
+        >Tax: <strong>{{ formatMoney(userTax) }}</strong></span
+      >
+      <span
+        >Take-home: <strong>{{ formatMoney(userTakeHome) }}</strong></span
+      >
     </div>
   </section>
+
   <section class="chart-section" aria-label="Tax graph">
-    <h2>Your Tax Rate at Every Income Level</h2>
+    <h2>Tax Rate at Every Income</h2>
     <div class="canvas-wrap">
-      <canvas #taxCanvas aria-label="Graph of proposed tax rate, current federal effective rate, and proposed take-home pay"></canvas>
+      <canvas
+        #taxCanvas
+        aria-label="Graph of proposed tax rate, current federal effective rate, and proposed take-home pay"
+      ></canvas>
     </div>
   </section>
 </div>

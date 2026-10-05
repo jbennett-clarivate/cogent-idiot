@@ -24,13 +24,13 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 	webglAvailable = signal<boolean>(true);
 
 	autoRotate = signal<boolean>(true);
-	solidity = signal<number>(0.10);
-	transmission = signal<number>(0.10);
-	thickness = signal<number>(0.20);
-	roughness = signal<number>(0.20);
-	metalness = signal<number>(0.10);
-	ior = signal<number>(1.20);
-	specularIntensity = signal<number>(1.00);
+	solidity = signal<number>(0.1);
+	transmission = signal<number>(0.1);
+	thickness = signal<number>(0.2);
+	roughness = signal<number>(0.2);
+	metalness = signal<number>(0.1);
+	ior = signal<number>(1.2);
+	specularIntensity = signal<number>(1.0);
 	tint = signal<string>("#7132ca");
 	specularColor = signal<string>("#000000");
 
@@ -180,7 +180,7 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 		const next = this.effectiveTransmission();
 		const was = this.material.transmission;
 		this.material.transmission = next;
-		if ((was <= 0) !== (next <= 0)) this.material.needsUpdate = true;
+		if (was <= 0 !== next <= 0) this.material.needsUpdate = true;
 	}
 
 	private onResize(): void {
@@ -297,4 +297,3 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 }
-

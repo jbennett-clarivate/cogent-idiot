@@ -31,14 +31,11 @@ function loadSource() {
 	const dir = mkdtempSync(join(tmpdir(), "emblem-src-"));
 	const out = join(dir, "emblem-source.mjs");
 	try {
-		execFileSync(join(repoRoot, "node_modules/.bin/esbuild"), [
-			sourceTs,
-			"--bundle",
-			"--format=esm",
-			"--platform=neutral",
-			`--outfile=${out}`,
-			"--log-level=warning",
-		], { stdio: "inherit" });
+		execFileSync(
+			join(repoRoot, "node_modules/.bin/esbuild"),
+			[sourceTs, "--bundle", "--format=esm", "--platform=neutral", `--outfile=${out}`, "--log-level=warning"],
+			{ stdio: "inherit" },
+		);
 		return import(`file://${out}`);
 	} finally {
 		process.on("exit", () => rmSync(dir, { recursive: true, force: true }));
@@ -89,13 +86,14 @@ function roundedPath(points, sharp) {
 }
 
 function writeFaceOn({ RODS, SPHERES }) {
-	const paths = RODS.map(rod =>
-		`      <!-- ${rod.name} -->\n` +
-		`      <path fill="${FILL}" stroke="${STROKE}" d="${roundedPath(rod.polygon, rod.sharp)}"/>`,
+	const paths = RODS.map(
+		rod =>
+			`      <!-- ${rod.name} -->\n` +
+			`      <path fill="${FILL}" stroke="${STROKE}" d="${roundedPath(rod.polygon, rod.sharp)}"/>`,
 	).join("\n");
 
-	const circles = SPHERES.map(s =>
-		`      <circle fill="${FILL}" stroke="${STROKE}" cx="${s.x}" cy="${s.y}" r="${s.r}"/>`,
+	const circles = SPHERES.map(
+		s => `      <circle fill="${FILL}" stroke="${STROKE}" cx="${s.x}" cy="${s.y}" r="${s.r}"/>`,
 	).join("\n");
 
 	const svg = `<?xml version="1.0" encoding="UTF-8"?>
@@ -132,14 +130,17 @@ function writeEdgeOn({ RODS, SPHERES }, { horizKey, label, fileName }) {
 		const line = rod.centerline;
 		const segs = line.length - 1;
 		// Normalized to [at, radius] pairs, matching buildEnvelopeSweep's radiusAt.
-		const profile = rod.radiusProfile === undefined
-			? undefined
-			: typeof rod.radiusProfile === "number"
-				? [[0, rod.radiusProfile], [1, rod.radiusProfile]]
-				: Array.isArray(rod.radiusProfile[0])
-					? rod.radiusProfile
-					: rod.radiusProfile.map((r, i, all) =>
-						[all.length === 1 ? 0 : i / (all.length - 1), r]);
+		const profile =
+			rod.radiusProfile === undefined
+				? undefined
+				: typeof rod.radiusProfile === "number"
+					? [
+							[0, rod.radiusProfile],
+							[1, rod.radiusProfile],
+						]
+					: Array.isArray(rod.radiusProfile[0])
+						? rod.radiusProfile
+						: rod.radiusProfile.map((r, i, all) => [all.length === 1 ? 0 : i / (all.length - 1), r]);
 		const radiusAt = at => {
 			if (profile.length === 1) return profile[0][1];
 			const t = Math.min(1, Math.max(0, at));
@@ -169,9 +170,7 @@ function writeEdgeOn({ RODS, SPHERES }, { horizKey, label, fileName }) {
 				// Fraction along the whole spine, so a taper spans the rod
 				// rather than restarting on each segment.
 				const along = (s + local) / segs;
-				const r = profile
-					? radiusAt(along)
-					: envelopeRadius(p, -ty, tx, rod.polygon);
+				const r = profile ? radiusAt(along) : envelopeRadius(p, -ty, tx, rod.polygon);
 				stations.push({ p, r });
 			}
 		}

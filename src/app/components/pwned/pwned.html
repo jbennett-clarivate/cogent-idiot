@@ -2,8 +2,8 @@
   <div class="pwned-intro">
     <p>
       Check whether a password has appeared in a known data breach. Type a password below and press the
-      <strong>Right Arrow</strong> key to check it. Only the first five characters of its hash ever leave your
-      browser, so the password itself is never sent anywhere.
+      <strong>Right Arrow</strong> key to check it. Only the first five characters of its hash ever leave your browser,
+      so the password itself is never sent anywhere.
     </p>
   </div>
   <form (submit)="$event.preventDefault()">
@@ -28,9 +28,7 @@
       </div>
     </div>
     <div class="flex-c h-center message-row" [ngSwitch]="state">
-      <p *ngSwitchCase="'safe'" class="msg-safe">
-        Good news \u00b7 this password was not found in any known breach.
-      </p>
+      <p *ngSwitchCase="'safe'" class="msg-safe">Good news \u00b7 this password was not found in any known breach.</p>
       <p *ngSwitchCase="'pwned'" class="msg-pwned">
         Warning \u00b7 this password has appeared in known breaches
         <strong>{{ breachCount.toLocaleString() }}</strong> times. Do not use it.

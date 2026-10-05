@@ -44,8 +44,12 @@ export class BayesComponent {
 		const confirmedSuspicionVal = this.confirmedSuspicion();
 		const falseSuspicionVal = this.falseSuspicion();
 		const confirmedFalseSuspicionVal = this.confirmedFalseSuspicion();
-		if (suspicionVal === null || confirmedSuspicionVal === null ||
-			falseSuspicionVal === null || confirmedFalseSuspicionVal === null) {
+		if (
+			suspicionVal === null ||
+			confirmedSuspicionVal === null ||
+			falseSuspicionVal === null ||
+			confirmedFalseSuspicionVal === null
+		) {
 			return 0;
 		}
 		const suspicionDecimal = suspicionVal / 100;
@@ -61,7 +65,7 @@ export class BayesComponent {
 		}
 
 		const displayAnswer = p_E_H / (p_E_H + p_E_NotH);
-		return Number((displayAnswer).toFixed(3));
+		return Number(displayAnswer.toFixed(3));
 	});
 
 	onSuspicionChange(): void {
@@ -103,4 +107,3 @@ export class BayesComponent {
 		return !this.rawAnswer() ? "✓ Start" : "♺ Reuse";
 	}
 }
-

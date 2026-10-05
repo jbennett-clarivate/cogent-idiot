@@ -3,10 +3,12 @@ import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { InputControllerDirective } from "../../directives/input-controller.directive";
 import { clamp, isPositiveNumber, toFiniteNumber } from "../../services/number-utils";
+import { QuadrantAnchorDirective } from "../../directives/quadrant-anchor.directive";
+import { TOOL_INFO } from "@app/config/tool-info";
 
 @Component({
 	selector: "app-taxes",
-	imports: [CommonModule, FormsModule, InputControllerDirective],
+	imports: [CommonModule, FormsModule, InputControllerDirective, QuadrantAnchorDirective],
 	templateUrl: "./taxes.html",
 	styleUrls: ["./taxes.scss"],
 })
@@ -15,6 +17,76 @@ export class TaxesComponent implements AfterViewInit {
 
 	readonly numberValidator = InputControllerDirective.numberValidator;
 	readonly noWhitespaceEnforcer = InputControllerDirective.noWhitespaceEnforcer;
+
+	// The explanatory prose lives in tool-info.ts and surfaces through info
+	// icons rather than inline paragraphs, so the tool fits a phone viewport.
+	readonly info = TOOL_INFO["/tools/taxes"].fields!;
+	activeInfo: string | null = null;
+
+	// One tap on a phone delivers touchstart, then a SYNTHETIC mouseenter, then
+	// a click. Handling all three naively makes the popup flash and vanish:
+	// touchstart opens it, mouseenter re-sets the same key, and the click's
+	// toggle then reads "already open" and shuts it.
+	//
+	// So touchstart owns the gesture and both follow-up events are swallowed:
+	// `hasTouch` permanently disables hover for this device, and
+	// `suppressNextClick` eats exactly the one click that belongs to the tap.
+	// A real mouse never sets either flag and keeps hover plus click.
+	private hasTouch = false;
+	private suppressNextClick = false;
+
+	onTouchStart(key: string): void {
+		this.hasTouch = true;
+		this.suppressNextClick = true;
+		this.toggleInfo(key);
+	}
+
+	onMarkerClick(key: string): void {
+		if (this.suppressNextClick) {
+			this.suppressNextClick = false;
+			return;
+		}
+		this.toggleInfo(key);
+	}
+
+	showInfo(key: string): void {
+		if (this.hasTouch) {
+			return;
+		}
+		this.activeInfo = key;
+	}
+
+	hideInfo(key: string): void {
+		if (this.hasTouch) {
+			return;
+		}
+		if (this.activeInfo === key) {
+			this.activeInfo = null;
+		}
+	}
+
+	toggleInfo(key: string): void {
+		this.activeInfo = this.activeInfo === key ? null : key;
+	}
+
+	// Any tap or click outside an info marker dismisses an open popup; on a
+	// phone there is no pointer to move away, so this is the only way back.
+	@HostListener("document:pointerdown", ["$event"])
+	onDocumentPointerDown(event: Event): void {
+		if (this.activeInfo === null) {
+			return;
+		}
+		const target = event.target as HTMLElement | null;
+		if (target?.closest(".info-marker") || target?.closest(".anchor-content")) {
+			return;
+		}
+		this.activeInfo = null;
+	}
+
+	@HostListener("document:keydown.escape")
+	onEscape(): void {
+		this.activeInfo = null;
+	}
 	private static readonly DEFAULT_POVERTY = 15060;
 
 	baseline: number = TaxesComponent.DEFAULT_POVERTY;
@@ -66,7 +138,7 @@ export class TaxesComponent implements AfterViewInit {
 			return;
 		}
 
-		this.exponent = 1.5 * L / L0;
+		this.exponent = (1.5 * L) / L0;
 		this.middleAnchor = 10 * L;
 
 		const xMax = 100 * L;
@@ -142,7 +214,7 @@ export class TaxesComponent implements AfterViewInit {
 		if (!isPositiveNumber(x) || !isPositiveNumber(L) || !isPositiveNumber(L0)) {
 			return 0;
 		}
-		const n = 1.5 * L / L0;
+		const n = (1.5 * L) / L0;
 		return 100 / (1 + 9 * Math.pow((10 * L) / x, n));
 	}
 
@@ -469,4 +541,3 @@ export class TaxesComponent implements AfterViewInit {
 		return "$" + Math.round(v);
 	}
 }
-

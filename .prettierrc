@@ -1,0 +1,19 @@
+{
+	"useTabs": true,
+	"tabWidth": 4,
+	"semi": true,
+	"singleQuote": false,
+	"printWidth": 120,
+	"trailingComma": "all",
+	"arrowParens": "avoid",
+	"overrides": [
+		{
+			"files": ["*.html"],
+			"options": { "parser": "angular", "useTabs": false, "tabWidth": 2 }
+		},
+		{
+			"files": ["*.json", "*.yml", "*.yaml", "*.md"],
+			"options": { "useTabs": false, "tabWidth": 2 }
+		}
+	]
+}

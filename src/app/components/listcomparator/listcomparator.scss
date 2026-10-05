@@ -1,135 +1,134 @@
-
 input:not([type="range"]) {
-  margin: 0 4px;
+	margin: 0 4px;
 }
 
 label[for^="file_input_list"] {
-  display: inline-block;
-  cursor: pointer;
-  font-weight: bold;
+	display: inline-block;
+	cursor: pointer;
+	font-weight: bold;
 }
 
 label[for^="file_input_list"]:hover {
-  text-decoration: none;
-  cursor: pointer;
+	text-decoration: none;
+	cursor: pointer;
 }
 
 textarea[name^="input_list"] {
-  resize: none;
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  flex: 1;
-  border: none;
-  padding: 10px;
+	resize: none;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	flex: 1;
+	border: none;
+	padding: 10px;
 }
 
 .height-500 {
-  height: 500px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+	height: 500px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
 }
 
 .width-half {
-  width: 100%;
-  max-width: 45%;
+	width: 100%;
+	max-width: 45%;
 }
 
 .output-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-top: 20px;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 10px;
+	margin-top: 20px;
 }
 
 .output-column {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-width: 0;
-  overflow: visible;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	min-width: 0;
+	overflow: visible;
 }
 
 .output-column ul {
-  flex: 1;
-  margin: 0;
-  overflow-y: auto;
-  min-height: 0;
+	flex: 1;
+	margin: 0;
+	overflow-y: auto;
+	min-height: 0;
 }
 
 .output-label {
-  font-weight: bold;
-  text-align: center;
-  font-size: 16px;
-  padding: 10px 10px 4px;
-  display: flex;
-  justify-content: center;
+	font-weight: bold;
+	text-align: center;
+	font-size: 16px;
+	padding: 10px 10px 4px;
+	display: flex;
+	justify-content: center;
 }
 
 .label-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }
 
 .output-label-row {
-  justify-content: center;
+	justify-content: center;
 }
 
 .flag-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
 }
 
 .output-display {
-  height: 15em;
-  border-top: 1px solid #000000;
-  padding: 10px;
-  overflow-y: auto;
-  background-color: #fff;
-  flex: 1;
+	height: 15em;
+	border-top: 1px solid #000000;
+	padding: 10px;
+	overflow-y: auto;
+	background-color: #fff;
+	flex: 1;
 }
 
 hr {
-  width: 100%;
+	width: 100%;
 }
 
 button:not(.allow-small) {
-  min-width: 130px;
+	min-width: 130px;
 }
 
 @media (max-width: 600px) {
-  .comparison-flags {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 8px;
-  }
+	.comparison-flags {
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: flex-start;
+		gap: 8px;
+	}
 
-  .comparison-flags label {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    text-align: left;
-  }
+	.comparison-flags label {
+		display: flex;
+		align-items: center;
+		width: 100%;
+		text-align: left;
+	}
 
-  .comparison-flags label input {
-    flex: 0 0 auto;
-    margin: 0 8px 0 0;
-  }
+	.comparison-flags label input {
+		flex: 0 0 auto;
+		margin: 0 8px 0 0;
+	}
 
-  .action-buttons {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
+	.action-buttons {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 8px;
+	}
 
-  .action-buttons button {
-    width: 100%;
-  }
+	.action-buttons button {
+		width: 100%;
+	}
 
-  .output-grid {
-    grid-template-columns: 1fr;
-  }
+	.output-grid {
+		grid-template-columns: 1fr;
+	}
 }

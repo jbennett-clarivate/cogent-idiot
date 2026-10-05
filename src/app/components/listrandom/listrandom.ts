@@ -45,7 +45,35 @@ export class ListrandomComponent {
 	private lowerCaseArray = "abcdefghijklmnopqrstuvwxyz".split("");
 	private upperCaseArray = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 	private numericArray = "0123456789".split("");
-	private specialCharArray = ["~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "-", "=", "[", "]", "|", "}", ";", "'", ":", "/", ".", ",", "?", ">"];
+	private specialCharArray = [
+		"~",
+		"!",
+		"@",
+		"#",
+		"$",
+		"%",
+		"^",
+		"&",
+		"*",
+		"(",
+		")",
+		"_",
+		"+",
+		"-",
+		"=",
+		"[",
+		"]",
+		"|",
+		"}",
+		";",
+		"'",
+		":",
+		"/",
+		".",
+		",",
+		"?",
+		">",
+	];
 	private utf8CharArray: string[] = [];
 	private benfordLawProbabilityArray = [301, 176, 125, 97, 79, 67, 58, 51, 46];
 	private benfordLawArray: string[] = [];
@@ -110,7 +138,14 @@ export class ListrandomComponent {
 		return mayContainValue;
 	}
 
-	private mustContainFunc(mayContainArrays: string[][], lower: boolean, upper: boolean, num: boolean, spec: boolean, utf8: boolean): string {
+	private mustContainFunc(
+		mayContainArrays: string[][],
+		lower: boolean,
+		upper: boolean,
+		num: boolean,
+		spec: boolean,
+		utf8: boolean,
+	): string {
 		for (let i = 0; i < mayContainArrays.length; i++) {
 			const innerArray = mayContainArrays[i];
 			let shuffle = false;
@@ -118,7 +153,7 @@ export class ListrandomComponent {
 				innerArray[0] = this.benfordLawArray[this.getRandomInt(this.benfordLawArray.length)];
 				shuffle = true;
 			}
-			if (spec && !(/[~!@#$%^&*()_+\-=[\]|};:/.,?><]/.test(innerArray.join("")))) {
+			if (spec && !/[~!@#$%^&*()_+\-=[\]|};:/.,?><]/.test(innerArray.join(""))) {
 				innerArray[1] = this.specialCharArray[this.getRandomInt(this.specialCharArray.length)];
 				shuffle = true;
 			}
@@ -149,7 +184,8 @@ export class ListrandomComponent {
 			if (dictionary.length === 0) {
 				dictionary = subDict;
 			} else {
-				let leftMult = 13, rightMult = 5;
+				let leftMult = 13,
+					rightMult = 5;
 				while (rightMult--) dictionary = dictionary.concat(dictionary);
 				while (leftMult--) dictionary = dictionary.concat(subDict);
 			}
@@ -164,7 +200,14 @@ export class ListrandomComponent {
 			mayContainArray.push(mayContainArrays[i].join(""));
 		}
 		this.mayContainListDisplay = mayContainArray.join("<br />");
-		this.mustContainListDisplay = this.mustContainFunc(mayContainArrays, this.lowercase, this.uppercase, this.numbers, this.special, this.utf8);
+		this.mustContainListDisplay = this.mustContainFunc(
+			mayContainArrays,
+			this.lowercase,
+			this.uppercase,
+			this.numbers,
+			this.special,
+			this.utf8,
+		);
 	}
 
 	reset() {
@@ -180,4 +223,3 @@ export class ListrandomComponent {
 		this.populateUTF8();
 	}
 }
-

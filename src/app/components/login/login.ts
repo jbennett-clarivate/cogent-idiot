@@ -50,10 +50,10 @@ export class LoginComponent implements OnInit {
 		this.updateProgress();
 
 		this.http.get<{ pepper: string }>(`${this.baseUrl}/auth/pepper`).subscribe({
-			next: (response) => {
+			next: response => {
 				this.pepper = response.pepper;
 			},
-			error: (error) => {
+			error: error => {
 				console.error("Failed to get pepper:", error);
 			},
 		});
@@ -100,17 +100,12 @@ export class LoginComponent implements OnInit {
 
 	private updateProgress() {
 		this.answeredQuestions = Object.values(this.checkedState).filter(Boolean).length;
-		this.progressPct = this.totalQuestions
-			? Math.round((this.answeredQuestions / this.totalQuestions) * 100)
-			: 0;
+		this.progressPct = this.totalQuestions ? Math.round((this.answeredQuestions / this.totalQuestions) * 100) : 0;
 	}
 
 	private saveChecklist() {
 		try {
-			localStorage.setItem(
-				LoginComponent.CHECKLIST_STORAGE_KEY,
-				JSON.stringify(this.checkedState),
-			);
+			localStorage.setItem(LoginComponent.CHECKLIST_STORAGE_KEY, JSON.stringify(this.checkedState));
 		} catch (e) {
 			console.error("Failed to save checklist:", e);
 		}
@@ -134,7 +129,7 @@ export class LoginComponent implements OnInit {
 		}
 
 		this.http.post<{ salt: string }>(`${this.baseUrl}/auth/salt`, { username: this.username }).subscribe({
-			next: (response) => {
+			next: response => {
 				this.salt = response.salt;
 				this.showPasswordField = true;
 				this.errorMessage = "";
@@ -143,7 +138,7 @@ export class LoginComponent implements OnInit {
 					this.passwordInput?.nativeElement.focus();
 				}, 0);
 			},
-			error: (error) => {
+			error: error => {
 				this.errorMessage = "User not found";
 				console.error("Failed to get salt:", error);
 			},
@@ -162,23 +157,25 @@ export class LoginComponent implements OnInit {
 			const pepperedDHP = dhp + this.pepper;
 			const hashedPepperedPassword = await this.sha256(pepperedDHP);
 
-			this.http.post<{ success: boolean, email?: string, error?: string }>(`${this.baseUrl}/login`, {
-				hashedPepperedPassword,
-			}).subscribe({
-				next: (response) => {
-					if (response.success && response.email) {
-						// Update auth service state
-						this.authService.setAuthenticatedUser(response.email);
-						this.router.navigate(["/home"]);
-					} else {
-						this.errorMessage = response.error || "Login failed";
-					}
-				},
-				error: (error) => {
-					this.errorMessage = "Login failed";
-					console.error("Login error:", error);
-				},
-			});
+			this.http
+				.post<{ success: boolean; email?: string; error?: string }>(`${this.baseUrl}/login`, {
+					hashedPepperedPassword,
+				})
+				.subscribe({
+					next: response => {
+						if (response.success && response.email) {
+							// Update auth service state
+							this.authService.setAuthenticatedUser(response.email);
+							this.router.navigate(["/home"]);
+						} else {
+							this.errorMessage = response.error || "Login failed";
+						}
+					},
+					error: error => {
+						this.errorMessage = "Login failed";
+						console.error("Login error:", error);
+					},
+				});
 		} catch (error) {
 			this.errorMessage = "Error processing login";
 			console.error("Hashing error:", error);
@@ -206,4 +203,3 @@ export class LoginComponent implements OnInit {
 		return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 	}
 }
-

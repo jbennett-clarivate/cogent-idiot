@@ -53,8 +53,7 @@ describe("IceComponent WebGL fallback", () => {
 		expect(host.querySelector(".webgl-unavailable")).withContext("fallback notice").toBeTruthy();
 		expect(host.querySelector("canvas.ice-canvas")).withContext("canvas").toBeNull();
 		// The notice has to say why, or it is just a different blank box.
-		expect(host.querySelector(".webgl-unavailable")!.textContent)
-			.toContain("privacy.resistFingerprinting");
+		expect(host.querySelector(".webgl-unavailable")!.textContent).toContain("privacy.resistFingerprinting");
 
 		resetWebGLSupportCache();
 	});

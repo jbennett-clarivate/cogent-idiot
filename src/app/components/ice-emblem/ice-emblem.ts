@@ -9,7 +9,7 @@ import { isWebGLAvailable } from "@services/webgl-support";
 // and a transparent background so it floats over whatever is behind it.
 @Component({
 	selector: "app-ice-emblem",
-	template: "<canvas #emblemCanvas class=\"emblem-canvas\"></canvas>",
+	template: '<canvas #emblemCanvas class="emblem-canvas"></canvas>',
 	styleUrls: ["./ice-emblem.scss"],
 })
 export class IceEmblemComponent implements AfterViewInit, OnDestroy {
@@ -105,12 +105,12 @@ export class IceEmblemComponent implements AfterViewInit, OnDestroy {
 		// folded into transmission (lerp(1, 0.90, 0.10) = 0.99).
 		this.material = new THREE.MeshPhysicalMaterial({
 			color: new THREE.Color("#314e7b"),
-			metalness: 0.10,
-			roughness: 0.20,
-			transmission: 0.10,
-			thickness: 0.20,
-			ior: 1.20,
-			specularIntensity: 1.00,
+			metalness: 0.1,
+			roughness: 0.2,
+			transmission: 0.1,
+			thickness: 0.2,
+			ior: 1.2,
+			specularIntensity: 1.0,
 			specularColor: new THREE.Color("#000000"),
 			clearcoat: 1,
 			clearcoatRoughness: 0.06,

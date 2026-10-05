@@ -9,8 +9,7 @@ import { Router } from "@angular/router";
 	styleUrls: ["./home.scss"],
 })
 export class HomeComponent {
-	constructor(private router: Router) {
-	}
+	constructor(private router: Router) {}
 	tools = [
 		{
 			name: "Bayes' Theorem",
@@ -61,4 +60,3 @@ export class HomeComponent {
 		this.router.navigate([route]).catch(err => console.error("Navigation failed:", err));
 	}
 }
-

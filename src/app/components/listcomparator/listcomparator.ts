@@ -58,7 +58,10 @@ export class ListcomparatorComponent implements OnInit {
 	processInput(input: string): string[] {
 		const delimiters = this.selectedDelimiters();
 		const regex = delimiters.length ? new RegExp(`[${delimiters.join("")}]`, "g") : /[\n]/g;
-		let items = input.split(regex).map(x => x.trim()).filter(x => x);
+		let items = input
+			.split(regex)
+			.map(x => x.trim())
+			.filter(x => x);
 		if (!this.caseSensitive()) items = items.map(x => x.toLowerCase());
 		if (this.dedupe()) items = Array.from(new Set(items));
 		return items;
@@ -69,17 +72,15 @@ export class ListcomparatorComponent implements OnInit {
 	}
 
 	levenshtein(a: string, b: string): number {
-		const matrix = Array(a.length + 1).fill(null).map(() => Array(b.length + 1).fill(null));
+		const matrix = Array(a.length + 1)
+			.fill(null)
+			.map(() => Array(b.length + 1).fill(null));
 		for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
 		for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
 		for (let i = 1; i <= a.length; i++) {
 			for (let j = 1; j <= b.length; j++) {
 				const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-				matrix[i][j] = Math.min(
-					matrix[i - 1][j] + 1,
-					matrix[i][j - 1] + 1,
-					matrix[i - 1][j - 1] + cost,
-				);
+				matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost);
 			}
 		}
 		return matrix[a.length][b.length];
@@ -90,7 +91,10 @@ export class ListcomparatorComponent implements OnInit {
 		if (!file) return;
 		this.loadingA.set(true);
 		this.errorA.set("");
-		if (!["text/plain", "text/csv", "text/tab-separated-values"].includes(file.type) && !file.name.match(/\.(txt|csv|tsv)$/i)) {
+		if (
+			!["text/plain", "text/csv", "text/tab-separated-values"].includes(file.type) &&
+			!file.name.match(/\.(txt|csv|tsv)$/i)
+		) {
 			this.errorA.set("Unsupported file type");
 			this.loadingA.set(false);
 			return;
@@ -114,7 +118,10 @@ export class ListcomparatorComponent implements OnInit {
 		if (!file) return;
 		this.loadingB.set(true);
 		this.errorB.set("");
-		if (!["text/plain", "text/csv", "text/tab-separated-values"].includes(file.type) && !file.name.match(/\.(txt|csv|tsv)$/i)) {
+		if (
+			!["text/plain", "text/csv", "text/tab-separated-values"].includes(file.type) &&
+			!file.name.match(/\.(txt|csv|tsv)$/i)
+		) {
 			this.errorB.set("Unsupported file type");
 			this.loadingB.set(false);
 			return;

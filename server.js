@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -31,57 +30,74 @@ if (!isLocalhost) {
 		database: process.env.DB_NAME,
 		waitForConnections: true,
 		connectionLimit: 10,
-		queueLimit: 0
+		queueLimit: 0,
 	});
 }
 
 const corsOptions = {
-	origin: isLocalhost ?
-		["http://localhost:4200", "http://localhost:3000"] : process.env.ALLOWED_ORIGIN || true,
+	origin: isLocalhost ? ["http://localhost:4200", "http://localhost:3000"] : process.env.ALLOWED_ORIGIN || true,
 	methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 	credentials: true,
-	optionsSuccessStatus: 200
+	optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
 
-app.use(helmet({
-	contentSecurityPolicy: {
-		directives: {
-			defaultSrc: ["'self'"],
-			fontSrc: ["'self'", "data:"],
-			styleSrc: ["'self'", "'unsafe-inline'", "data:"],
-			imgSrc: ["'self'", "data:"],
-			scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "www.google-analytics.com", "www.googletagmanager.com"],
-			scriptSrcAttr: ["'self'", "'unsafe-inline'"],
-			connectSrc: ["'self'", "api.pwnedpasswords.com", "www.google-analytics.com", ...(isLocalhost ? ["http://localhost:*"] : [])]
-		}
-	},
-	hsts: {
-		maxAge: 31536000,
-		includeSubDomains: true
-	},
-	frameguard: {action: "sameorigin"},
-	referrerPolicy: {policy: "same-origin"}
-}));
+app.use(
+	helmet({
+		contentSecurityPolicy: {
+			directives: {
+				defaultSrc: ["'self'"],
+				fontSrc: ["'self'", "data:"],
+				styleSrc: ["'self'", "'unsafe-inline'", "data:"],
+				imgSrc: ["'self'", "data:"],
+				scriptSrc: [
+					"'self'",
+					"'unsafe-inline'",
+					"'unsafe-eval'",
+					"www.google-analytics.com",
+					"www.googletagmanager.com",
+				],
+				scriptSrcAttr: ["'self'", "'unsafe-inline'"],
+				connectSrc: [
+					"'self'",
+					"api.pwnedpasswords.com",
+					"www.google-analytics.com",
+					...(isLocalhost ? ["http://localhost:*"] : []),
+				],
+			},
+		},
+		hsts: {
+			maxAge: 31536000,
+			includeSubDomains: true,
+		},
+		frameguard: { action: "sameorigin" },
+		referrerPolicy: { policy: "same-origin" },
+	}),
+);
 
 const sessionConfig = {
 	secret: process.env.SESSION_SECRET || "default_secret_for_development",
-	resave: true, saveUninitialized: true,
-	rolling: true, cookie: {
-		secure: false, httpOnly: true,
+	resave: true,
+	saveUninitialized: true,
+	rolling: true,
+	cookie: {
+		secure: false,
+		httpOnly: true,
 		maxAge: 24 * 60 * 60 * 1000,
-		sameSite: "lax"
-	}
+		sameSite: "lax",
+	},
 };
 
 if (isGoDaddy || !isLocalhost) {
 	sessionConfig.store = new FileStore({
 		path: "./sessions",
-		ttl: 86400, retries: 2,
-		reapInterval: 3600, logFn: function (message) {
+		ttl: 86400,
+		retries: 2,
+		reapInterval: 3600,
+		logFn: function (message) {
 			console.log("FileStore:", message);
-		}
+		},
 	});
 	console.log("Using FileStore for session management");
 } else {
@@ -100,26 +116,28 @@ if (DEBUG_AUTH) {
 }
 
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
 	console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
 	next();
 });
 
-app.use(express.static(path.join(__dirname, "public_html"), {
-	setHeaders: (res, path) => {
-		if (path.match(/\.(otf|ico|pdf|flv)$/)) {
-			res.setHeader("Cache-Control", "max-age=29030400, public");
-		} else if (path.match(/\.(jpg|jpeg|png|gif|swf|svg)$/)) {
-			res.setHeader("Cache-Control", "max-age=2419200, public");
-		} else if (path.match(/\.(xml|txt|css|js)$/)) {
-			res.setHeader("Cache-Control", "max-age=608400, public");
-		} else if (path.match(/\.(phtml|html|htm|php)$/)) {
-			res.setHeader("Cache-Control", "max-age=1800, public");
-		}
-	}
-}));
+app.use(
+	express.static(path.join(__dirname, "public_html"), {
+		setHeaders: (res, path) => {
+			if (path.match(/\.(otf|ico|pdf|flv)$/)) {
+				res.setHeader("Cache-Control", "max-age=29030400, public");
+			} else if (path.match(/\.(jpg|jpeg|png|gif|swf|svg)$/)) {
+				res.setHeader("Cache-Control", "max-age=2419200, public");
+			} else if (path.match(/\.(xml|txt|css|js)$/)) {
+				res.setHeader("Cache-Control", "max-age=608400, public");
+			} else if (path.match(/\.(phtml|html|htm|php)$/)) {
+				res.setHeader("Cache-Control", "max-age=1800, public");
+			}
+		},
+	}),
+);
 
 app.use((req, res, next) => {
 	req.apiBase = isLocalhost ? API_URL : "";
@@ -132,14 +150,15 @@ const mockDatabase = {
 		{
 			EMAIL: "test@example.com",
 			PASSWORD: "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
-			SALT: "salt123"
+			SALT: "salt123",
 		},
 		{
 			EMAIL: "user@test.com",
-			PASSWORD: "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86",
-			SALT: "abc123"
-		}
-	]
+			PASSWORD:
+				"b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86",
+			SALT: "abc123",
+		},
+	],
 };
 
 function safeStringCompare(str1, str2, caseSensitive = false) {
@@ -163,7 +182,8 @@ function timingSafeEqual(a, b) {
 }
 
 function deterministicFakeSalt(username) {
-	return crypto.createHmac("sha256", process.env.SESSION_SECRET || "default_secret_for_development")
+	return crypto
+		.createHmac("sha256", process.env.SESSION_SECRET || "default_secret_for_development")
 		.update(username)
 		.digest("hex")
 		.slice(0, 16);
@@ -176,13 +196,13 @@ async function queryDatabase(query, params) {
 		if (query.includes("SELECT SALT FROM USER WHERE EMAIL")) {
 			const email = params[0];
 			const user = mockDatabase.users.find(u => u.EMAIL === email);
-			return [user ? [{SALT: user.SALT}] : []];
+			return [user ? [{ SALT: user.SALT }] : []];
 		}
 
 		if (query.includes("SELECT PASSWORD, EMAIL FROM USER WHERE EMAIL")) {
 			const email = params[0];
 			const user = mockDatabase.users.find(u => u.EMAIL === email);
-			return [user ? [{PASSWORD: user.PASSWORD, EMAIL: user.EMAIL}] : []];
+			return [user ? [{ PASSWORD: user.PASSWORD, EMAIL: user.EMAIL }] : []];
 		}
 
 		return [[]];
@@ -195,7 +215,7 @@ const requireAuth = (req, res, next) => {
 	if (req.session && req.session.login) {
 		return next();
 	} else {
-		return res.status(401).json({error: "Authentication required"});
+		return res.status(401).json({ error: "Authentication required" });
 	}
 };
 
@@ -205,7 +225,7 @@ app.get("/api/health", (req, res) => {
 		message: "Server is running",
 		environment: isLocalhost ? "development" : "production",
 		apiUrl: req.apiBase,
-		timestamp: new Date().toISOString()
+		timestamp: new Date().toISOString(),
 	});
 });
 
@@ -229,15 +249,15 @@ app.get("/api/auth/pepper", (req, res) => {
 	console.log("Generated pepper:", pepper);
 	console.log("Session after pepper storage:", JSON.stringify(req.session, null, 2));
 
-	req.session.save((err) => {
+	req.session.save(err => {
 		if (err) {
 			console.error("Session save error:", err);
-			return res.status(500).json({error: "Session save failed"});
+			return res.status(500).json({ error: "Session save failed" });
 		}
 
 		console.log("Pepper session saved successfully");
 		console.log("=== PEPPER REQUEST END ===");
-		res.json({pepper});
+		res.json({ pepper });
 	});
 });
 
@@ -247,20 +267,17 @@ app.post("/api/auth/salt", async (req, res) => {
 	console.log("Session before salt lookup:", JSON.stringify(req.session, null, 2));
 	console.log("Session ID:", req.sessionID);
 
-	const {username} = req.body;
+	const { username } = req.body;
 
 	if (!username || username.length > 256) {
-		return res.status(400).json({error: "Invalid username"});
+		return res.status(400).json({ error: "Invalid username" });
 	}
 
 	try {
 		const normalizedUsername = username.toLowerCase().trim();
 		let salt;
 		if (!isLocalhost) {
-			const [rows] = await queryDatabase(
-				"SELECT SALT FROM USER WHERE EMAIL = ?",
-				[normalizedUsername]
-			);
+			const [rows] = await queryDatabase("SELECT SALT FROM USER WHERE EMAIL = ?", [normalizedUsername]);
 			salt = rows.length > 0 ? rows[0].SALT : deterministicFakeSalt(normalizedUsername);
 		} else {
 			salt = "salt123";
@@ -271,20 +288,19 @@ app.post("/api/auth/salt", async (req, res) => {
 
 		console.log("Session after storing username and salt:", JSON.stringify(req.session, null, 2));
 
-		req.session.save((err) => {
+		req.session.save(err => {
 			if (err) {
 				console.error("Session save error:", err);
-				return res.status(500).json({error: "Session save failed"});
+				return res.status(500).json({ error: "Session save failed" });
 			}
 
 			console.log("Session saved successfully");
 			console.log("=== SALT REQUEST END ===");
-			res.json({salt});
+			res.json({ salt });
 		});
-
 	} catch (error) {
 		console.error("Database error:", error);
-		res.status(500).json({error: "Server error"});
+		res.status(500).json({ error: "Server error" });
 	}
 });
 
@@ -293,10 +309,10 @@ app.post("/api/login", async (req, res) => {
 	console.log("Request body:", req.body);
 	console.log("Session before login:", JSON.stringify(req.session, null, 2));
 
-	const {hashedPepperedPassword} = req.body;
-	const {username, salt, pepper} = req.session;
+	const { hashedPepperedPassword } = req.body;
+	const { username, salt, pepper } = req.session;
 
-	console.log("Extracted session values:", {username, salt, pepper: pepper ? "present" : "missing"});
+	console.log("Extracted session values:", { username, salt, pepper: pepper ? "present" : "missing" });
 
 	if (!hashedPepperedPassword || !username || !salt || !pepper) {
 		console.log("Missing session data:", {
@@ -305,31 +321,32 @@ app.post("/api/login", async (req, res) => {
 			salt: salt || "missing",
 			pepper: pepper || "missing",
 			sessionID: req.sessionID,
-			fullSession: req.session
+			fullSession: req.session,
 		});
-		return res.status(400).json({error: "Invalid login attempt - session data missing"});
+		return res.status(400).json({ error: "Invalid login attempt - session data missing" });
 	}
 
 	try {
 		let rows = [];
 		if (!isLocalhost) {
-			[rows] = await queryDatabase(
-				"SELECT PASSWORD, EMAIL FROM USER WHERE EMAIL = ?",
-				[username]
-			);
+			[rows] = await queryDatabase("SELECT PASSWORD, EMAIL FROM USER WHERE EMAIL = ?", [username]);
 
 			if (rows.length !== 1) {
-				return res.status(401).json({error: "Authentication failed"});
+				return res.status(401).json({ error: "Authentication failed" });
 			}
 		} else {
-			const mockDHP = crypto.createHash("sha256").update("salt123" + "123456").digest("hex");
-			rows.push({PASSWORD: mockDHP, EMAIL: "test@example.com"});
+			const mockDHP = crypto
+				.createHash("sha256")
+				.update("salt123" + "123456")
+				.digest("hex");
+			rows.push({ PASSWORD: mockDHP, EMAIL: "test@example.com" });
 		}
 
 		const storedDHP = rows[0].PASSWORD;
 		const email = rows[0].EMAIL;
 
-		const expectedHash = crypto.createHash("sha256")
+		const expectedHash = crypto
+			.createHash("sha256")
 			.update(storedDHP + pepper)
 			.digest("hex");
 
@@ -346,14 +363,14 @@ app.post("/api/login", async (req, res) => {
 			delete req.session.pepper;
 
 			console.log("Login successful, session after cleanup:", JSON.stringify(req.session, null, 2));
-			res.json({success: true, email});
+			res.json({ success: true, email });
 		} else {
 			console.log("Password hash mismatch");
-			res.status(401).json({error: "Authentication failed"});
+			res.status(401).json({ error: "Authentication failed" });
 		}
 	} catch (error) {
 		console.error("Login error:", error);
-		res.status(500).json({error: "Server error"});
+		res.status(500).json({ error: "Server error" });
 	}
 
 	console.log("=== LOGIN REQUEST END ===");
@@ -364,20 +381,20 @@ app.get("/api/auth/status", (req, res) => {
 		res.json({
 			authenticated: true,
 			email: req.session.login,
-			logged_in_at: req.session.logged_in_at
+			logged_in_at: req.session.logged_in_at,
 		});
 	} else {
-		res.json({authenticated: false});
+		res.json({ authenticated: false });
 	}
 });
 
 app.post("/api/logout", (req, res) => {
-	req.session.destroy((err) => {
+	req.session.destroy(err => {
 		if (err) {
 			console.error("Session destruction error:", err);
-			return res.status(500).json({error: "Logout failed"});
+			return res.status(500).json({ error: "Logout failed" });
 		}
-		res.json({success: true});
+		res.json({ success: true });
 	});
 });
 
@@ -387,35 +404,35 @@ app.post("/api/auth/refresh", (req, res) => {
 		res.json({
 			authenticated: true,
 			email: req.session.login,
-			logged_in_at: req.session.logged_in_at
+			logged_in_at: req.session.logged_in_at,
 		});
 	} else {
-		res.json({authenticated: false});
+		res.json({ authenticated: false });
 	}
 });
 
 app.get("/api/tools", (req, res) => {
 	const tools = [
-		{id: "bayes", name: "Bayes Calculator", description: "Calculate Bayesian probabilities"},
-		{id: "listcomparator", name: "List Comparator", description: "Compare two lists"},
+		{ id: "bayes", name: "Bayes Calculator", description: "Calculate Bayesian probabilities" },
+		{ id: "listcomparator", name: "List Comparator", description: "Compare two lists" },
 		{ id: "listrandom", name: "List Randomizer", description: "Randomize list order" },
-		{id: "safecron", name: "Safe Cron", description: "Manage cron jobs safely"},
+		{ id: "safecron", name: "Safe Cron", description: "Manage cron jobs safely" },
 		{ id: "taxes", name: "Tax Calculator", description: "Calculate taxes" },
-		{ id: "ice", name: "Ice Sculpture", description: "3D ice sculpture viewer" }
+		{ id: "ice", name: "Ice Sculpture", description: "3D ice sculpture viewer" },
 	];
 	res.json(tools);
 });
 
 app.use((err, req, res, next) => {
 	console.error("Express error:", err);
-	res.status(500).json({error: "Internal server error"});
+	res.status(500).json({ error: "Internal server error" });
 });
 
 app.get("*", (req, res) => {
 	console.log(`Catch-all route hit: ${req.path}`);
 
 	if (req.path.startsWith("/api") || req.path.includes(".")) {
-		return res.status(404).json({error: "Not found"});
+		return res.status(404).json({ error: "Not found" });
 	}
 
 	if (!req.session || !req.session.login) {
@@ -427,7 +444,7 @@ app.get("*", (req, res) => {
 	const indexPath = path.join(__dirname, "public_html/index.html");
 	console.log(`Serving index.html from: ${indexPath}`);
 
-	res.sendFile(indexPath, (err) => {
+	res.sendFile(indexPath, err => {
 		if (err) {
 			console.error("Error serving index.html:", err);
 			res.status(500).send("Error loading page");
@@ -435,7 +452,7 @@ app.get("*", (req, res) => {
 	});
 });
 
-process.on("uncaughtException", (err) => {
+process.on("uncaughtException", err => {
 	console.error("Uncaught Exception:", err);
 });
 

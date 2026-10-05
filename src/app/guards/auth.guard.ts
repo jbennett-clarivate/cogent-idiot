@@ -10,8 +10,7 @@ export class AuthGuard implements CanActivate {
 	constructor(
 		private authService: AuthService,
 		private router: Router,
-	) {
-	}
+	) {}
 
 	canActivate(): Observable<boolean> {
 		return this.authService.isAuthenticated$.pipe(
