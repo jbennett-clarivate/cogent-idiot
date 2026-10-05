@@ -25,3 +25,34 @@
 .control-help {
   cursor: help;
 }
+// Shown in place of the canvas when the browser refuses a WebGL context. The
+// container it sits in is black, so this sets its own readable foreground
+// rather than inheriting the page's.
+.webgl-unavailable {
+  max-width: 46ch;
+  padding: 2rem;
+  text-align: center;
+  color: #c7d4e3;
+
+  h3 {
+    margin: 0 0 0.75rem;
+    color: #ffffff;
+  }
+
+  p {
+    margin: 0 0 0.75rem;
+    line-height: 1.5;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  code {
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    background: #1c2a3a;
+    color: #e6eef7;
+    font-size: 0.95em;
+  }
+}

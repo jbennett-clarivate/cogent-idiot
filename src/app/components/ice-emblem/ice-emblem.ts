@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, NgZone, Inp
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { buildIceEmblem } from "@components/ice/shapes";
+import { isWebGLAvailable } from "@services/webgl-support";
 
 // A decorative, non-interactive miniature of the `ice` tool's emblem: same
 // geometry and the same default material, but no controls, no OrbitControls
@@ -30,18 +31,44 @@ export class IceEmblemComponent implements AfterViewInit, OnDestroy {
 	constructor(private ngZone: NgZone) {}
 
 	ngAfterViewInit(): void {
-		this.initScene();
+		// Purely decorative, so a browser that blocks WebGL (LibreWolf and other
+		// hardened profiles disable it by default) should get a blank space and
+		// no console noise, not a broken login form. The `ice` tool explains the
+		// situation instead, because there the emblem is the whole point.
+		if (!isWebGLAvailable()) return;
+		try {
+			this.initScene();
+		} catch {
+			// The probe can pass and creation still fail (driver blocklist, too
+			// many live contexts); nothing here is worth interrupting a login for.
+			this.teardown();
+			return;
+		}
 		this.ngZone.runOutsideAngular(() => this.animate());
 	}
 
 	ngOnDestroy(): void {
+		this.teardown();
+	}
+
+	// Also used to clean up a half-built scene when WebGL setup throws, so every
+	// step is independently optional.
+	private teardown(): void {
 		if (this.animationId !== undefined) cancelAnimationFrame(this.animationId);
+		this.animationId = undefined;
 		this.resizeObserver?.disconnect();
 		this.mesh?.geometry.dispose();
 		this.material?.dispose();
 		this.environment?.dispose();
 		this.pmrem?.dispose();
 		this.renderer?.dispose();
+		this.resizeObserver = undefined;
+		this.mesh = undefined;
+		this.material = undefined;
+		this.scene = undefined;
+		this.environment = undefined;
+		this.pmrem = undefined;
+		this.renderer = undefined;
 	}
 
 	private initScene(): void {

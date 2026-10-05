@@ -53,11 +53,15 @@
     </div>
     <div class="derived-card">
       <span class="derived-label">Income where you keep the most</span>
-      <strong>{{ formatMoney(peakIncome) }}</strong>
+      <strong>{{ peakIsAtRangeEdge ? formatMoney(peakIncome) + '+' : formatMoney(peakIncome) }}</strong>
+      <span class="derived-note" *ngIf="peakIsAtRangeEdge">
+        no peak at this steepness &middot; take-home keeps rising past the chart
+      </span>
     </div>
     <div class="derived-card">
       <span class="derived-label">Your tax rate at peak take-home</span>
       <strong>{{ peakTaxRate | number:'1.1-1' }}%</strong>
+      <span class="derived-note" *ngIf="peakIsAtRangeEdge">at the edge of the chart</span>
     </div>
     <div class="derived-card">
       <span class="derived-label">Middle anchor point</span>

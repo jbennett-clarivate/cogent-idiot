@@ -7,6 +7,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { buildIceEmblem } from "./shapes";
 import { quadrantAnchorPositioner } from "@services/quadrant-anchor-positioner";
+import { isWebGLAvailable } from "@services/webgl-support";
 
 @Component({
 	selector: "app-ice",
@@ -16,6 +17,11 @@ import { quadrantAnchorPositioner } from "@services/quadrant-anchor-positioner";
 })
 export class IceComponent implements AfterViewInit, OnDestroy {
 	@ViewChild("iceCanvas", { static: false }) iceCanvas!: ElementRef<HTMLCanvasElement>;
+
+	// False on browsers that refuse a WebGL context (LibreWolf and other
+	// hardened profiles disable WebGL by default); the template then shows an
+	// explanation in place of the canvas.
+	webglAvailable = signal<boolean>(true);
 
 	autoRotate = signal<boolean>(true);
 	solidity = signal<number>(0.10);
@@ -42,7 +48,20 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 	constructor(private ngZone: NgZone) {}
 
 	ngAfterViewInit(): void {
-		this.initScene();
+		if (!isWebGLAvailable()) {
+			this.webglAvailable.set(false);
+			return;
+		}
+		try {
+			this.initScene();
+		} catch (error) {
+			// The probe can pass and creation still fail (driver blocklist, too
+			// many live contexts). Fall back rather than break the route.
+			console.error("[ice] WebGL setup failed, falling back to notice:", error);
+			this.webglAvailable.set(false);
+			this.teardown();
+			return;
+		}
 		this.ngZone.runOutsideAngular(() => this.animate());
 	}
 
@@ -50,7 +69,14 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 		// Tooltips live on the body, so they would outlast this component if it
 		// were destroyed while one was open.
 		document.querySelectorAll(".dynamic-tooltip").forEach(el => el.remove());
+		this.teardown();
+	}
+
+	// Also used to clean up a half-built scene when WebGL setup throws, so every
+	// step is independently optional.
+	private teardown(): void {
 		if (this.animationId !== undefined) cancelAnimationFrame(this.animationId);
+		this.animationId = undefined;
 		this.resizeObserver?.disconnect();
 		this.controls?.dispose();
 		this.mesh?.geometry.dispose();
@@ -59,6 +85,14 @@ export class IceComponent implements AfterViewInit, OnDestroy {
 		this.environment?.dispose();
 		this.pmrem?.dispose();
 		this.renderer?.dispose();
+		this.resizeObserver = undefined;
+		this.controls = undefined;
+		this.mesh = undefined;
+		this.material = undefined;
+		this.scene = undefined;
+		this.environment = undefined;
+		this.pmrem = undefined;
+		this.renderer = undefined;
 	}
 
 	private initScene(): void {

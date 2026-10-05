@@ -2,6 +2,7 @@ import { Component, AfterViewInit, ElementRef, ViewChild, HostListener } from "@
 import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { InputControllerDirective } from "../../directives/input-controller.directive";
+import { clamp, isPositiveNumber, toFiniteNumber } from "../../services/number-utils";
 
 @Component({
 	selector: "app-taxes",
@@ -22,6 +23,12 @@ export class TaxesComponent implements AfterViewInit {
 	minIncome = 10000;
 	maxIncome = 1000000;
 	exponent = 0;
+	// True when the take-home curve has no interior maximum over the drawn
+	// range, i.e. the exponent 1.5*L/L0 is at or below 1 and take-home rises
+	// all the way to the right edge. peakIncome is then the edge of the chart,
+	// not a turning point, and the template says so instead of naming an
+	// income the curve never turns at.
+	peakIsAtRangeEdge = false;
 	peakIncome = 0;
 	peakTaxRate = 0;
 	peakTakeHome = 0;
@@ -53,9 +60,9 @@ export class TaxesComponent implements AfterViewInit {
 	}
 
 	private computeDerived(): void {
-		const L = this.current;
-		const L0 = this.baseline;
-		if (!L || !L0 || L <= 0 || L0 <= 0) {
+		const L = toFiniteNumber(this.current, 0);
+		const L0 = toFiniteNumber(this.baseline, 0);
+		if (!isPositiveNumber(L) || !isPositiveNumber(L0)) {
 			return;
 		}
 
@@ -74,9 +81,16 @@ export class TaxesComponent implements AfterViewInit {
 				bestX = x;
 			}
 		}
+
+		// When the exponent is at or below 1 the take-home curve is strictly
+		// increasing and has no interior maximum, so the coarse scan pins
+		// bestX to its last sample. Refining around that sample used to widen
+		// the bracket to bestX + span and walk off the end of the chart,
+		// reporting an income beyond the x axis (e.g. $900,225 on a $900,000
+		// axis). Both ends of the bracket are now clamped to the drawn range.
 		const span = xMax / coarse;
-		let lo = Math.max(1, bestX - span);
-		let hi = bestX + span;
+		let lo = clamp(bestX - span, 1, xMax);
+		let hi = clamp(bestX + span, 1, xMax);
 		for (let pass = 0; pass < 40; pass++) {
 			const mLeft = lo + (hi - lo) / 3;
 			const mRight = hi - (hi - lo) / 3;
@@ -86,11 +100,23 @@ export class TaxesComponent implements AfterViewInit {
 				hi = mRight;
 			}
 		}
-		bestX = (lo + hi) / 2;
+		bestX = clamp((lo + hi) / 2, 1, xMax);
+
+		// Distinguish a real turning point from the range edge: if take-home
+		// is still climbing at the far right, there is no peak to report.
+		const edgeProbe = xMax * (1 - 1e-6);
+		this.peakIsAtRangeEdge = this.takeHomeAt(xMax) >= this.takeHomeAt(edgeProbe);
 
 		this.peakIncome = bestX;
 		this.peakTaxRate = this.taxRateAt(bestX);
 		this.peakTakeHome = this.takeHomeAt(bestX);
+
+		// The explorer's slider must stay inside the range the chart plots, or
+		// the black dot silently disappears across its upper travel while the
+		// readouts keep updating.
+		this.maxIncome = Math.round(xMax);
+		this.minIncome = Math.min(10000, this.maxIncome);
+		this.userIncome = clamp(toFiniteNumber(this.userIncome, this.minIncome), this.minIncome, this.maxIncome);
 
 		this.computeUser();
 	}
@@ -101,23 +127,29 @@ export class TaxesComponent implements AfterViewInit {
 	}
 
 	private computeUser(): void {
-		const x = this.userIncome;
+		const x = toFiniteNumber(this.userIncome, 0);
 		this.userTaxRate = this.taxRateAt(x);
 		this.userTax = (x * this.userTaxRate) / 100;
 		this.userTakeHome = x - this.userTax;
 	}
 
 	taxRateAt(x: number): number {
-		if (x <= 0) {
+		// Guarded here rather than only in computeDerived: the template calls
+		// this directly, so an emptied or negative poverty-line field reaches
+		// Math.pow with a non-positive base and renders as "NaN".
+		const L = toFiniteNumber(this.current, 0);
+		const L0 = toFiniteNumber(this.baseline, 0);
+		if (!isPositiveNumber(x) || !isPositiveNumber(L) || !isPositiveNumber(L0)) {
 			return 0;
 		}
-		const L = this.current;
-		const L0 = this.baseline;
 		const n = 1.5 * L / L0;
 		return 100 / (1 + 9 * Math.pow((10 * L) / x, n));
 	}
 
 	takeHomeAt(x: number): number {
+		if (!isPositiveNumber(x)) {
+			return 0;
+		}
 		return x * (1 - this.taxRateAt(x) / 100);
 	}
 
@@ -248,7 +280,13 @@ export class TaxesComponent implements AfterViewInit {
 		this.drawCurve(ctx, samples, xMax, xToPx, x => rateToPy(this.taxRateAt(x)), this.COLOR_PROPOSED, 2.5);
 		this.drawMarker(ctx, xToPx(L), marginTop, plotH, "Poverty Line");
 		this.drawMarker(ctx, xToPx(10 * L), marginTop, plotH, "10% Tax Anchor");
-		this.drawMarker(ctx, xToPx(this.peakIncome), marginTop, plotH, "Peak Take-Home");
+		this.drawMarker(
+			ctx,
+			xToPx(this.peakIncome),
+			marginTop,
+			plotH,
+			this.peakIsAtRangeEdge ? "Still Rising" : "Peak Take-Home",
+		);
 
 		if (this.userIncome > 0 && this.userIncome <= xMax) {
 			const dotX = xToPx(this.userIncome);
@@ -411,9 +449,19 @@ export class TaxesComponent implements AfterViewInit {
 	}
 
 	formatMoney(v: number): string {
-		if (v >= 1e6) {
-			const m = v / 1e6;
-			return "$" + (m % 1 === 0 ? m.toFixed(0) : m.toFixed(1)) + "M";
+		if (!Number.isFinite(v)) {
+			return "$0";
+		}
+		// Thresholds are tested against the value AFTER this function's own
+		// rounding: 999999 rounds to 1000K, a magnitude the "M" unit covers,
+		// so it must cross into the upper branch rather than print "$1000K".
+		if (Math.round(v / 1e3) >= 1e3) {
+			// Decide the decimal from the ROUNDED mantissa: 999999/1e6 is
+			// 0.999999, which prints as "1.0M" if the fraction is tested
+			// before rounding. One decimal place is what toFixed(1) keeps, so
+			// that is the precision the whole-number test must use.
+			const m = Math.round(v / 1e5) / 10;
+			return "$" + (Number.isInteger(m) ? m.toFixed(0) : m.toFixed(1)) + "M";
 		}
 		if (v >= 1e3) {
 			return "$" + Math.round(v / 1e3) + "K";
